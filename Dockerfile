@@ -12,7 +12,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install app dependencies for building (including devDependencies for build tools)
-RUN npm ci --only=production=false
+RUN npm ci
 
 # Copy the rest of the application code to the working directory
 COPY . ./
