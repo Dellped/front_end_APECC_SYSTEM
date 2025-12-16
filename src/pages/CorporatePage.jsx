@@ -38,7 +38,12 @@ export default function CorporatePage() {
   const role = getRole();
 
   // Fetch preview details
-  const fetchDetailsAndShow = async (filterKey, type, name = "") => {
+  const fetchDetailsAndShow = async (
+    filterKey,
+    type,
+    name = "",
+    displayKey = ""
+  ) => {
     setModalTitle(`Detail Records: ${name || filterKey}`);
     setModalDisplayName(name || filterKey);
     setModalOpen(true);
@@ -53,7 +58,7 @@ export default function CorporatePage() {
       }
 
       const { data } = await apiClient.get(
-        `${endpoint}?name=${encodeURIComponent(filterKey)}`
+        `${endpoint}?operation_name=${encodeURIComponent(filterKey)}`
       );
 
       if (data.error) {
@@ -61,7 +66,15 @@ export default function CorporatePage() {
         return;
       }
 
-      setModalRecords(data.records || []);
+      const filteredRecords = data.records.filter((r) => {
+        if (type === "department") {
+          return r.department === displayKey;
+        } else if (type === "operation") {
+          return r.group === displayKey;
+        }
+      });
+
+      setModalRecords(filteredRecords || []);
     } catch (err) {
       setMessage(err.message);
     }
@@ -169,7 +182,9 @@ export default function CorporatePage() {
                 return (
                   <TableRow key={idx} hover>
                     <TableCell sx={{ textAlign: "left" }}>
-                      {r.department_name}
+                      {type === "department"
+                        ? r.department_name
+                        : r.operation_name}
                     </TableCell>
                     <TableCell>{EE}</TableCell>
                     <TableCell>{Math.round(r.EE_percent || 0)}%</TableCell>
@@ -182,7 +197,14 @@ export default function CorporatePage() {
                       <Button
                         variant="outlined"
                         size="small"
-                        onClick={() => fetchDetailsAndShow(name, type, name)}
+                        onClick={() =>
+                          fetchDetailsAndShow(
+                            name,
+                            type,
+                            name,
+                            r.department_name || r.operation_name
+                          )
+                        }
                       >
                         Preview
                       </Button>
