@@ -1,0 +1,1630 @@
+  <style>
+/* Keep all original styles (from your provided CSS) */
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height:100vh;
+  font-family: Arial, sans-serif;
+  background-color: #fafafa;
+  overflow-x: hidden;
+  margin-top: -10px;
+  margin-left: 35px;
+}
+
+#branch-display {
+  font-weight: bold;
+  color: orange;
+  font-size: 22px; 
+  margin-bottom: 15px;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+.container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+  padding: 20px 25px;
+  width: 100%;
+  max-width: 1250px;
+  text-align: center;
+  position: relative;
+  z-index: 5;
+  margin-top: 20px;
+  min-height:100vh;
+}
+.tabs {
+  display:flex;
+  gap:8px;
+  margin-top:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+.tab-btn {
+  padding:8px 14px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  background:#e7eef2;
+  color:#333;
+  font-weight:700;
+}
+.tab-btn.active {
+  background: mediumseagreen;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.floating-tables { margin-top: 16px; display:block; }
+.table-wrapper { width:100%; }
+.table-container {
+  width:100%;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin-bottom: 14px;
+  display:none;
+  margin-left: -10px;
+}
+.table-title {
+  background-color:mediumseagreen;
+  color: white;
+  padding: 8px;
+  font-weight: bold;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  width: 98.6%;
+}
+table { border-collapse: collapse; width: 100%; min-width: 900px; }
+th, td { border: 1px solid #ccc; padding: 8px; text-align: center; white-space: nowrap; font-size:13px;}
+th { background-color: mediumseagreen; color: white; position: sticky; top:40px; z-index: 2; border-bottom: 2px solid #ccc;}
+#loading-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: none; justify-content: center; align-items: center; z-index: 9999; flex-direction: column;
+}
+.loader-spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #007bff;
+  border-radius: 50%; width: 50px; height: 50px;
+  animation: spin 1s linear infinite; margin-bottom: 15px;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+#message-box {
+  display: none;
+  position: fixed; top: 20px; left: 50%;
+  transform: translateX(-50%);
+  background-color: #ff4d4d; color: white;
+  padding: 15px 25px; border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); z-index: 10000; font-weight: bold;
+}
+#message-box.success { background-color: #4CAF50; }
+
+/* Preview Modal (kept from your original) */
+#preview-modal {
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
+  background:rgba(0,0,0,0.5);
+  justify-content:center;
+  align-items:center;
+  z-index:10000;
+}
+#preview-modal .modal-content {
+  background:white;
+  border-radius:10px;
+  padding:16px;
+  width:95%;
+  max-width:1200px;
+  max-height:85vh;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  position:relative;
+}
+#preview-modal .modal-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+#preview-modal h4 { margin:0; }
+#modal-close {
+  border:none;
+  background:#3498db;
+  color:#fff;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+}
+#preview-table-wrapper {
+  overflow:auto;
+  flex:1 1 auto;
+}
+#preview-table {
+  width:100%;
+  border-collapse:collapse;
+}
+#preview-table th, #preview-table td {
+  border:1px solid #ccc;
+  padding:6px;
+  text-align:center;
+  white-space:nowrap;
+  font-size:12px;
+}
+#preview-table th {
+  background:mediumseagreen;
+  color:white;
+  position:sticky;
+  top:0;
+  z-index:3;
+}
+
+/* Modal pagination controls */
+.modal-pagination {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:6px 0;
+}
+.modal-pagination button {
+  padding:6px 12px;
+  border-radius:6px;
+  border:none;
+  background:#3498db;
+  color:#fff;
+  cursor:pointer;
+}
+.modal-pagination button:disabled {
+  opacity:0.5;
+  cursor:not-allowed;
+}
+.modal-pagination .page-indicator {
+  font-weight:600;
+  color:#333;
+}
+
+/* responsive tweak */
+@media (max-width: 1100px) {
+  table { min-width: 800px; }
+}
+#download-csv-btn, #download-excel-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #3498db;
+  color: #fff;
+  cursor: pointer;
+  margin-right: 6px;
+  font-size: 13px;
+}
+#download-csv-btn:hover, #download-excel-btn:hover {
+  background: #2980b9;
+}
+
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div id="loading-overlay">
+    <div class="loader-spinner"></div>
+    <div>Generating report...</div>
+  </div>
+
+  <div class="container">
+    <div id="message-box"></div>
+    <img src="https://raw.githubusercontent.com/rodelpeligro-oss/image-hosting/main/nav3%20(1).png"
+         alt="Logo" style="width:200px; height:70px;">
+    <h3>Value-Driven Performance Management Form</h3>
+    <h3>Summary Reports</h3>
+
+    <div id="branch-display">Loading branch...</div>
+
+    <!-- Tabs -->
+    <div class="tabs" id="tabs"></div>
+
+    <!-- Tables container -->
+    <div class="floating-tables" id="tables-container">
+      <!-- Placeholders; rendered dynamically -->
+      <div class="table-wrapper">
+        <div class="table-container" id="table-itr-summary">
+          <div class="table-title">DEPARTMENT SUMMARY</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Department</th>
+                <th>EE</th>
+                <th>EE %</th>
+                <th>ME</th>
+                <th>ME %</th>
+                <th>DM</th>
+                <th>DM %</th>
+                <th>Total</th>
+                <th>Preview</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="table-container" id="table-im-summary">
+          <div class="table-title">DEPARTMENT SUMMARY</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Department</th>
+                <th>EE</th>
+                <th>EE %</th>
+                <th>ME</th>
+                <th>ME %</th>
+                <th>DM</th>
+                <th>DM %</th>
+                <th>Total</th>
+                <th>Preview</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="table-container" id="table-department-summary">
+  <div class="table-title">DEPARTMENT SUMMARY</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Department</th>
+        <th>EE</th><th>EE %</th>
+        <th>ME</th><th>ME %</th>
+        <th>DM</th><th>DM %</th>
+        <th>Total</th>
+        <th>Preview</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+        <div class="table-container" id="table-operation-summary">
+  <div class="table-title">OPERATION SUMMARY</div>
+  <table>
+    <thead>
+      <tr>
+        <th>OPERATION</th>
+        <th>EE</th><th>EE %</th>
+        <th>ME</th><th>ME %</th>
+        <th>DM</th><th>DM %</th>
+        <th>Total</th>
+        <th>Preview</th>
+        <!-- No preview column -->
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+        <div class="table-container" id="table-division-summary">
+          <div class="table-title">DIVISION SUMMARY</div>
+          <table>
+            <thead>
+              <tr>
+                <th>DIVISION</th>
+                <th>EE</th><th>EE %</th>
+                <th>ME</th><th>ME %</th>
+                <th>DM</th><th>DM %</th>
+                <th>Total</th>
+                <th>Preview</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="table-container" id="table-region-summary">
+          <div class="table-title">REGION SUMMARY</div>
+          <table>
+            <thead>
+              <tr>
+                <th>REGION</th>
+                <th>EE</th><th>EE %</th>
+                <th>ME</th><th>ME %</th>
+                <th>DM</th><th>DM %</th>
+                <th>Total</th>
+                <th>Preview</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="table-container" id="table-area-summary">
+          <div class="table-title">AREA SUMMARY</div>
+          <table>
+            <thead>
+              <tr>
+                <th>AREA NAME</th>
+                <th>EE</th><th>EE %</th>
+                <th>ME</th><th>ME %</th>
+                <th>DM</th><th>DM %</th>
+                <th>Total</th>
+                <th>Preview</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="table-container" id="table-branch-summary">
+          <div class="table-title">BRANCH SUMMARY</div>
+          <table>
+            <thead>
+              <tr>
+                <th>BRANCH</th>
+                <th>EE</th><th>EE %</th>
+                <th>ME</th><th>ME %</th>
+                <th>DM</th><th>DM %</th>
+                <th>Total</th>
+                <th>Preview</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+<div class="table-container" id="table-operation-support-summary">
+  <div class="table-title">OPERATIONS SUPPORT SUMMARY</div>
+  <table>
+    <thead>
+      <tr>
+        <th>DEPARTMENT</th>
+        <th>EE</th><th>EE %</th>
+        <th>ME</th><th>ME %</th>
+        <th>DM</th><th>DM %</th>
+        <th>Total</th>
+        <th>Preview</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div> 
+  </div>
+  <!-- Preview Modal -->
+  <div id="preview-modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-content" role="document">
+      <div class="modal-header">
+        <h4 id="preview-title">Detail Records</h4>
+        <div>
+         <button id="download-csv-btn" type="button">Download CSV</button>
+         <button id="download-excel-btn" type="button">Download Excel</button>
+         <button id="modal-close" type="button">Close</button>
+         </div>
+      </div>
+
+      <div id="preview-table-wrapper">
+        <table id="preview-table" aria-describedby="preview-title">
+          <thead>
+            <tr>
+              <th>EMP ID</th>
+              <th>Employee Name</th>
+              <th>Position Title</th>
+              <th>Date Hired</th>
+              <th>Immediate Superior</th>
+              <th>Department</th>
+              <th>Group</th>
+              <th>Division</th>
+              <th>Region</th>
+              <th>Area</th>
+              <th>Branch</th>
+              <th>Satellite</th>
+              <th>Month From</th>
+              <th>Month To</th>
+              <th>Year</th>
+              <th>Part A Total Rating</th>
+              <th>Part A Overall Weight Allocation</th>
+              <th>Part A Subtotal</th>
+              <th>Part B Total Rating</th>
+              <th>Part B Overall Weight Allocation</th>
+              <th>Part B Subtotal</th>
+              <th>Overall Numeric Rating</th>
+              <th>Overall Adjectival Rating</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="modal-pagination">
+        <button id="modal-prev">Prev</button>
+        <div class="page-indicator" id="modal-page-indicator">Page 1 / 1</div>
+        <button id="modal-next">Next</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ---------- Helpers & UI utilities ---------- */
+function showMessage(msg, type='error', duration=4000) {
+    const box = document.getElementById('message-box');
+    box.textContent = msg;
+    box.className = type==='success' ? 'success' : '';
+    box.style.display = 'block';
+    setTimeout(() => box.style.display='none', duration);
+}
+
+
+function el(selector) { return document.querySelector(selector); }
+function elAll(selector) { return Array.from(document.querySelectorAll(selector)); }
+
+/* ---------- Preview modal logic (same as your existing) ---------- */
+let modalRecords = [];
+let modalPage = 1;
+const modalPerPage = 10;
+let currentPreviewKey = '';
+let currentPreviewType = '';
+let currentDisplayName = '';
+
+function openPreviewModalUI(title) {
+  const modal = el('#preview-modal');
+  modal.style.display = 'flex';
+  modal.setAttribute('aria-hidden', 'false');
+  el('#preview-title').textContent = title;
+}
+
+function closePreviewModal() {
+  const modal = el('#preview-modal');
+  modal.style.display = 'none';
+  modal.setAttribute('aria-hidden', 'true');
+  modalRecords = [];
+  modalPage = 1;
+  currentPreviewKey = '';
+  currentPreviewType = '';
+  currentDisplayName = ''; 
+  el('#preview-table tbody').innerHTML = '';
+  updateModalPaginationControls();
+}
+
+async function fetchDetailsAndShow(filterKey, type, displayName='') {
+  // type: 'branch', 'area', 'region', 'division'
+  const tbody = el('#preview-table tbody');
+  tbody.innerHTML = '<tr><td colspan="23">Loading...</td></tr>';
+
+   currentDisplayName = displayName || filterKey;
+
+  const title = type === 'area' ? `Detail Records for Area: ${displayName}` :
+                type === 'region' ? `Detail Records for Region: ${displayName}` :
+                type === 'division' ? `Detail Records for Division: ${displayName}` :
+                type === 'im' ? `Detail Records for Department: ${displayName}` :
+                type === 'itr' ? `Detail Records for Department: ${displayName}` :
+                `Detail Records: ${filterKey}`;
+  openPreviewModalUI(title);
+
+  try {
+    let url = '';
+    if (type === 'branch') url = `/api/summary/details?branch=${encodeURIComponent(filterKey)}`;
+    else if (type === 'area') url = `/api/summary/details?area_name=${encodeURIComponent(filterKey)}`;
+    else if (type === 'region') url = `/api/summary/details?region_name=${encodeURIComponent(filterKey)}`;
+    else if (type === 'division') url = `/api/summary/details?division_name=${encodeURIComponent(filterKey)}`;
+    else if (type === 'department') url = `/api/summary/details?department=${encodeURIComponent(filterKey)}`;
+    else if (type === 'operation_name') url = `/api/summary/details?operation_name=${encodeURIComponent(filterKey)}`;
+    else if (type === 'im') url = `/api/summary/preview?role=IM&userId=${encodeURIComponent(filterKey)}`;
+    else if (type === 'itr') url = `/api/summary/preview?role=ITR&userId=${encodeURIComponent(filterKey)}`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.error) {
+      tbody.innerHTML = `<tr><td colspan="23">${data.error}</td></tr>`;
+      modalRecords = [];
+      updateModalPaginationControls();
+      return;
+    }
+    modalRecords = data.records || [];
+    modalPage = 1;
+    renderModalPage();
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="23">${err.message}</td></tr>`;
+    modalRecords = [];
+    updateModalPaginationControls();
+  }
+}
+
+function renderModalPage() {
+  const tbody = el('#preview-table tbody');
+  tbody.innerHTML = '';
+
+  const totalPages = Math.ceil(modalRecords.length / modalPerPage) || 1;
+  if (modalPage > totalPages) modalPage = totalPages;
+
+  const start = (modalPage - 1) * modalPerPage;
+  const pageData = modalRecords.slice(start, start + modalPerPage);
+
+  if (!pageData.length) {
+    tbody.innerHTML = '<tr><td colspan="23">No records found</td></tr>';
+  } else {
+    pageData.forEach(emp => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${emp.emp_id || ''}</td>
+        <td style="text-align:left">${emp.employee_name || ''}</td>
+        <td>${emp.position_title || ''}</td>
+        <td>${emp.date_hired || ''}</td>
+        <td>${emp.immediate_superior || ''}</td>
+        <td>${emp.department || ''}</td>
+        <td>${emp['group'] || emp.group_name || ''}</td>
+        <td>${emp.division || ''}</td>
+        <td>${emp.region || ''}</td>
+        <td>${emp.area || ''}</td>
+        <td>${emp.branch || ''}</td>
+        <td>${emp.satellite || ''}</td>
+        <td>${emp.month_from || ''}</td>
+        <td>${emp.month_to || ''}</td>
+        <td>${emp.year || ''}</td>
+        <td>${emp.part_a_total_rating ?? emp.part_a_total ?? ''}</td>
+        <td>${emp.part_a_overall_weight ? Math.round(emp.part_a_overall_weight) + '%' : (emp.part_a_weight ?? '')}</td>
+        <td>${emp.part_a_subtotal ?? ''}</td>
+        <td>${emp.part_b_total_rating ?? emp.part_b_total ?? ''}</td>
+        <td>${emp.part_b_overall_weight ? Math.round(emp.part_b_overall_weight) + '%' : (emp.part_b_weight ?? '')}</td>
+        <td>${emp.part_b_subtotal ?? ''}</td>
+        <td>${emp.overall_numeric_rating ?? emp.overall_numeric ?? ''}</td>
+        <td>${emp.overall_adjectival_rating ?? emp.overall_adjectival ?? ''}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+  updateModalPaginationControls();
+}
+
+function updateModalPaginationControls() {
+  const totalPages = Math.ceil(modalRecords.length / modalPerPage) || 1;
+  el('#modal-page-indicator').textContent = `Page ${modalPage} / ${totalPages}`;
+  el('#modal-prev').disabled = modalPage <= 1;
+  el('#modal-next').disabled = modalPage >= totalPages;
+}
+
+el('#modal-prev').addEventListener('click', () => {
+  if (modalPage > 1) { modalPage--; renderModalPage(); el('#preview-table-wrapper').scrollTop = 0; }
+});
+el('#modal-next').addEventListener('click', () => {
+  const totalPages = Math.ceil(modalRecords.length / modalPerPage) || 1;
+  if (modalPage < totalPages) { modalPage++; renderModalPage(); el('#preview-table-wrapper').scrollTop = 0; }
+});
+el('#modal-close').addEventListener('click', closePreviewModal);
+el('#preview-modal').addEventListener('click', (e) => { if (e.target && e.target.id === 'preview-modal') closePreviewModal(); });
+
+
+// ---------------------- Export Functions ----------------------
+el('#download-csv-btn').addEventListener('click', () => {
+  if (!modalRecords.length) return showMessage('No records to export', 'error');
+  const safeName = (currentDisplayName || 'records').replace(/[^a-z0-9_\-]/gi, '_');
+  exportToCSV(modalRecords, safeName);
+});
+
+el('#download-excel-btn').addEventListener('click', () => {
+  if (!modalRecords.length) return showMessage('No records to export', 'error');
+  const safeName = (currentDisplayName || 'records').replace(/[^a-z0-9_\-]/gi, '_');
+  exportToExcel(modalRecords, safeName);
+});
+
+const previewColumns = [
+  'emp_id','employee_name','position_title','date_hired','immediate_superior','department',
+  'group','division','region','area','branch','satellite',
+  'month_from','month_to','year',
+  'part_a_total_rating','part_a_overall_weight','part_a_subtotal',
+  'part_b_total_rating','part_b_overall_weight','part_b_subtotal',
+  'overall_numeric_rating','overall_adjectival_rating'
+];
+
+function exportToCSV(data, filename='export.csv') {
+  const csvRows = [];
+  csvRows.push(previewColumns.join(','));
+  data.forEach(row => {
+    const values = previewColumns.map(col => `"${(row[col] ?? '')}"`);
+    csvRows.push(values.join(','));
+  });
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename.replace(/ /g,'_') + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportToExcel(data, filename='export.xlsx') {
+  const wsData = data.map(row => previewColumns.reduce((obj, col) => ({ ...obj, [col]: row[col] ?? '' }), {}));
+  const ws = XLSX.utils.json_to_sheet(wsData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+  XLSX.writeFile(wb, filename.replace(/ /g,'_') + '.xlsx');
+}
+
+/* ---------- Summary renderers ---------- */
+
+function renderItrSummary(records, entity, subordinates = []) {
+      const container = el('#table-itr-summary');
+      const tbody = container.querySelector('tbody');
+      tbody.innerHTML = '';
+
+      if (!records || !records.length) {
+        tbody.innerHTML = '<tr><td colspan="8">No department data</td></tr>';
+        container.style.display = 'none';
+        return;
+      }
+
+      let totals = { EE: 0, ME: 0, DM: 0, total: 0 };
+
+      records.forEach(r => {
+        const EE_count = parseInt(r.EE_count || 0);
+        const ME_count = parseInt(r.ME_count || 0);
+        const DM_count = parseInt(r.DM_count || 0);
+        const total_employees = parseInt(r.total_employees || 0);
+
+        totals.EE += EE_count;
+        totals.ME += ME_count;
+        totals.DM += DM_count;
+        totals.total += total_employees;
+
+        // Use the passed subordinates instead of undefined 'data'
+        const allIds = [entity, ...subordinates].join(',');
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+      <td style="text-align:left">${r.department || ''}</td>
+      <td>${EE_count}</td>
+      <td>${Math.round(r.EE_percent || 0)}%</td>
+      <td>${ME_count}</td>
+      <td>${Math.round(r.ME_percent || 0)}%</td>
+      <td>${DM_count}</td>
+      <td>${Math.round(r.DM_percent || 0)}%</td>
+      <td>${total_employees}</td>
+      <td><button class="itr-preview-btn" data-itr="${allIds}" data-name="${r.department || ''}">Preview</button></td>
+    `;
+        tbody.appendChild(tr);
+      });
+
+      // Subtotal row
+      const trSub = document.createElement('tr');
+      trSub.style.fontWeight = 'bold';
+      trSub.style.color = 'red';
+      trSub.innerHTML = `
+    <td style="text-align:left">Subtotal</td>
+    <td>${totals.EE}</td>
+    <td>${totals.total > 0 ? Math.round((totals.EE / totals.total) * 100) : 0}%</td>
+    <td>${totals.ME}</td>
+    <td>${totals.total > 0 ? Math.round((totals.ME / totals.total) * 100) : 0}%</td>
+    <td>${totals.DM}</td>
+    <td>${totals.total > 0 ? Math.round((totals.DM / totals.total) * 100) : 0}%</td>
+    <td>${totals.total}</td>
+  `;
+      tbody.appendChild(trSub);
+
+      container.style.display = 'block';
+
+      elAll('.itr-preview-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.itr;
+          const name = btn.dataset.name || '';
+          if (!id) return showMessage('No ITR identifier available');
+          await fetchDetailsAndShow(id, 'itr', name);
+        });
+      });
+    }
+
+    function renderImSummary(records, entity, subordinates = []) {
+      const container = el('#table-im-summary');
+      const tbody = container.querySelector('tbody');
+      tbody.innerHTML = '';
+
+      if (!records || !records.length) {
+        tbody.innerHTML = '<tr><td colspan="8">No department data</td></tr>';
+        container.style.display = 'none';
+        return;
+      }
+
+      let totals = { EE: 0, ME: 0, DM: 0, total: 0 };
+
+      records.forEach(r => {
+        const EE_count = parseInt(r.EE_count || 0);
+        const ME_count = parseInt(r.ME_count || 0);
+        const DM_count = parseInt(r.DM_count || 0);
+        const total_employees = parseInt(r.total_employees || 0);
+
+        totals.EE += EE_count;
+        totals.ME += ME_count;
+        totals.DM += DM_count;
+        totals.total += total_employees;
+
+        // Use the passed subordinates instead of undefined 'data'
+        const allIds = [entity, ...subordinates].join(',');
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+      <td style="text-align:left">${r.department || ''}</td>
+      <td>${EE_count}</td>
+      <td>${Math.round(r.EE_percent || 0)}%</td>
+      <td>${ME_count}</td>
+      <td>${Math.round(r.ME_percent || 0)}%</td>
+      <td>${DM_count}</td>
+      <td>${Math.round(r.DM_percent || 0)}%</td>
+      <td>${total_employees}</td>
+      <td><button class="im-preview-btn" data-im="${allIds}" data-name="${r.department || ''}">Preview</button></td>
+    `;
+        tbody.appendChild(tr);
+      });
+
+      // Subtotal row
+      const trSub = document.createElement('tr');
+      trSub.style.fontWeight = 'bold';
+      trSub.style.color = 'red';
+      trSub.innerHTML = `
+    <td style="text-align:left">Subtotal</td>
+    <td>${totals.EE}</td>
+    <td>${totals.total > 0 ? Math.round((totals.EE / totals.total) * 100) : 0}%</td>
+    <td>${totals.ME}</td>
+    <td>${totals.total > 0 ? Math.round((totals.ME / totals.total) * 100) : 0}%</td>
+    <td>${totals.DM}</td>
+    <td>${totals.total > 0 ? Math.round((totals.DM / totals.total) * 100) : 0}%</td>
+    <td>${totals.total}</td>
+  `;
+      tbody.appendChild(trSub);
+
+      container.style.display = 'block';
+
+      elAll('.im-preview-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.im;
+          const name = btn.dataset.name || '';
+          if (!id) return showMessage('No IM identifier available');
+          await fetchDetailsAndShow(id, 'im', name);
+        });
+      });
+    }
+
+function renderDepartmentSummary(records) {
+  const container = el('#table-department-summary');
+  const tbody = container.querySelector('tbody');
+  tbody.innerHTML = '';
+
+  if (!records || !records.length) {
+    tbody.innerHTML = '<tr><td colspan="8">No department data</td></tr>';
+    container.style.display = 'none';
+    return;
+  }
+
+  let totals = { EE: 0, ME: 0, DM: 0, total: 0 };
+
+  records.forEach(r => {
+    const EE_count = parseInt(r.EE_count || 0);
+    const ME_count = parseInt(r.ME_count || 0);
+    const DM_count = parseInt(r.DM_count || 0);
+    const total_employees = parseInt(r.total_employees || 0);
+
+    totals.EE += EE_count;
+    totals.ME += ME_count;
+    totals.DM += DM_count;
+    totals.total += total_employees;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:left">${r.department_name || r.department || ''}</td>
+      <td>${EE_count}</td>
+      <td>${Math.round(r.EE_percent || 0)}%</td>
+      <td>${ME_count}</td>
+      <td>${Math.round(r.ME_percent || 0)}%</td>
+      <td>${DM_count}</td>
+      <td>${Math.round(r.DM_percent || 0)}%</td>
+      <td>${total_employees}</td>
+      <td>
+        <button class="department-preview-btn" 
+                data-department="${r.department_name || r.id || ''}" 
+                data-name="${r.department_name || r.department || ''}">
+          Preview
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const trSub = document.createElement('tr');
+  trSub.style.fontWeight = 'bold';
+  trSub.style.color = 'red';
+  trSub.innerHTML = `
+    <td style="text-align:left">Subtotal</td>
+    <td>${totals.EE}</td>
+    <td>${totals.total > 0 ? Math.round((totals.EE / totals.total) * 100) : 0}%</td>
+    <td>${totals.ME}</td>
+    <td>${totals.total > 0 ? Math.round((totals.ME / totals.total) * 100) : 0}%</td>
+    <td>${totals.DM}</td>
+    <td>${totals.total > 0 ? Math.round((totals.DM / totals.total) * 100) : 0}%</td>
+    <td>${totals.total}</td>
+  `;
+  tbody.appendChild(trSub);
+
+  container.style.display = 'block';
+
+  elAll('.department-preview-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.department;
+      const name = btn.dataset.name || '';
+      if (!id) return showMessage('No department id available');
+      await fetchDetailsAndShow(id, 'department', name);
+    });
+  });
+}
+
+function renderOperationSupportSummary(records) {
+  const container = el('#table-operation-support-summary'); 
+  const tbody = container.querySelector('tbody');
+  tbody.innerHTML = '';
+
+  if (!records || !records.length) {
+    tbody.innerHTML = '<tr><td colspan="9">No Operations Support data</td></tr>';
+    container.style.display = 'none';
+    return;
+  }
+
+  let totals = { EE: 0, ME: 0, DM: 0, total: 0 };
+
+  records.forEach(r => {
+    const EE_count = parseInt(r.EE_count || 0);
+    const ME_count = parseInt(r.ME_count || 0);
+    const DM_count = parseInt(r.DM_count || 0);
+    const total_employees = parseInt(r.total_employees || 0);
+
+    totals.EE += EE_count;
+    totals.ME += ME_count;
+    totals.DM += DM_count;
+    totals.total += total_employees;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:left">OPERATIONS SUPPORT</td>
+      <td>${EE_count}</td>
+      <td>${total_employees > 0 ? Math.round((EE_count / total_employees) * 100) : 0}%</td>
+      <td>${ME_count}</td>
+      <td>${total_employees > 0 ? Math.round((ME_count / total_employees) * 100) : 0}%</td>
+      <td>${DM_count}</td>
+      <td>${total_employees > 0 ? Math.round((DM_count / total_employees) * 100) : 0}%</td>
+      <td>${total_employees}</td>
+      <td>
+        <button class="operations-support-preview-btn" data-department="OPERATIONS SUPPORT">
+          Preview
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Subtotal row
+  const trSub = document.createElement('tr');
+  trSub.style.fontWeight = 'bold';
+  trSub.style.color = 'red';
+  trSub.innerHTML = `
+    <td style="text-align:left">Subtotal</td>
+    <td>${totals.EE}</td>
+    <td>${totals.total > 0 ? Math.round((totals.EE / totals.total) * 100) : 0}%</td>
+    <td>${totals.ME}</td>
+    <td>${totals.total > 0 ? Math.round((totals.ME / totals.total) * 100) : 0}%</td>
+    <td>${totals.DM}</td>
+    <td>${totals.total > 0 ? Math.round((totals.DM / totals.total) * 100) : 0}%</td>
+    <td>${totals.total}</td>
+  `;
+  tbody.appendChild(trSub);
+
+  container.style.display = 'block';
+
+  // Preview button handler
+  elAll('.operations-support-preview-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      // Always fetch Operations Support details
+      await fetchDetailsAndShow('OPERATIONS SUPPORT', 'department');
+    });
+  });
+}
+
+
+function renderOperationSummary(records) {
+  const container = el('#table-operation-summary');
+  const tbody = container.querySelector('tbody');
+  tbody.innerHTML = '';
+
+  if (!records || !records.length) {
+    tbody.innerHTML = '<tr><td colspan="8">No operation data</td></tr>';
+    container.style.display = 'none';
+    return;
+  }
+
+  let totals = { EE:0, ME:0, DM:0, total:0 };
+
+  records.forEach(r => {
+    const EE_count = parseInt(r.EE_count || 0);
+    const ME_count = parseInt(r.ME_count || 0);
+    const DM_count = parseInt(r.DM_count || 0);
+    const total_employees = parseInt(r.total_employees || 0);
+
+    totals.EE += EE_count;
+    totals.ME += ME_count;
+    totals.DM += DM_count;
+    totals.total += total_employees;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:left">${r.operation_name || r.operation || ''}</td>
+      <td>${EE_count}</td>
+      <td>${Math.round(r.EE_percent || 0)}%</td>
+      <td>${ME_count}</td>
+      <td>${Math.round(r.ME_percent || 0)}%</td>
+      <td>${DM_count}</td>
+      <td>${Math.round(r.DM_percent || 0)}%</td>
+      <td>${total_employees}</td>
+      <td>
+        <button class="operation-preview-btn" data-operation="${r.operation_name}">Preview</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Subtotal row
+  const trSub = document.createElement('tr');
+  trSub.style.fontWeight = 'bold';
+  trSub.style.color = 'red';
+  trSub.innerHTML = `
+    <td style="text-align:left">Subtotal</td>
+    <td>${totals.EE}</td>
+    <td>${totals.total > 0 ? Math.round((totals.EE / totals.total) * 100) : 0}%</td>
+    <td>${totals.ME}</td>
+    <td>${totals.total > 0 ? Math.round((totals.ME / totals.total) * 100) : 0}%</td>
+    <td>${totals.DM}</td>
+    <td>${totals.total > 0 ? Math.round((totals.DM / totals.total) * 100) : 0}%</td>
+    <td>${totals.total}</td>
+    <td>-</td>
+  `;
+  tbody.appendChild(trSub);
+
+  container.style.display = 'block';
+  
+// Add preview button listeners
+  elAll('.operation-preview-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const name = btn.dataset.operation;
+      await fetchDetailsAndShow(name, 'operation_name', name);
+    });
+  });
+}
+
+function renderDivisionSummary(records) {
+  const container = el('#table-division-summary');
+  const tbody = container.querySelector('tbody');
+  tbody.innerHTML = '';
+  if (!records || !records.length) {
+    tbody.innerHTML = '<tr><td colspan="9">No division data</td></tr>';
+    container.style.display = 'none';
+    return;
+  }
+
+  let totals = { EE: 0, ME: 0, DM: 0, total: 0 };
+
+  records.forEach(r => {
+    const EE_count = parseInt(r.EE_count || 0);
+    const ME_count = parseInt(r.ME_count || 0);
+    const DM_count = parseInt(r.DM_count || 0);
+    const total_employees = parseInt(r.total_employees || 0);
+
+    totals.EE += EE_count;
+    totals.ME += ME_count;
+    totals.DM += DM_count;
+    totals.total += total_employees;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:left">${r.division_name || r.division || ''}</td>
+      <td>${EE_count}</td>
+      <td>${Math.round(r.EE_percent || 0)}%</td>
+      <td>${ME_count}</td>
+      <td>${Math.round(r.ME_percent || 0)}%</td>
+      <td>${DM_count}</td>
+      <td>${Math.round(r.DM_percent || 0)}%</td>
+      <td>${total_employees}</td>
+      <td><button class="division-preview-btn" data-division="${r.division_name || r.division_name}" data-name="${r.division_name || r.division}">Preview</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Subtotal row
+  const trSub = document.createElement('tr');
+  trSub.style.fontWeight = 'bold';
+  trSub.style.color = 'red';
+  trSub.innerHTML = `
+    <td style="text-align:left">Subtotal</td>
+    <td>${totals.EE}</td>
+    <td>${totals.total > 0 ? Math.round((totals.EE / totals.total) * 100) : 0}%</td>
+    <td>${totals.ME}</td>
+    <td>${totals.total > 0 ? Math.round((totals.ME / totals.total) * 100) : 0}%</td>
+    <td>${totals.DM}</td>
+    <td>${totals.total > 0 ? Math.round((totals.DM / totals.total) * 100) : 0}%</td>
+    <td>${totals.total}</td>
+    <td>-</td>
+  `;
+  tbody.appendChild(trSub);
+
+  container.style.display = 'block';
+
+  elAll('.division-preview-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.division;
+      const name = btn.dataset.name || '';
+      if (!id) return showMessage('No division id available');
+      await fetchDetailsAndShow(id, 'division', name);
+    });
+  });
+}
+
+function renderRegionSummary(records) {
+  const container = el('#table-region-summary');
+  const tbody = container.querySelector('tbody');
+  tbody.innerHTML = '';
+  if (!records || !records.length) {
+    tbody.innerHTML = '<tr><td colspan="10">No region data</td></tr>';
+    container.style.display = 'none';
+    return;
+  }
+
+  let totals = { EE:0, ME:0, DM:0, total:0 };
+
+  records.forEach(r => {
+    const EE_count = parseInt(r.EE_count || 0);
+    const ME_count = parseInt(r.ME_count || 0);
+    const DM_count = parseInt(r.DM_count || 0);
+    const total_employees = parseInt(r.total_employees || 0);
+
+    totals.EE += EE_count;
+    totals.ME += ME_count;
+    totals.DM += DM_count;
+    totals.total += total_employees;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:left">${r.region_name || ''}</td>
+      <td>${EE_count}</td>
+      <td>${Math.round(r.EE_percent || 0)}%</td>
+      <td>${ME_count}</td>
+      <td>${Math.round(r.ME_percent || 0)}%</td>
+      <td>${DM_count}</td>
+      <td>${Math.round(r.DM_percent || 0)}%</td>
+      <td>${total_employees}</td>
+      <td><button class="region-preview-btn" data-region="${r.region || r.region_name}" data-name="${r.region_name || ''}">Preview</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const trSub = document.createElement('tr');
+  trSub.style.fontWeight = 'bold';
+  trSub.style.color = 'red';
+  trSub.innerHTML = `
+    <td style="text-align:left">Subtotal</td>
+    <td>-</td>
+    <td>${totals.EE}</td>
+    <td>${totals.total > 0 ? Math.round((totals.EE / totals.total) * 100) : 0}%</td>
+    <td>${totals.ME}</td>
+    <td>${totals.total > 0 ? Math.round((totals.ME / totals.total) * 100) : 0}%</td>
+    <td>${totals.DM}</td>
+    <td>${totals.total > 0 ? Math.round((totals.DM / totals.total) * 100) : 0}%</td>
+    <td>${totals.total}</td>
+    <td>-</td>
+  `;
+  tbody.appendChild(trSub);
+
+  container.style.display = 'block';
+
+  elAll('.region-preview-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.region;
+      const name = btn.dataset.name || '';
+      if (!id) return showMessage('No region id available');
+      await fetchDetailsAndShow(id, 'region', name);
+    });
+  });
+}
+
+function renderAreaSummary(records) {
+  const container = el('#table-area-summary');
+  const tbody = container.querySelector('tbody');
+  tbody.innerHTML = '';
+  if (!records || !records.length) {
+    tbody.innerHTML = '<tr><td colspan="10">No area data</td></tr>';
+    container.style.display = 'none';
+    return;
+  }
+
+  let totals = { EE:0, ME:0, DM:0, total:0 };
+
+  records.forEach(r => {
+    const EE_count = parseInt(r.EE_count || 0);
+    const ME_count = parseInt(r.ME_count || 0);
+    const DM_count = parseInt(r.DM_count || 0);
+    const total_employees = parseInt(r.total_employees || 0);
+
+    totals.EE += EE_count;
+    totals.ME += ME_count;
+    totals.DM += DM_count;
+    totals.total += total_employees;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:left">${r.area_name || ''}</td>
+      <td>${EE_count}</td>
+      <td>${Math.round(r.EE_percent || 0)}%</td>
+      <td>${ME_count}</td>
+      <td>${Math.round(r.ME_percent || 0)}%</td>
+      <td>${DM_count}</td>
+      <td>${Math.round(r.DM_percent || 0)}%</td>
+      <td>${total_employees}</td>
+      <td><button class="area-preview-btn" data-area="${r.area_name || r.area_name}" data-name="${r.area_name || ''}">Preview</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const trSub = document.createElement('tr');
+  trSub.style.fontWeight = 'bold';
+  trSub.style.color = 'red';
+  trSub.innerHTML = `
+    <td style="text-align:left">Subtotal</td>
+    <td>-</td>
+    <td>${totals.EE}</td>
+    <td>${totals.total > 0 ? Math.round((totals.EE / totals.total) * 100) : 0}%</td>
+    <td>${totals.ME}</td>
+    <td>${totals.total > 0 ? Math.round((totals.ME / totals.total) * 100) : 0}%</td>
+    <td>${totals.DM}</td>
+    <td>${totals.total > 0 ? Math.round((totals.DM / totals.total) * 100) : 0}%</td>
+    <td>${totals.total}</td>
+    <td>-</td>
+  `;
+  tbody.appendChild(trSub);
+
+  container.style.display = 'block';
+
+  elAll('.area-preview-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.area;
+      const name = btn.dataset.name || '';
+      if (!id) return showMessage('No area id available');
+      await fetchDetailsAndShow(id, 'area', name);
+    });
+  });
+}
+
+function renderBranchSummary(records) {
+  const container = el('#table-branch-summary');
+  const tbody = container.querySelector('tbody');
+  tbody.innerHTML = '';
+  if (!records || !records.length) {
+    tbody.innerHTML = '<tr><td colspan="9">No branch data</td></tr>';
+    container.style.display = 'none';
+    return;
+  }
+
+  let totals = { EE:0, ME:0, DM:0, total:0 };
+
+  records.forEach(r => {
+    const EE_count = parseInt(r.EE_count || 0);
+    const ME_count = parseInt(r.ME_count || 0);
+    const DM_count = parseInt(r.DM_count || 0);
+    const total_employees = parseInt(r.total_employees || r.subtotal || 0);
+
+    totals.EE += EE_count;
+    totals.ME += ME_count;
+    totals.DM += DM_count;
+    totals.total += total_employees;
+
+    const branchKey =r.branch_no || r.Branch || r.branch || '';
+    const displayName =  r.full_branch_name || r.branchNo || r.branch || r.branch_no || '';
+    
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:left">${branchKey} - ${displayName}</td>
+      <td>${EE_count}</td>
+      <td>${Math.round(r.EE_percent || 0)}%</td>
+      <td>${ME_count}</td>
+      <td>${Math.round(r.ME_percent || 0)}%</td>
+      <td>${DM_count}</td>
+      <td>${Math.round(r.DM_percent || 0)}%</td>
+      <td>${total_employees}</td>
+      <td><button class="branch-preview-btn" data-branch="${branchKey}">Preview</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const trSub = document.createElement('tr');
+  trSub.style.fontWeight = 'bold';
+  trSub.style.color = 'red';
+  trSub.innerHTML = `
+    <td style="text-align:left">Subtotal</td>
+    <td>${totals.EE}</td>
+    <td>${totals.total > 0 ? Math.round((totals.EE / totals.total) * 100) : 0}%</td>
+    <td>${totals.ME}</td>
+    <td>${totals.total > 0 ? Math.round((totals.ME / totals.total) * 100) : 0}%</td>
+    <td>${totals.DM}</td>
+    <td>${totals.total > 0 ? Math.round((totals.DM / totals.total) * 100) : 0}%</td>
+    <td>${totals.total}</td>
+    <td>-</td>
+  `;
+  tbody.appendChild(trSub);
+
+  container.style.display = 'block';
+
+  elAll('.branch-preview-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const branchKey = btn.dataset.branch;
+      if (!branchKey) return showMessage('No branch identifier available for preview.');
+      await fetchDetailsAndShow(branchKey, 'branch');
+    });
+  });
+}
+
+
+/* ---------- Tabs handling ---------- */
+function clearAllTablesDisplay() {
+  ['#table-department-summary','#table-operation-summary','#table-division-summary','#table-region-summary','#table-area-summary','#table-branch-summary'].forEach(id => {
+    const elc = el(id);
+    if (elc) elc.style.display = 'none';
+  });
+}
+function activateTab(tabBtn) {
+  elAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  tabBtn.classList.add('active');
+  // hide all table containers then show the one linked
+  clearAllTablesDisplay();
+  const target = tabBtn.dataset.target;
+  if (target) {
+    const cont = el(`#${target}`);
+    if (cont) cont.style.display = 'block';
+  }
+}
+
+/* ---------- Fetch summary and render based on role ---------- */
+window.addEventListener('DOMContentLoaded', async () => {
+  const role = sessionStorage.getItem('role') || 'AA';
+  let entity = '';
+
+  switch(role) {
+    case 'BM': entity = sessionStorage.getItem('branchNo') || ''; break;
+    case 'AA': entity = sessionStorage.getItem('area_id') || ''; break;
+    case 'RA': entity = sessionStorage.getItem('region_id') || ''; break;
+    case 'AVP': entity = sessionStorage.getItem('division_id') || ''; break;
+    case 'SVP': entity = sessionStorage.getItem('division_id') || sessionStorage.getItem('operation_id') || ''; break;
+    case 'CFOO': entity = sessionStorage.getItem('cfo_id') || ''; break;
+    case 'COO': entity = sessionStorage.getItem('coo_id') || ''; break;
+    case 'CHIEF': entity = sessionStorage.getItem('chief_id') || ''; break;
+    case 'IM': entity = sessionStorage.getItem('userId') || ''; break;
+    case 'ITR': entity = sessionStorage.getItem('userId') || ''; break;
+    case 'ADMIN': entity = 'ALL'; break;
+    default: entity = sessionStorage.getItem('area_id') || '';
+  }
+
+
+  // display branch/area/div info
+  const displayName = role === 'BM' ? `${sessionStorage.getItem('branchNo') || ''} - (${sessionStorage.getItem('branch') || ''})` :
+                      role === 'AA' ? (sessionStorage.getItem('area_name') || '') :
+                      role === 'RA' ? (sessionStorage.getItem('region_name') || '') :
+                      role === 'AVP' ? (sessionStorage.getItem('division') || '') :
+                      role === 'SVP' ? (sessionStorage.getItem('operation_name') || sessionStorage.getItem('division') || '') :
+                      role === 'CFOO' ? (sessionStorage.getItem('cfo_name') || '') : 
+                      role === 'COO' ? (sessionStorage.getItem('coo_name') || '') :
+                      role === 'CHIEF' ? (sessionStorage.getItem('chief_name') || '') :
+                      role === 'IM' ? (sessionStorage.getItem('dep_name') || '') : 
+                      role === 'ITR' ? (sessionStorage.getItem('dep_name') || '') :
+                      role === 'ADMIN' ? 'ADMIN' : '';  // <-- Add ADMIN display
+
+  
+  el('#branch-display').textContent = displayName || 'Unknown';
+
+const restrictedRoles = ['AVP', 'SVP', 'RA', 'AA', 'BM'];
+const csvBtn = el('#download-csv-btn');
+const excelBtn = el('#download-excel-btn');
+
+if (restrictedRoles.includes(role)) {
+  [csvBtn, excelBtn].forEach(btn => {
+    btn.disabled = true;
+    btn.title = 'Export not allowed for your role';
+    btn.style.cursor = 'not-allowed';   // Ensure pointer shows disabled
+    btn.style.opacity = '0.6';          // Dim the button
+  });
+} else {
+  [csvBtn, excelBtn].forEach(btn => {
+    btn.disabled = false;
+    btn.style.cursor = 'pointer';
+    btn.style.opacity = '1';
+    btn.title = '';
+  });
+}
+ role === 'ADMIN' ? 'Administrator' : ''; role === 'ADMIN' ? 'Administrator' : ''; role === 'ADMIN' ? 'Administrator' : ''; role === 'ADMIN' ? 'Administrator' : ''; role === 'ADMIN' ? 'Administrator' : '';
+
+  // show loader
+  el('#loading-overlay').style.display = 'flex';
+
+  try {
+    const res = await fetch(`/api/summary?entity=${encodeURIComponent(entity)}&role=${encodeURIComponent(role)}`);
+    const data = await res.json();
+    el('#loading-overlay').style.display = 'none';
+    if (data.error) {
+      showMessage(data.error);
+      return;
+    }
+
+    // Prepare tabs container
+    const tabs = el('#tabs');
+    tabs.innerHTML = '';
+
+    // We will create tabs dynamically depending on which summaries exist in response:
+    // order: division, region, area, branch
+    const available = [];
+
+  if (role === 'ADMIN') {
+  if (data.departmentSummary && data.departmentSummary.length) {
+    available.push({
+      id: 'table-department-summary',
+      label: 'Department Summary'
+    });
+    renderDepartmentSummary(data.departmentSummary);
+  }
+
+  if (data.operationSummary && data.operationSummary.length) {
+    available.push({
+      id: 'table-operation-summary',
+      label: 'Operation Summary'
+    });
+    renderOperationSummary(data.operationSummary);
+  }
+}
+  
+// -------------------- COO Tabs --------------------
+  if (role === 'ITR') {
+          // Department summary (COO only)
+          if (data.itrSummary && data.itrSummary.length) {
+            available.push({ id: 'table-itr-summary', label: 'Department Summary' });
+            renderItrSummary(data.itrSummary || [], entity);
+          }
+        }
+
+  if (role === 'IM') {
+          // Department summary (COO only)
+          if (data.imSummary && data.imSummary.length) {
+            available.push({ id: 'table-im-summary', label: 'Department Summary' });
+            renderImSummary(data.imSummary || [], entity);
+          }
+        }
+
+  if (role === 'COO') {
+  // Department summary (COO only)
+  if (data.departmentSummary && data.departmentSummary.length) {
+    available.push({ id: 'table-department-summary', label: 'Department Summary' });
+    renderDepartmentSummary(data.departmentSummary);
+  }
+
+  // Operation summary (COO also sees this)
+  if (data.operationSummary && data.operationSummary.length) {
+    available.push({ id: 'table-operation-summary', label: 'Operation Summary' });
+    renderOperationSummary(data.operationSummary);
+  }
+}
+
+
+        // For CFOO: Operation Summary first
+    if (role === 'CFOO' && data.operationSummary && data.operationSummary.length) {
+      available.push({ id: 'table-operation-summary', label: 'Operation Summary' });
+      renderOperationSummary(data.operationSummary);
+    }
+
+    // For CFOO: Render Operation Support Summary **at the bottom**
+if (role === 'CFOO' && data.operationSupportSummary && data.operationSupportSummary.length) {
+  renderOperationSupportSummary(data.operationSupportSummary);
+  const container = el('#table-operation-support-summary');
+  container.style.display = 'block'; // make sure it's visible
+}
+
+    // AVP role: show only region, area, branch (no division)
+    if (role === 'AVP') {
+      if (data.regionSummary && data.regionSummary.length) {
+        available.push({ id: 'table-region-summary', label: 'Region Summary' });
+        renderRegionSummary(data.regionSummary);
+      }
+      if (data.areaSummary && data.areaSummary.length) {
+        available.push({ id: 'table-area-summary', label: 'Area Summary' });
+        renderAreaSummary(data.areaSummary);
+      }
+      if (data.branchSummary && data.branchSummary.length) {
+        available.push({ id: 'table-branch-summary', label: 'Branch Summary' });
+        renderBranchSummary(data.branchSummary);
+      }
+    } else {
+      // For other roles, fallback to standard logic
+      if (data.divisionSummary && data.divisionSummary.length) available.push({ id: 'table-division-summary', label: 'Division Summary' });
+      if (data.regionSummary && data.regionSummary.length) available.push({ id: 'table-region-summary', label: 'Region Summary' });
+      if (data.areaSummary && data.areaSummary.length) available.push({ id: 'table-area-summary', label: 'Area Summary' });
+      if (data.branchSummary && data.branchSummary.length) available.push({ id: 'table-branch-summary', label: 'Branch Summary' });
+    }
+    // Special handling for CFOO (if backend returns something else, show what is available)
+    if (available.length === 0) {
+      // fallback to branch summary even if empty (so user can see message)
+      available.push({ id: 'table-branch-summary', label: 'Branch Summary' });
+    }
+
+    // create buttons
+    available.forEach((tab, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'tab-btn' + (idx === 0 ? ' active' : '');
+      btn.textContent = tab.label;
+      btn.dataset.target = tab.id;
+      btn.addEventListener('click', () => activateTab(btn));
+      tabs.appendChild(btn);
+    });
+
+    // Render each table if the data exists
+    if (data.divisionSummary) renderDivisionSummary(data.divisionSummary);
+    if (data.regionSummary) renderRegionSummary(data.regionSummary);
+    if (data.areaSummary) renderAreaSummary(data.areaSummary);
+    if (data.branchSummary) renderBranchSummary(data.branchSummary);
+
+    // Activate the first available tab
+    const firstBtn = el('.tab-btn');
+    if (firstBtn) activateTab(firstBtn);
+
+  } catch (err) {
+    el('#loading-overlay').style.display = 'none';
+    showMessage(err.message);
+  }
+});
+
+
+// ---------- Summary Tables Pagination ----------
+const summaryPerPage = 10; // rows per page
+const summaryState = {
+  division: { page: 1, records: [] },
+  region: { page: 1, records: [] },
+  area: { page: 1, records: [] },
+  branch: { page: 1, records: [] },
+};
+
+function paginateRecords(type, records) {
+  summaryState[type].records = records;
+  summaryState[type].page = 1;
+  renderSummaryPage(type);
+}
+
+function renderSummaryPage(type) {
+  const state = summaryState[type];
+  const container = document.querySelector(`#table-${type}-summary`);
+  const tbody = container.querySelector('tbody');
+  tbody.innerHTML = '';
+
+  if (!state.records.length) return;
+
+  const totalPages = Math.ceil(state.records.length / summaryPerPage);
+  if (state.page > totalPages) state.page = totalPages;
+
+  const start = (state.page - 1) * summaryPerPage;
+  const pageData = state.records.slice(start, start + summaryPerPage);
+
+  // render only the current page rows
+  pageData.forEach(row => tbody.appendChild(row));
+
+  // add page indicator and controls
+  let pagination = container.querySelector('.summary-pagination');
+  if (!pagination) {
+    pagination = document.createElement('div');
+    pagination.className = 'summary-pagination';
+    pagination.style.margin = '8px 0';
+    pagination.style.textAlign = 'center';
+    pagination.innerHTML = `
+      <button class="prev">Prev</button>
+      <span class="page-indicator">Page 1 / ${totalPages}</span>
+      <button class="next">Next</button>
+    `;
+    container.appendChild(pagination);
+
+    pagination.querySelector('.prev').addEventListener('click', () => {
+      if (state.page > 1) { state.page--; renderSummaryPage(type); }
+    });
+    pagination.querySelector('.next').addEventListener('click', () => {
+      if (state.page < totalPages) { state.page++; renderSummaryPage(type); }
+    });
+  }
+
+  pagination.querySelector('.page-indicator').textContent = `Page ${state.page} / ${totalPages}`;
+}
+
+// ---------- After original render functions ----------
+function applySummaryPagination() {
+  if (summaryState.division.records.length === 0) summaryState.division.records = Array.from(document.querySelectorAll('#table-division-summary tbody tr'));
+  if (summaryState.region.records.length === 0) summaryState.region.records = Array.from(document.querySelectorAll('#table-region-summary tbody tr'));
+  if (summaryState.area.records.length === 0) summaryState.area.records = Array.from(document.querySelectorAll('#table-area-summary tbody tr'));
+  if (summaryState.branch.records.length === 0) summaryState.branch.records = Array.from(document.querySelectorAll('#table-branch-summary tbody tr'));
+
+  ['division','region','area','branch'].forEach(t => renderSummaryPage(t));
+}
+
+
+// PAGINATION FOR ALL CFOO SUMMARY TABLES
+const summaryTables = [
+    "table-operation-summary",
+    "table-division-summary",
+    "table-region-summary",
+    "table-area-summary",
+    "table-branch-summary"
+];
+
+function addPaginationToTable(tableId) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+
+    const tbody = table.querySelector("tbody");
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+    const itemsPerPage = 5;
+    let currentPage = 1;
+    const totalPages = Math.ceil(rows.length / itemsPerPage);
+
+    if (rows.length <= itemsPerPage) return; // no pagination needed
+
+    // create pagination controls
+    const pagination = document.createElement("div");
+    pagination.className = "pagination-controls";
+    pagination.style.margin = "10px 0";
+    pagination.style.display = "flex";
+    pagination.style.gap = "10px";
+
+    pagination.innerHTML = `
+        <button id="${tableId}-prev" class="btn">Prev</button>
+        <span id="${tableId}-page" style="font-weight:bold;">Page 1 of ${totalPages}</span>
+        <button id="${tableId}-next" class="btn">Next</button>
+    `;
+
+    table.parentNode.insertBefore(pagination, table.nextSibling);
+
+    function renderPage() {
+        tbody.innerHTML = "";
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+
+        rows.slice(start, end).forEach(r => tbody.appendChild(r.cloneNode(true)));
+
+        document.getElementById(`${tableId}-page`).textContent =
+            `Page ${currentPage} of ${totalPages}`;
+
+        document.getElementById(`${tableId}-prev`).disabled = currentPage === 1;
+        document.getElementById(`${tableId}-next`).disabled = currentPage === totalPages;
+    }
+
+    document.getElementById(`${tableId}-prev`).addEventListener("click", () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderPage();
+        }
+    });
+
+    document.getElementById(`${tableId}-next`).addEventListener("click", () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderPage();
+        }
+    });
+
+    renderPage();
+}
+
+// Apply pagination to all summary tables
+window.addEventListener("DOMContentLoaded", () => {
+    summaryTables.forEach(id => addPaginationToTable(id));
+});
+
+
+
+// Call this **after your summary tables are rendered** (at the end of your fetch and render)
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => applySummaryPagination(), 1000); // slight delay to ensure tables exist
+});
+</script>
+</body>
+</html>

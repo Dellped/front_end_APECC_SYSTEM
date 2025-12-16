@@ -1,0 +1,127 @@
+/* Main Layout styles - matches main.html */
+.main-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 200px;
+  background: wheat;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  transition: width 0.3s, opacity 0.3s, transform 0.3s;
+  position: relative;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.sidebar.collapsed {
+  width: 0px;
+}
+
+.sidebar.collapsed .sidebar-logo,
+.sidebar.collapsed .sidebar-nav,
+.sidebar.collapsed .logout-btn {
+  display: none;
+}
+
+.sidebar-logo {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.sidebar-logo img {
+  width: 90px;
+  height: 120px;
+  transition: all 0.3s;
+}
+
+.sidebar.collapsed .sidebar-logo img {
+  width: 40px;
+  height: 36px;
+}
+
+/* Toggle button */
+.toggle-sidebar {
+  position: absolute;
+  top: 10px;
+  right: -40px;
+  background: orange;
+  border: 2px solid white;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  z-index: 10;
+}
+
+/* Navigation */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-nav a {
+  background: none;
+  border: none;
+  color: white;
+  padding: 15px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.3s, padding 0.3s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+  background: orange;
+}
+
+.sidebar-spacer {
+  flex: 1;
+}
+
+/* Logout button */
+.logout-btn {
+  margin: 20px;
+  padding: 15px 20px;
+  background-color: olive;
+  border: none;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.logout-btn:hover {
+  background-color: #4a4a00;
+}
+
+/* Main content */
+.main-content {
+  flex: 1;
+  transition: all 0.3s;
+  overflow: auto;
+  background: #f3f4f6;
+}
+
+.main-content.expanded {
+  width: calc(100% - 60px);
+}

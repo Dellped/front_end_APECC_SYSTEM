@@ -1,0 +1,2249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VDPM Upload</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #f8fafc, #eef2f7);
+      font-family: "Segoe UI", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 60vh;
+      padding-top: 10px;
+     min-height: 100vh; /* match full viewport */
+    overflow-x: hidden;
+    overflow-y: hidden; /* optional: remove vertical scroll from body */
+    }
+/* Override centering for ONLY the Select All row */
+#file-list .select-all-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 5px !important;
+    margin-bottom: 8px;
+}
+
+    /* Container for Select All */
+.modal-select-all-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;        /* small gap between checkbox and label */
+    margin-bottom: 8px;
+}
+
+/* Remove default label spacing */
+.modal-select-all-container label {
+    margin: 0;
+    cursor: pointer;
+}
+
+/* File list row */
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;        /* spacing between checkbox and file name */
+    padding: 4px 8px;
+}
+
+/* Remove default checkbox margin in modal */
+.modal-file-checkbox,
+.modal-select-all {
+    margin: 0;
+    padding: 0;
+}
+
+
+    /* SMALLER STYLE FOR EMPLOYEE COUNT MODALS */
+#mfo-modal .modal-content,
+#edit-count-modal .modal-content {
+    width: 300px !important;      /* smaller width */
+    padding: 15px !important;     /* tighter padding */
+    border-radius: 6px;
+    box-sizing: border-box;  
+}
+
+#mfo-modal h3,
+#edit-count-modal h3 {
+    font-size: 18px !important;
+    margin-bottom: 8px;
+}
+
+#mfo-modal p,
+#edit-count-modal p {
+    font-size: 13px !important;
+}
+
+#mfo-input,
+#edit-count-input {
+   width: 100% !important;      /* stays inside modal */
+    max-width: 100% !important;  /* prevents stretching */
+    padding: 6px 8px !important;
+    font-size: 14px !important;
+    box-sizing: border-box;      /* prevents expanding */
+}
+
+#mfo-modal .modal-buttons,
+#edit-count-modal .modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px !important;
+}
+
+#mfo-modal .modal-buttons button,
+#edit-count-modal .modal-buttons button {
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+}
+
+    .container {
+      background: white;
+      height: auto; /* instead of 87vh */
+      border-radius: 16px;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+      padding: 35px 45px;
+      width: 100%;
+      height: 87vh;
+      max-width: 90%;
+      text-align: center;
+      position: relative;
+      z-index: 5;
+    }
+
+    img {
+      display: block;
+      margin: 0 auto 10px;
+    }
+
+    h2,
+    h3 {
+      margin: 5px 0;
+      color: #333;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      outline: none;
+      font-size: 15px;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+    }
+
+    input[type="text"]:focus {
+      border-color: #007bff;
+    }
+
+    #branches-suggestions {
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      display: none;
+      max-height: 200px;
+      overflow-y: auto;
+      width: 50%;
+      margin-top: 70px;
+      text-align: left;
+    }
+
+    .suggestion-item {
+      padding: 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .suggestion-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    form#uploadForm {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      margin: 0;
+    }
+
+    .button-group {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    #file-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 42px;
+      padding: 0 16px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    #file-label:hover {
+      background-color: #0056b3;
+    }
+
+    #file {
+      display: none;
+    }
+
+    #file-list {
+       margin-top: 15px;
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  overflow-y: visible;  
+    }
+    #file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* spacing between rows */
+  padding: 10px;
+}
+
+#file-list .file-item {
+  display: flex;
+  align-items: center;       /* vertically center checkbox and label */
+  justify-content: flex-start; /* keep items on the left */
+  gap: 5px;                  /* small space between checkbox and label */
+  padding: 6px 10px;
+  background: white;
+  border-radius: 6px;
+  font-size: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+#file-list .file-item input[type="checkbox"] {
+  margin: 0;       /* remove default margin */
+  padding: 0;
+  width: 16px;     /* optional: set consistent checkbox size */
+  height: 16px;
+}
+
+#file-list .file-item label {
+  margin: 0;       /* remove default label margin */
+  padding: 0;
+  cursor: pointer; /* makes clicking the label check the box */
+}
+
+
+#file-list div {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* <-- keep items together */
+  background: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  gap: 3px; /* optional: small spacing between checkbox and file name */
+}
+#file-list div {
+  display: flex;
+  align-items: center;      /* vertically center checkbox and label */
+  justify-content: flex-start; /* keep them on the left */
+  gap: 4px;                 /* small space between checkbox and label */
+}
+
+#file-list div label {
+  margin: 0;                /* remove default label margin */
+  padding: 0;
+}
+
+
+    #file-list button {
+      background: none;
+      border: none;
+      color: #ff4d4f;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    #file-list button:hover {
+      color: #d9363e;
+      transform: scale(1.1);
+    }
+
+    input[type="submit"] {
+      padding: 10px 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 15px;
+      transition: background-color 0.3s;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+
+    .label-dropdown {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 250px;
+    }
+
+    .label-dropdown input {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+      height: 42px;
+      box-sizing: border-box;
+    }
+
+    .upload-form {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 10px;
+    }
+
+    #file-label,
+    .upload-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 30px;
+      padding: 0 16px;
+      font-size: 15px;
+      box-sizing: border-box;
+      margin: 0;
+      line-height: 1;
+      vertical-align: middle;
+      border-radius: 8px;
+    }
+
+
+    .file-button {
+      background-color: #007bff;
+      color: white;
+      transition: 0.3s;
+    }
+
+    .file-button:hover {
+      background-color: #1565c0;
+    }
+
+    .upload-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      padding: 20px;
+      background: #f8fafc;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 1400px;
+      margin-left: -20px;
+      font-family: Arial, sans-serif;
+      height: 50vh;
+      margin-top: 20px;
+    }
+
+    .upload-row {
+      display: flex;
+    align-items: center;   /* vertical center */
+    justify-content: center;
+    gap: 10px;  
+    }
+
+    .upload-button {
+      background-color: #43a047;
+      color: #ffffff;
+      border: none;
+      height: 30px;
+      padding: 0 16px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      box-sizing: border-box;
+      transition: background-color 0.3s;
+    }
+
+    .upload-button:hover {
+      background-color: #388e3c;
+    }
+#branch-display, #file-label, .upload-button {
+    height: 35px;        /* same height */
+    display: flex;       /* use flex for vertical alignment */
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;  /* consistent rounded corners */
+    font-size: 13px;     /* consistent font */
+}
+#branch-display{
+   font-weight: bold;
+      color: orange;
+      font-size: 20px; 
+}
+    .file-list {
+      margin-top: 20px;
+      background: white;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      min-height: 40px;
+    }
+
+    .file-list div {
+      margin-bottom: 5px;
+    }
+
+    #loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(3px);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      font-size: 18px;
+      color: #333;
+    }
+    #loading-overlay2 {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(3px);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      font-size: 18px;
+      color: #333;
+    }
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #007bff;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .progress-bar {
+      width: 80%;
+      background: #e9ecef;
+      border-radius: 20px;
+      height: 12px;
+      margin: 10px auto;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      background: #007bff;
+      height: 100%;
+      width: 0%;
+      border-radius: 20px;
+      transition: width 0.4s ease;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 10px;
+      padding: 25px 30px;
+      text-align: center;
+      width: 300px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content h3 {
+      margin-bottom: 10px;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .modal-buttons button {
+      border: none;
+      border-radius: 6px;
+      padding: 8px 15px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+
+    #cancel-modal { background: #ccc; }
+    #confirm-modal { background: #007bff; color: white; }
+    #confirm-modal:hover { background: #0056b3; }
+
+    /* Modal Background */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+}
+
+/* Modal Window */
+.modal-content {
+ background: #fff;
+  width: 800px;
+  margin: 8% auto;
+  padding: 20px;
+  border-radius: 10px;
+  max-height: none;      /* remove height restriction */
+  overflow-y: visible;   /* show all content */
+}
+
+/* Modal Window */
+.modal-contents {
+ background: #fff;
+  width: 1000px;
+  margin: 8% auto;
+  padding: 20px;
+  border-radius: 10px;
+  max-height: none;      /* remove height restriction */
+  overflow-y: visible;   /* show all content */
+}
+
+/* Close Button */
+.close {
+  float: right;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+}
+   /* Smaller Style for Duplicate Modal */
+#duplicate-modal .modal-content {
+    width: 300px !important;      /* smaller width */
+    padding: 15px !important;     /* tighter padding */
+    border-radius: 6px;
+    box-sizing: border-box;  
+}
+
+#duplicate-modal h3 {
+    font-size: 18px !important;
+    margin-bottom: 8px;
+}
+
+#duplicate-modal p {
+    font-size: 13px !important;
+}
+
+#duplicate-modal .modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px !important;
+}
+
+#duplicate-modal .modal-buttons button {
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+}
+
+#duplicate-modal #cancel-duplicate {
+    background: #ccc;             /* Cancel button style */
+}
+
+#duplicate-modal #replace-duplicate {
+    background: #007bff;         /* Replace button style */
+    color: white;                 /* White text color */
+}
+  </style>
+</head>
+<body>
+    <div id="confirm-upload-modal" class="modal">
+  <div class="modal-content">
+    <h3>Confirm Upload</h3>
+    <p>Do you want to proceed with uploading the selected file(s)?</p>
+    <div class="modal-buttons">
+      <button id="cancel-upload-modal">Cancel</button>
+      <button id="confirm-upload-modal-btn">Yes</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW MODAL FOR EDITING EMPLOYEE COUNT -->
+<div id="edit-count-modal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>Edit Employee Count</h3>
+    <p>Update your expected employee count:</p>
+
+    <input type="number" id="edit-count-input" min="0" max="300" placeholder="Enter new count">
+
+    <div class="modal-buttons">
+      <button id="edit-cancel-btn">Cancel</button>
+      <button id="edit-save-btn" style="background:#28a745;color:white;">Save</button>
+    </div>
+  </div>
+</div>
+<div id="duplicate-modal" class="modal">
+  <div class="modal-content">
+    <h3>Duplicate Files Detected</h3>
+    <p id="duplicate-list" style="text-align:left; max-height:200px; overflow-y:auto;"></p>
+    <div class="modal-buttons">
+      <button id="cancel-duplicate" style="background:#ccc;">Cancel</button>
+      <button id="replace-duplicate" style="background:#007bff; color:white;">Replace</button>
+    </div>
+  </div>
+</div>
+
+  <div id="message-box" style="
+  display:none;
+  position:fixed;
+  top:220px;
+  left:50%;
+  transform:translateX(-50%);
+  background-color:#4CAF50;
+  color:white;
+  padding:15px 25px;
+  border-radius:8px;
+  font-size:16px;
+  z-index:10000;
+  box-shadow:0 2px 10px rgba(0,0,0,0.2);
+"></div>
+
+<!-- Message Box / Confirmation Modal -->
+<div id="message-box2" style="
+  display:none;
+  position:fixed;
+  top:220px;
+  left:50%;
+  transform:translateX(-50%);
+  background-color:#0056b3; /* red for delete */
+  color:white;
+  padding:20px 25px;
+  border-radius:8px;
+  font-size:16px;
+  z-index:10000;
+  box-shadow:0 2px 10px rgba(0,0,0,0.2);
+  text-align:center;
+">
+  <p id="message-text"></p>
+  <div style="margin-top:15px;">
+    <button id="cancel-btn" style="margin-right:10px; padding:5px 10px; cursor:pointer;">Cancel</button>
+    <button id="confirm-btn" style="padding:5px 10px; background:white; color:#f44336; border:none; border-radius:4px; cursor:pointer;">Delete</button>
+  </div>
+</div>
+
+
+  <div class="container">
+ <img src="https://raw.githubusercontent.com/rodelpeligro-oss/image-hosting/main/nav3%20(1).png" alt="Logo" style="width:200px; height:70px;">
+    <h3>Value-Driven Performance Management Form</h3>
+<!-- Summary Boxes -->
+<div style="
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    gap:30px;
+    padding-top:20px;
+    background-color:white;
+">
+    <!-- Total Expected -->
+    <div style="
+        background:#e0efff;
+        border-radius:10px;
+        padding:5px;
+        text-align:center;
+        width:150px;
+        height:50px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        font-size:12px;
+        font-weight: bold;
+    ">
+        <div>Total Expected <span id="editExpected" style="cursor:pointer;">✏️</span></div>
+        <div id="expectedCount">0</div>
+    </div>
+
+    <!-- Total Uploaded Forms -->
+    <div style="
+        background:#eaffea;
+        border-radius:10px;
+        padding:5px;
+        text-align:center;
+        width:150px;
+        height:50px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        font-size:12px;
+        font-weight: bold;
+    ">
+        <div>Total Uploaded Forms</div>
+        <div id="formsCount">0</div>
+    </div>
+
+    <!-- Pending -->
+    <div style="
+        background:#fff3cd;
+        border-radius:10px;
+        padding:5px;
+        text-align:center;
+        width:150px;
+        height:50px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        font-size:12px;
+        font-weight: bold;
+    ">
+        <div>Pending</div>
+        <div id="pendingCount">0</div>
+    </div>
+</div>
+    <!-- Reminder Note -->
+<div style="
+    width: 104%;
+    background-color: lightyellow; /* light yellow background */
+    border: 1px solid #ffeeba; /* subtle border */
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: bold;
+    color: orange;
+    box-sizing: border-box;
+    text-align: left;
+    margin-bottom: -10px;
+    margin-left: -20px;
+">
+    Reminder: Please ensure all expected forms are reviewed before submission..
+</div>
+    <div class="upload-container">
+      <div class="upload-row">
+      <div id="role">L.oading role...</div>
+      <div id="statusMessage" style="font-weight:bold; color:orange; font-size:20px; margin-left:-8px;"></div>
+        <div class="label-dropdown">
+          <div id="branch-display">L.oading branch...</div>
+        </div>
+        <div class="button-group">
+          <form id="uploadForm">
+            <label for="file" id="file-label" class="file-button">Choose Files</label>
+            <input type="file" id="file" name="file" accept=".xlsx, .xls" multiple hidden>
+            <button type="submit" class="upload-button" style="margin-left:auto">Upload</button>
+          </form>
+        </div>
+      </div>
+      <!-- Button to open modal -->
+<button id="openFileListModal" style="margin-bottom: 5px; width: 200px;" >Files for Review</button>
+<!-- Modal -->
+<div id="fileListModal" class="modal">
+  <div class="modal-content">
+    <h3>File List</h3>
+    <div id="file-list" class="file-list">No File Uploaded</div>
+   <div style="margin-top: 15px; display: flex; justify-content: flex-start; gap: 10px; align-items:left;" id="file-footer">
+  <!-- Pagination indicator + Prev/Next -->
+  <div id="file-pagination" style="margin-right:auto; display:flex; gap:5px; align-items:center;"></div>
+  <button id="clearFileListBtn" style="padding: 6px 12px; background:blue; color:white; border:none; border-radius:6px; cursor:pointer;">Delete All</button>
+  <button id="closeFileListBtn" style="padding: 6px 12px; background:#ccc; color:#333; border:none; border-radius:6px; cursor:pointer;">Close</button>
+</div>
+  </div>
+</div>
+      <div id="branch-summary" style="margin-top:-10px; display:none;">
+
+<div id="file-table-container" style="max-width: 2000px; margin: auto; position: relative; min-height: 400px; padding-bottom: 60px;">
+  <table id="file-table" style="width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+<thead style="background: #f5f6fa;">
+  <!-- Top Title Header -->
+  <tr>
+    <!-- Title centered -->
+    <th colspan="3" style="padding:12px; font-size:16px; font-weight:bold; text-align:center; border-bottom:1px solid #ccc;">
+      Submitted Files
+    </th>
+  </tr>
+
+  <!-- Column Headers -->
+  <tr>
+    <!-- CHECKBOX COLUMN (must match tbody checkboxes) -->
+    <th style="padding: 8px; width: 20%; text-align: center;">
+      <input 
+        type="checkbox" 
+        id="selectAllFiles" 
+        style="transform: scale(1.2);"
+      >
+      <span style="margin-left: 10px;">Select All</span>
+    </th>
+
+    <th style="padding: 8px; width: 45%; border-bottom:1px solid #ccc; text-align:left;">
+      File Name
+    </th>
+
+    <th style="padding: 8px; width: 30%; border-bottom:1px solid #ccc; text-align:center;">
+      Date
+    </th>
+  </tr>
+</thead>
+
+    <tbody id="fileTableBody"></tbody>
+        <!-- Column for Delete Button (same column as checkboxes) -->
+    <th style="padding: 8px; width: 20%; text-align: left;">
+       <button id="deleteFileBtn" 
+          style="padding:5px 10px; cursor:pointer; border-radius: 12px; background-color:#999; color:white; width: 70%;" 
+          disabled>
+        🗑 Delete Selected
+      </button>
+    </th>
+  </table>
+
+
+
+<!-- Pagination buttons fixed at bottom -->
+<div id="pagination" style="
+     position: absolute;
+     bottom: 150px;
+     left: 50%;
+     transform: translateX(-50%);
+     display: flex;
+     gap: 10px;
+     flex-wrap: wrap;
+">
+    <button id="prevPage" class="page-btn">Prev</button>
+    <button id="nextPage" class="page-btn">Next</button>
+</div>
+        </table>
+        <div id="branch-data" class="branch-data"></div>
+      </div>
+
+      <div id="mfo-modal" class="modal">
+        <div class="modal-content">
+          <h3>Enter Employee Count</h3>
+          <p>Please input how many active Employee's do you have:</p>
+          <input type="number" id="mfo-input" min="0" max="8" placeholder="e.g., 5">
+          <div class="modal-buttons">
+            <button id="cancel-modal">Cancel</button>
+            <button id="confirm-modal">Confirm</button>
+          </div>
+        </div>
+      </div>
+      <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div id="progress-text">Uploading...</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+          <div id="loading-overlay2">
+        <div class="spinner"></div>
+        <div id="progress-text">Deleting...</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('file');
+    const fileListContainer = document.getElementById('file-list');
+    const mfoModal = document.getElementById('mfo-modal');
+    const cancelModalBtn = document.getElementById('cancel-modal');
+    const confirmModalBtn = document.getElementById('confirm-modal');
+    const mfoInput = document.getElementById('mfo-input');
+    const uploadForm = document.getElementById('uploadForm');
+    const editExpected = document.getElementById('editExpected');
+    const fileTableBody = document.getElementById('fileTableBody');
+    const confirmUploadModal = document.getElementById('confirm-upload-modal');
+    const cancelUploadModalBtn = document.getElementById('cancel-upload-modal');
+    const confirmUploadModalBtn = document.getElementById('confirm-upload-modal-btn');
+
+
+
+    let selectedFiles = [];
+
+
+window.addEventListener('DOMContentLoaded', () => {
+    const role = sessionStorage.getItem('role') || 'Unknown';
+
+    // Display role
+    const roleDiv = document.getElementById('role');
+    if (roleDiv) {
+        roleDiv.innerText = `Role Access: ${role}`;
+        roleDiv.style.fontWeight = 'bold';
+        roleDiv.style.color = 'orange';
+        roleDiv.style.fontSize = '20px';
+    }
+
+    // Hide editExpected button for ADMIN
+    const editBtn = document.getElementById('editExpected');
+    if (role === 'ADMIN' && editBtn) {
+        editBtn.style.display = 'none';
+    }
+
+    if (role === 'ADMIN') {
+        // Disable the actual file input
+        const fileInput = document.getElementById('file');
+        if (fileInput) fileInput.disabled = true;
+
+        // Disable the label so it cannot trigger the file input
+        const fileLabel = document.getElementById('file-label');
+        if (fileLabel) {
+            fileLabel.style.pointerEvents = 'none'; // prevent click
+            fileLabel.style.opacity = '0.6';       // visually indicate disabled
+            fileLabel.style.cursor = 'not-allowed';
+        }
+
+         // Disable the upload button
+        const uploadBtn = document.querySelector('#uploadForm button[type="submit"]');
+        if (uploadBtn) {
+            uploadBtn.disabled = true;
+            uploadBtn.style.opacity = '0.6';
+            uploadBtn.style.cursor = 'not-allowed';
+        }
+
+        // Disable "Files for Review" button
+        const reviewBtn = document.getElementById('openFileListModal');
+        if (reviewBtn) {
+            reviewBtn.disabled = true;
+            reviewBtn.style.cursor = 'not-allowed';
+            reviewBtn.style.opacity = '0.6';
+        }
+    }
+
+    // Determine entity name & code based on role
+    let entityName = '';
+    let entityCode = '';
+    switch(role) {
+        case 'BM':
+            entityName = sessionStorage.getItem('branch') || 'Unknown Branch';
+            entityCode = sessionStorage.getItem('branchNo') || '';
+            break;
+        case 'AA':
+            entityName = sessionStorage.getItem('area_name') || 'Unknown Area';
+            entityCode = sessionStorage.getItem('area_id') || '';
+            break;
+        case 'RA':
+            entityName = sessionStorage.getItem('region_name') || 'Unknown Region';
+            entityCode = sessionStorage.getItem('region_id') || '';
+            break;
+        case 'AVP':
+            entityName = sessionStorage.getItem('division') || 'Unknown Division';
+            entityCode = sessionStorage.getItem('division_id') || '';
+            break;
+        case 'SVP':
+            entityName = sessionStorage.getItem('operation_name') || 'Unknown Operation';
+            entityCode = sessionStorage.getItem('operation_id') || '';
+            break;
+        case 'CFOO':
+            entityName = sessionStorage.getItem('cfo_name') || 'Unknown CFO';
+            entityCode = sessionStorage.getItem('cfo_id') || '';
+            break;
+        case 'COO':
+            entityCode = sessionStorage.getItem('coo_id') || '';
+            break;
+        case 'ADMIN':
+            entityName = '';
+            entityCode = '';
+            break;
+        case 'IM':
+          entityName = sessionStorage.getItem('dep_name') || 'Unknown Department';
+          entityCode = sessionStorage.getItem('userId') || '';
+          break;
+        case 'ITR':
+          entityName = sessionStorage.getItem('dep_name') || 'Unknown Department';
+          entityCode = sessionStorage.getItem('userId') || '';
+          break;
+        default:
+            entityName = 'Unknown';
+    }
+
+    const displayDiv = document.getElementById('branch-display');
+    if (displayDiv) {
+        displayDiv.innerText = role === 'BM' ? `${entityCode} - (${entityName})` : ` ${entityName}`;
+    }
+
+    // Function to safely refresh branch summary
+    const safeRefresh = () => {
+        if (typeof refreshBranchSummary === 'function') {
+            refreshBranchSummary(entityCode);
+        }
+    };
+
+    // Initial refresh on page load
+    safeRefresh();
+
+    // Refresh whenever page becomes visible
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') safeRefresh();
+    });
+
+    // Call existing functions
+    isEmployeeCountEmpty();
+    updateTotalUploadedForms();
+});
+
+window.onload = () => { resetBranchSummary(); };
+
+
+function getRoleValue() {
+    const role = sessionStorage.getItem('role') || 'Unknown';
+    if (role === 'ADMIN') return null;
+
+    switch(role) {
+        case 'BM': return sessionStorage.getItem('branchNo') || 'Unknown';
+        case 'AA': return sessionStorage.getItem('area_id') || 'Unknown';
+        case 'RA': return sessionStorage.getItem('region_id') || 'Unknown';
+        case 'AVP': return sessionStorage.getItem('division_id') || 'Unknown';
+        case 'SVP': return sessionStorage.getItem('operation_id') || 'Unknown';
+        case 'CFOO': return sessionStorage.getItem('cfo_id') || 'Unknown';
+        case 'COO': return sessionStorage.getItem('coo_id') || 'Unknown';
+        case 'IM': return  sessionStorage.getItem('userId') || 'Unknown';
+        case 'ITR': return   sessionStorage.getItem('userId') || 'Unknown';
+        default: return null;
+    }
+}
+// ----------------- FILE INPUT HANDLER -----------------
+fileInput.addEventListener('change', () => {
+    const newFiles = Array.from(fileInput.files);
+    selectedFiles = selectedFiles.concat(newFiles);
+
+    renderFileList();
+    fileInput.value = '';
+});
+
+function renderFileList() {
+    fileListContainer.innerHTML = '';
+    if (!selectedFiles.length) {
+        fileListContainer.style.display = 'none';
+        document.getElementById('file-label').textContent = 'Choose Files';
+        return;
+    }
+
+    fileListContainer.style.display = 'flex';
+    selectedFiles.forEach((file, index) => {
+        const div = document.createElement('div');
+        div.className = 'file-item';
+        div.innerHTML = `
+            <span>${file.name}</span>
+            <button type="button" class="remove-file" data-index="${index}">&times;</button>
+        `;
+        fileListContainer.appendChild(div);
+    });
+
+    document.querySelectorAll('.remove-file').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.getAttribute('data-index'));
+            selectedFiles.splice(idx, 1);
+            renderFileList();
+        });
+    });
+
+    document.getElementById('file-label').textContent = `Choose Files (${selectedFiles.length})`;
+}
+
+
+    async function isEmployeeCountEmpty() {
+    const role = sessionStorage.getItem('role');
+    let value = '';
+
+    switch(role) {
+        case 'BM': value = sessionStorage.getItem('branchNo') || 'Unknown'; break;
+        case 'AA': value = sessionStorage.getItem('area_id') || 'Unknown'; break;
+        case 'RA': value = sessionStorage.getItem('region_id') || 'Unknown'; break;
+        case 'AVP': value = sessionStorage.getItem('division_id') || 'Unknown'; break;
+        case 'SVP': value = sessionStorage.getItem('operation_id') || 'Unknown'; break;
+        case 'CFOO': value = sessionStorage.getItem('cfo_id') || 'Unknown'; break;
+        case 'COO': value = sessionStorage.getItem('coo_id') || 'Unknown'; break;
+        case 'IM': value = sessionStorage.getItem('userId') || 'Unknown'; break;
+        case 'ITR': value = sessionStorage.getItem('userId') || 'Unknown'; break;
+        case 'ADMIN': value = 'ALL'; break; // ✅ special case for admin
+    }
+
+      try {
+        const res = await fetch(`/api/employee-count?role=${encodeURIComponent(role)}&value=${encodeURIComponent(value)}`);
+        const data = await res.json();
+        const employeeCount = data.employee_count !== null ? data.employee_count : 0;
+        document.getElementById('expectedCount').innerText = employeeCount;
+        document.getElementById('branch-summary').style.display = 'block';
+        return data.empty;
+      } catch (err) {
+        console.error(err);
+        document.getElementById('expectedCount').innerText = 'Error fetching count';
+        return false;
+      }
+    }
+
+    async function updateTotalUploadedForms() {
+    const role = sessionStorage.getItem('role');
+    let value = '';
+
+    switch(role) {
+        case 'BM': value = sessionStorage.getItem('branchNo') || 'Unknown'; break;
+        case 'AA': value = sessionStorage.getItem('area_id') || 'Unknown'; break;
+        case 'RA': value = sessionStorage.getItem('region_id') || 'Unknown'; break;
+        case 'AVP': value = sessionStorage.getItem('division_id') || 'Unknown'; break;
+        case 'SVP': value = sessionStorage.getItem('operation_id') || 'Unknown'; break;
+        case 'CFOO': value = sessionStorage.getItem('cfo_id') || 'Unknown'; break;
+        case 'COO': value = sessionStorage.getItem('coo_id') || 'Unknown'; break;
+        case 'IM': value = sessionStorage.getItem('userId') || 'Unknown'; break;
+        case 'ITR': value = sessionStorage.getItem('userId') || 'Unknown'; break;
+    }
+
+      try {
+        const res = await fetch(`/api/total-uploaded-forms?role=${encodeURIComponent(role)}&value=${encodeURIComponent(value)}`);
+        const data = await res.json();
+
+        const formsCount = Number(data.totalUploadedForms) || 0;
+        const expected = parseInt(document.getElementById('expectedCount').innerText) || 0;
+
+        document.getElementById('formsCount').innerText = data.totalUploadedForms || 0;
+        document.getElementById('pendingCount').innerText = Math.max(expected - data.totalUploadedForms, 0);
+      } catch (err) {
+        console.error(err);
+        document.getElementById('formsCount').innerText = 0;
+        document.getElementById('pendingCount').innerText = 0;
+      }
+    }
+
+
+ async function checkDuplicateFilenames(filenames) {
+    const role = sessionStorage.getItem('role');
+    let value = '';
+
+    switch(role) {
+        case 'BM': value = sessionStorage.getItem('branchNo') || 'Unknown'; break;
+        case 'AA': value = sessionStorage.getItem('area_id') || 'Unknown'; break;
+        case 'RA': value = sessionStorage.getItem('region_id') || 'Unknown'; break;
+        case 'AVP': value = sessionStorage.getItem('division_id') || 'Unknown'; break;
+        case 'SVP': value = sessionStorage.getItem('operation_id') || 'Unknown'; break;
+        case 'CFOO': value = sessionStorage.getItem('cfo_id') || 'Unknown'; break;
+        case 'COO': value = sessionStorage.getItem('coo_id') || 'Unknown'; break;
+        case 'IM': value = sessionStorage.getItem('userId') || 'Unknown'; break;
+        case 'ITR': value = sessionStorage.getItem('userId') || 'Unknown'; break;
+    }
+
+    try {
+        const res = await fetch('/api/check-filename', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role, value, filenames })
+        });
+
+        return await res.json(); // { duplicates: [] }
+    } catch (err) {
+        console.error("Duplicate check error:", err);
+        return { duplicates: [] };
+    }
+}
+
+const PerPage = 5; // Number of items to display per page
+let FirstPage = 1; // Current page number
+let totalFiles = []; // Array to store all files for pagination
+
+async function refreshBranchSummary() {
+    const role = sessionStorage.getItem('role');
+    let value = '';
+
+    switch(role) {
+        case 'BM': value = sessionStorage.getItem('branchNo') || 'Unknown'; break;
+        case 'AA': value = sessionStorage.getItem('area_id') || 'Unknown'; break;
+        case 'RA': value = sessionStorage.getItem('region_id') || 'Unknown'; break;
+        case 'AVP': value = sessionStorage.getItem('division_id') || 'Unknown'; break;
+        case 'SVP': value = sessionStorage.getItem('operation_id') || 'Unknown'; break;
+        case 'CFOO': value = sessionStorage.getItem('cfo_id') || 'Unknown'; break; 
+        case 'COO': value = sessionStorage.getItem('coo_id') || 'Unknown'; break; 
+        case 'IM': value = sessionStorage.getItem('userId') || 'Unknown'; break;
+        case 'ITR': value = sessionStorage.getItem('userId') || 'Unknown'; break;
+    }
+      try {
+        const res = await fetch(`/api/total-uploaded-forms?role=${encodeURIComponent(role)}&value=${encodeURIComponent(value)}`);
+        const data = await res.json();
+        document.getElementById('formsCount').innerText = data.totalUploadedForms || 0;
+        const expected = parseInt(document.getElementById('expectedCount').innerText) || 0;
+        document.getElementById('pendingCount').innerText = Math.max(expected - data.totalUploadedForms, 0);
+
+        totalFiles = data.files; // Store files for pagination
+        FirstPage = 1; // Reset to first page
+        renderFiles(); // Initial render
+
+        updatePaginationControls(); // Update pagination controls
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+let checkedFilesDB = new Set(); // Track selected files for deletion
+
+function showConfirmMessageBox(fileCount, onConfirm) {
+    const box = document.getElementById('message-box2');
+    const text = document.getElementById('message-text');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const confirmBtn = document.getElementById('confirm-btn');
+
+    text.textContent = `Are you sure you want to delete ${fileCount} file(s)?`;
+    box.style.display = 'block';
+
+    // Close function
+    const closeBox = () => {
+        box.style.display = 'none';
+        cancelBtn.removeEventListener('click', closeBox);
+        confirmBtn.removeEventListener('click', confirmAction);
+    };
+
+    const confirmAction = () => {
+        closeBox();
+        onConfirm();
+    };
+
+    cancelBtn.addEventListener('click', closeBox);
+    confirmBtn.addEventListener('click', confirmAction);
+}
+
+function renderFiles() {
+    const tbody = document.getElementById('fileTableBody');
+    tbody.innerHTML = '';
+
+    const startIndex = (FirstPage - 1) * PerPage;
+    const endIndex = startIndex + PerPage;
+    const filesToDisplay = totalFiles.slice(startIndex, endIndex);
+
+    const deleteBtn = document.getElementById('deleteFileBtn');
+ if (!filesToDisplay.length) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:15px; color:#666;">No files uploaded yet.</td></tr>`;
+        if (deleteBtn) {
+            deleteBtn.disabled = true;
+            deleteBtn.style.backgroundColor = '#999';
+            deleteBtn.style.cursor = 'not-allowed';
+        }
+        return;
+    }
+    filesToDisplay.forEach(file => {
+        const utcDate = new Date(file.uploaded_at);
+        const localDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+           <td style="padding:5px;">
+    <input type="checkbox" class="file-db-checkbox" data-id="${file.id}" style="margin-left:-85px;">
+</td>
+            <td style="padding:5px; text-align:left; font-size:15px;">${file.filename}</td>
+            <td style="padding:5px; text-align:center; font-size:15px;">${localDate.toLocaleString('en-US', { hour12: true })}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+    
+      // --- Function to update Delete button state and color ---
+    function updateDeleteButtonState() {
+        if (!deleteBtn) return;
+        if (checkedFilesDB.size > 0) {
+            deleteBtn.disabled = false;
+            deleteBtn.style.backgroundColor = 'blue';
+            deleteBtn.style.color = 'white';
+            deleteBtn.style.cursor = 'pointer';
+            deleteBtn.style.fontWeight= 'bold';
+            deleteBtn.style.border = '2px solid white';   // white border
+            deleteBtn.style.borderRadius = '12px';      
+        } else {
+            deleteBtn.disabled = true;
+            deleteBtn.style.backgroundColor = '#999';
+            deleteBtn.style.color = 'white';
+            deleteBtn.style.cursor = 'not-allowed';
+            deleteBtn.style.fontWeight= 'bold';
+            deleteBtn.style.border = '2px solid white';  // keep border
+            deleteBtn.style.borderRadius = '12px';
+        }
+    }
+
+
+     // --- Checkbox logic ---
+    const checkboxes = document.querySelectorAll('.file-db-checkbox');
+    const selectAllCheckbox = document.getElementById('selectAllFiles');
+
+    const role = sessionStorage.getItem('role') || 'Unknown';
+if (role === 'ADMIN') {
+    // Disable Select All checkbox
+    if (selectAllCheckbox) selectAllCheckbox.disabled = true;
+
+    // Disable all individual checkboxes
+    checkboxes.forEach(cb => cb.disabled = true);
+}
+
+    // Set initial state for checkboxes
+    checkboxes.forEach(cb => {
+        const fileId = parseInt(cb.dataset.id);
+        cb.checked = checkedFilesDB.has(fileId);
+
+        cb.addEventListener('change', () => {
+            if (cb.checked) checkedFilesDB.add(fileId);
+            else checkedFilesDB.delete(fileId);
+
+             updateDeleteButtonState();
+
+            // Update "Select All" checkbox
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = Array.from(checkboxes).every(c => c.checked);
+            }
+        });
+    });
+
+    // --- "Select All" logic ---
+    if (selectAllCheckbox) {
+        // Initialize state
+        selectAllCheckbox.checked = checkboxes.length > 0 && Array.from(checkboxes).every(c => c.checked);
+
+        selectAllCheckbox.addEventListener('change', () => {
+            const checked = selectAllCheckbox.checked;
+            checkboxes.forEach(cb => {
+                cb.checked = checked;
+                const fileId = parseInt(cb.dataset.id);
+                if (checked) checkedFilesDB.add(fileId);
+                else checkedFilesDB.delete(fileId);
+            });
+
+            updateDeleteButtonState();
+        });
+    }
+
+    // --- Delete button click handler ---
+    if (deleteBtn) {
+        deleteBtn.onclick = () => {
+            if (checkedFilesDB.size === 0) return;
+
+            showConfirmMessageBox(checkedFilesDB.size, async () => {
+                // Show the loading overlay
+            const overlay = document.getElementById('loading-overlay2');
+            overlay.style.display = 'flex';
+
+            // Disable delete button
+            deleteBtn.disabled = true;
+
+                try {
+                    const res = await fetch('/api/delete-files', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ids: Array.from(checkedFilesDB) })
+                    });
+
+                    const data = await res.json();
+
+                    if (data.success) {
+                        totalFiles = totalFiles.filter(file => !checkedFilesDB.has(file.id));
+                        checkedFilesDB.clear();
+                        renderFiles();
+                         refreshBranchSummary();
+                        // Reset Select All
+                        if (selectAllCheckbox) selectAllCheckbox.checked = false;
+                       
+                        showMessage("Selected files deleted successfully!");
+                    } else {
+                        alert("Failed to delete files.");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Error deleting files.");
+                }  finally {
+                    // Hide overlay and re-enable delete button
+                overlay.style.display = 'none';
+                updateDeleteButtonState();
+                }
+            });
+        };
+    }
+    updateDeleteButtonState();
+}
+
+// Example: Message Box function to show temporary messages
+function showMessage(msg) {
+    const msgBox = document.getElementById('message-box2');
+    const text = document.getElementById('message-text');
+    text.textContent = msg;
+    msgBox.style.backgroundColor = '#4CAF50'; // green for success
+    msgBox.style.display = 'block';
+    setTimeout(() => {
+        msgBox.style.display = 'none';
+    }, 3000);
+}
+
+
+function updatePaginationControls() {
+    const paginationContainer = document.getElementById('pagination');
+    paginationContainer.innerHTML = '';
+
+    const totalPages = Math.ceil(totalFiles.length / PerPage);
+
+    // --- Prev Button ---
+    const prevBtn = document.createElement('button');
+    prevBtn.innerText = 'Prev';
+    prevBtn.style.padding = '8px 16px';
+    prevBtn.style.border = 'none';
+    prevBtn.style.borderRadius = '4px';
+    prevBtn.style.cursor = 'pointer';
+    prevBtn.style.backgroundColor = '#3498db';
+    prevBtn.style.color = '#fff';
+
+    prevBtn.disabled = (FirstPage === 1);
+    if (prevBtn.disabled) prevBtn.style.opacity = '0.5';
+
+    prevBtn.addEventListener('click', () => {
+        if (FirstPage > 1) {
+            FirstPage--;
+            renderFiles();
+            updatePaginationControls();
+        }
+    });
+
+    paginationContainer.appendChild(prevBtn);
+
+
+    // --- Next Button ---
+    const nextBtn = document.createElement('button');
+    nextBtn.innerText = 'Next';
+    nextBtn.style.padding = '8px 16px';
+    nextBtn.style.border = 'none';
+    nextBtn.style.borderRadius = '4px';
+    nextBtn.style.cursor = 'pointer';
+    nextBtn.style.backgroundColor = '#3498db';
+    nextBtn.style.color = '#fff';
+
+    nextBtn.disabled = (FirstPage >= totalPages || totalPages === 0);
+    if (nextBtn.disabled) nextBtn.style.opacity = '0.5';
+
+    nextBtn.addEventListener('click', () => {
+        if (FirstPage < totalPages) {
+            FirstPage++;
+            renderFiles();
+            updatePaginationControls();
+        }
+    });
+
+    paginationContainer.appendChild(nextBtn);
+}
+
+    
+editExpected.onclick = openEditEmployeeCount;
+
+function openEditEmployeeCount() {
+  const current = document.getElementById('expectedCount').innerText.trim();
+  document.getElementById('edit-count-input').value = current;
+  document.getElementById('edit-count-modal').style.display = 'flex';
+}
+
+
+document.getElementById("edit-save-btn").onclick = saveEditedEmployeeCount;
+document.getElementById("edit-cancel-btn").onclick = () => {
+  document.getElementById('edit-count-modal').style.display = 'none';
+};
+
+
+async function handleDuplicateFiles(duplicates) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('duplicate-modal');
+    const listEl = document.getElementById('duplicate-list');
+    listEl.innerHTML = duplicates.join('<br>');
+
+    modal.style.display = 'flex';
+
+    const cancelBtn = document.getElementById('cancel-duplicate');
+    const replaceBtn = document.getElementById('replace-duplicate');
+
+    function cleanup() {
+      modal.style.display = 'none';
+      cancelBtn.removeEventListener('click', onCancel);
+      replaceBtn.removeEventListener('click', onReplace);
+    }
+
+    function onCancel() {
+      cleanup();
+      resolve(false); // user cancelled
+    }
+
+    function onReplace() {
+      cleanup();
+      resolve(true); // user wants to replace
+    }
+
+    cancelBtn.addEventListener('click', onCancel);
+    replaceBtn.addEventListener('click', onReplace);
+  });
+}
+
+
+async function saveEditedEmployeeCount() {
+const role = sessionStorage.getItem('role');
+    let value = '';
+
+    switch(role) {
+        case 'BM': value = sessionStorage.getItem('branchNo'); break;
+        case 'AA': value = sessionStorage.getItem('area_id'); break;
+        case 'RA': value = sessionStorage.getItem('region_id'); break;
+        case 'AVP': value = sessionStorage.getItem('division_id'); break;
+        case 'SVP': value = sessionStorage.getItem('operation_id'); break;
+        case 'CFOO': value = sessionStorage.getItem('cfo_id'); break;
+        case 'COO': value = sessionStorage.getItem('coo_id'); break;
+        case 'IM': value = sessionStorage.getItem('userId'); break;
+        case 'ITR': value = sessionStorage.getItem('userId'); break;
+    }
+  const newCount = parseInt(document.getElementById("edit-count-input").value);
+
+  if (isNaN(newCount) || newCount < 0) {
+    showMessage("Enter a valid number.");
+    return;
+  }
+
+  // Prevent lowering the count below already uploaded forms
+  const uploaded = parseInt(document.getElementById("formsCount").innerText);
+  if (newCount < uploaded) {
+    showMessage(`Employee count cannot be lower than uploaded forms (${uploaded}).`);
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/employee-count/set-employee-count', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role, value, count: newCount })
+
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      // Update UI
+      document.getElementById('expectedCount').innerText = newCount;
+
+      // Close modal
+      document.getElementById('edit-count-modal').style.display = 'none';
+
+      showMessage('Employee count updated!');
+      updateTotalUploadedForms();
+
+        //  Reset file input so user can select files again
+  resetUploadForm();
+    } else {
+      showMessage('Failed to update employee count.');
+    }
+  } catch (err) {
+    console.error(err);
+    showMessage('Error updating employee count.');
+  }
+}
+
+
+
+
+    cancelUploadModalBtn.onclick = () => {
+    confirmUploadModal.style.display = 'none';
+};
+
+    confirmUploadModalBtn.onclick = async () => {
+    confirmUploadModal.style.display = 'none';
+
+    const role = sessionStorage.getItem('role');
+    let type = role;
+    let name = '';
+
+    switch(role) {
+        case 'BM': name = sessionStorage.getItem('branch'); break;
+        case 'AA': name = sessionStorage.getItem('area_id'); break;
+        case 'RA': name = sessionStorage.getItem('region_id'); break;
+        case 'AVP': name = sessionStorage.getItem('division'); break;
+        case 'SVP': name = sessionStorage.getItem('operation_id'); break;
+        case 'CFOO': name = sessionStorage.getItem('cfo_id'); break;
+        case 'COO': name = sessionStorage.getItem('coo_id'); break;
+        case 'IM': name = sessionStorage.getItem('userId'); break;
+        case 'ITR': name = sessionStorage.getItem('userId'); break;
+        default: name = '';
+    }
+
+    await proceedUpload(type, name);
+};
+
+    cancelModalBtn.onclick = () => { mfoModal.style.display = 'none'; mfoInput.value = ''; };
+    confirmModalBtn.onclick = async () => {
+     const role = sessionStorage.getItem('role');
+    let value = '';
+
+    switch(role) {
+        case 'BM': value = sessionStorage.getItem('branchNo'); break;
+        case 'AA': value = sessionStorage.getItem('area_id'); break;
+        case 'RA': value = sessionStorage.getItem('region_id'); break;
+        case 'AVP': value = sessionStorage.getItem('division_id'); break;
+        case 'SVP': value = sessionStorage.getItem('operation_id'); break;
+        case 'CFOO': value = sessionStorage.getItem('cfo_id'); break;
+        case 'COO': value = sessionStorage.getItem('coo_id'); break;
+        case 'IM': value = sessionStorage.getItem('userId'); break;
+        case 'ITR': value = sessionStorage.getItem('userId'); break;
+    }
+
+    const employeeCount = parseInt(mfoInput.value);
+
+    if (isNaN(employeeCount) || employeeCount < 0 || employeeCount > 15) {
+        showMessage('Enter a valid number 0-15.');
+        return;
+    }
+
+    // Get current uploaded forms from server
+    let uploadedForms = 0;
+    try {
+        const res = await fetch(`/api/total-uploaded-forms?role=${encodeURIComponent(role)}&value=${encodeURIComponent(value)}`);
+        const data = await res.json();
+        uploadedForms = data.totalUploadedForms || 0;
+    } catch (err) {
+        console.error(err);
+        showMessage('Error fetching uploaded forms count.');
+        return;
+    }
+
+       // NEW: check if selected files exceed employee count
+    if (selectedFiles.length > employeeCount) {
+        showMessage(`You can upload ${employeeCount} file(s) based on the employee count.`);
+        return; // stop upload
+    }
+
+
+    // Prevent update if input is less than already uploaded files
+    if (employeeCount < uploadedForms) {
+        showMessage(`Employee count cannot be less than already uploaded files (${uploadedForms}).`);
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/employee-count/set-employee-count', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role, value, count: employeeCount })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            showMessage('Employee count saved!');
+            document.getElementById('expectedCount').innerText = employeeCount;
+            mfoModal.style.display = 'none';
+            mfoInput.value = '';
+            await updateTotalUploadedForms();
+             proceedUpload();
+        } else {
+            showMessage(data.error || 'Failed to save employee count.');
+        }
+    } catch (err) {
+        console.error(err);
+        showMessage('Error saving employee count.');
+    }
+};
+
+
+
+  uploadForm.onsubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedFiles.length) {
+        showMessage('Choose files first.');
+        return;
+    }
+
+    // Check if employee count is set
+    const empty = await isEmployeeCountEmpty();
+    if (empty) {
+        mfoModal.style.display = 'flex';
+        return;
+    }
+
+    
+    const expected = parseInt(document.getElementById('expectedCount').innerText) || 0;
+    const uploaded = parseInt(document.getElementById('formsCount').innerText) || 0;
+    const totalSelected = selectedFiles.length;
+
+    // Prevent upload if total files exceed employee count
+    if ((uploaded + totalSelected) > expected) {
+        showMessage(`You can upload only ${expected - uploaded} more file(s).`);
+        return;
+      // stop further execution
+    }
+
+    
+    // Fetch user role and IDs from sessionStorage (or wherever stored)
+    const role = sessionStorage.getItem('role');
+    const branchNo = sessionStorage.getItem('branchNo');
+    const area_id = sessionStorage.getItem('area_id');
+    const region_id = sessionStorage.getItem('region_id');
+    const division_id = sessionStorage.getItem('division_id');
+    const operation_id = sessionStorage.getItem('operation_id');
+    const cfo_id = sessionStorage.getItem('cfo_id');
+    const coo_id = sessionStorage.getItem('coo_id');
+    const dep_id = sessionStorage.getItem('dep_id');
+    const userId = sessionStorage.getItem('userId');
+
+    
+    console.log("Received role:", role);
+    console.log("Received branchNo:", branchNo);
+    console.log("Received area_id:", area_id);
+    console.log("Received region_id:", region_id);
+    console.log("Received cfoo_id:", cfo_id);
+    console.log("Received cooo_id:", coo_id);
+    console.log("Received dep_id:", dep_id);
+    console.log("Received userId:", userId);
+
+    if (!role) {
+        showMessage('User role not found.');
+        return;
+    }
+
+ // Determine role-specific value for duplicate check
+    let valueForCheck;
+    switch(role) {
+        case 'BM':
+            valueForCheck = branchNo;        // branch_name column
+            break;
+        case 'AA':
+            valueForCheck = area_id;         // area_id column
+            break;
+        case 'RA':
+            valueForCheck = region_id;       // regions_id column
+            break;
+        case 'AVP':
+            valueForCheck = division_id;     // division_id column
+            break;
+        case 'SVP':
+            valueForCheck = operation_id;    // operation_id column
+            break;
+        case 'CFOO':
+            valueForCheck = cfo_id;    // cfo_id column
+            break;
+        case 'COO':
+            valueForCheck = coo_id;    // coo_id column
+            break;
+        case 'IM':
+          valueForCheck = userId;
+          break;
+         case 'ITR':
+          valueForCheck = userId;
+          break;
+        default:
+            valueForCheck = branchNo;        // fallback
+    }
+
+// Check duplicate filenames before uploading
+const filenames = selectedFiles.map(f => f.name);
+
+
+const duplicateCheck = await checkDuplicateFilenames(filenames);
+console.log("Response from duplicate check:", duplicateCheck);
+
+if (duplicateCheck.duplicates.length > 0) {
+   
+  const proceed = await handleDuplicateFiles(duplicateCheck.duplicates);
+  if (!proceed) {
+    showMessage("Upload cancelled.");
+    return; // stop upload
+  }
+
+}
+
+// No duplicates or user accepted → proceed
+proceedUpload();
+};
+
+
+async function proceedUpload() {
+      document.getElementById('loading-overlay').style.display = 'flex';
+      const formData = new FormData();
+
+      selectedFiles.forEach(file => formData.append('file', file));
+
+      // Get user role and name for all user types
+      const role = sessionStorage.getItem('role');
+      console.log("SessionStorage snapshot:");
+console.log({
+  role: sessionStorage.getItem("role"),
+  branchNo: sessionStorage.getItem("branchNo"),
+  area_id: sessionStorage.getItem("area_id"),
+  region_id: sessionStorage.getItem("region_id"),
+  division_id: sessionStorage.getItem("division_id"),
+  operation_id: sessionStorage.getItem("operation_id"),
+  cfo_id: sessionStorage.getItem("cfo_id"),
+  coo_id: sessionStorage.getItem("coo_id"),
+  dep_id: sessionStorage.getItem("dep_id"),
+  uploaded_by: sessionStorage.getItem("userId")
+});
+        // Helper to safely get values from sessionStorage, returns null if missing
+  const safeValue = (val) => (val && val !== 'undefined' && val !== 'null') ? val : null;
+
+    // Initialize all IDs as null
+  let branchNo = null, area_id = null, region_id = null, division_id = null, operation_id = null;
+
+  // Assign values based on role
+  switch(role) {
+    case 'BM':
+      branchNo = safeValue(sessionStorage.getItem('branchNo'));
+      area_id = safeValue(sessionStorage.getItem('area_id'));
+      region_id = safeValue(sessionStorage.getItem('region_id'));
+      division_id = safeValue(sessionStorage.getItem('division_id'));
+      operation_id = safeValue(sessionStorage.getItem('operation_id'));
+      break;
+    case 'AA':
+      area_id = safeValue(sessionStorage.getItem('area_id'));
+      branchNo = null; // ✅ explicitly null
+      region_id = safeValue(sessionStorage.getItem('region_id'));
+      division_id = safeValue(sessionStorage.getItem('division_id'));
+      operation_id = safeValue(sessionStorage.getItem('operation_id'));
+      break;
+    case 'RA':
+      region_id = safeValue(sessionStorage.getItem('region_id'));
+      division_id = safeValue(sessionStorage.getItem('division_id'));
+      operation_id = safeValue(sessionStorage.getItem('operation_id'));
+      break;
+    case 'AVP':
+      division_id = safeValue(sessionStorage.getItem('division_id'));
+      operation_id = safeValue(sessionStorage.getItem('operation_id'));
+      break;
+    case 'SVP':
+      operation_id = safeValue(sessionStorage.getItem('operation_id'));
+      break;
+    case 'CFOO':
+      cfo_id = safeValue(sessionStorage.getItem('cfo_id'));
+      break;
+     case 'COO':
+      cfo_id = safeValue(sessionStorage.getItem('coo_id'));
+      break;
+     case 'IM':
+      dep_id = safeValue(sessionStorage.getItem('dep_id'));
+      userId = safeValue(sessionStorage.getItem('userId'));
+      break;
+     case 'ITR':
+      dep_id = safeValue(sessionStorage.getItem('dep_id'));
+      userId = safeValue(sessionStorage.getItem('userId'));
+      break;
+  }
+  // Append all fields to FormData
+  formData.append('role', role);
+  formData.append('employeeCount', mfoInput.value || 0);
+     // ✅ Append area_id for AA role
+       if (role === 'BM') {
+        formData.append('branchNo', safeValue(sessionStorage.getItem('branchNo')));
+      }
+    
+
+    if (role === 'AA') {
+        formData.append('area_id', safeValue(sessionStorage.getItem('area_id')));
+        formData.append('area_name', safeValue(sessionStorage.getItem('area_name')));
+    }
+
+        if (role === 'RA') {
+        formData.append('region_id', safeValue(sessionStorage.getItem('region_id')));
+        formData.append('region_name', safeValue(sessionStorage.getItem('region_name')));
+    }
+        if (role === 'AVP') {
+        formData.append('division_id', safeValue(sessionStorage.getItem('division_id')));
+        formData.append('division', safeValue(sessionStorage.getItem('division')));
+    }
+
+        if (role === 'SVP') {
+        formData.append('operation_id', safeValue(sessionStorage.getItem('operation_id')));
+        formData.append('operation_name', safeValue(sessionStorage.getItem('operation_name')));
+    }
+
+        if (role === 'CFOO') {
+        formData.append('cfo_id', safeValue(sessionStorage.getItem('cfo_id')));
+        formData.append('cfo_name', safeValue(sessionStorage.getItem('cfo_name')));
+    }
+
+        if (role === 'COO') {
+        formData.append('coo_id', safeValue(sessionStorage.getItem('coo_id')));
+        formData.append('coo_name', safeValue(sessionStorage.getItem('coo_name')));
+    }
+
+         if (role === 'IM') {
+          formData.append('dep_id', safeValue(sessionStorage.getItem('dep_id')));
+          formData.append('dep_name', safeValue(sessionStorage.getItem('dep_name')));
+          formData.append('uploaded_by', safeValue(sessionStorage.getItem('userId')));
+    }
+
+         if (role === 'ITR') {
+          formData.append('dep_id', safeValue(sessionStorage.getItem('dep_id')));
+          formData.append('dep_name', safeValue(sessionStorage.getItem('dep_name')));
+          formData.append('uploaded_by', safeValue(sessionStorage.getItem('userId')));
+    }
+
+      try {
+        const res = await fetch('/api/uploading', { method: 'POST', body: formData });
+        const result = await res.json();
+        if (res.ok) {
+             // ✅ Check if any files were replaced
+      if (result.replacedFiles && result.replacedFiles.length > 0) {
+        showMessage(`Replaced file(s): ${result.replacedFiles.join(', ')}`, 6000);
+      }
+      
+         showMessage('Upload complete!');
+          selectedFiles = [];
+          resetUploadForm();
+          await refreshBranchSummary();
+        } else showMessage(result.error || 'Upload failed');
+      } catch (err)  { showMessage(err.message); }
+      finally { document.getElementById('loading-overlay').style.display = 'none'; }
+    }
+
+    function resetBranchSummary() {
+      document.getElementById('branch-summary').style.display = 'block';
+      document.getElementById('expectedCount').innerText = 0;
+      document.getElementById('formsCount').innerText = 0;
+      document.getElementById('pendingCount').innerText = 0;
+      document.getElementById('fileTableBody').innerHTML = `<tr><td colspan="3" style="text-align:center; padding:15px; color:#666;">No files uploaded yet.</td></tr>`;
+    }
+
+function resetUploadForm() {
+  // Clear selected files array
+  selectedFiles = [];
+
+  // Reset the file input by replacing it
+  const oldInput = document.getElementById('file');
+  const newInput = oldInput.cloneNode(true); // clone without value
+  oldInput.parentNode.replaceChild(newInput, oldInput);
+
+  // Re-attach the change event
+  newInput.addEventListener('change', () => {
+    selectedFiles = Array.from(newInput.files);
+    renderFileList();
+  });
+
+  // Reset the file list container
+  fileListContainer.innerHTML = '';
+  fileListContainer.style.display = 'none';
+  document.getElementById('file-label').textContent = 'Choose Files';
+
+}
+
+    function showMessage(msg, duration = 4000) {
+  const msgBox = document.getElementById('message-box');
+  msgBox.textContent = msg;
+  msgBox.style.display = 'block';
+  setTimeout(() => { msgBox.style.display = 'none'; }, duration);
+}
+const fileListModal = document.getElementById("fileListModal");
+const openFileListBtn = document.getElementById("openFileListModal");
+const closeFileListBtn = document.getElementById("closeFileListBtn");
+const clearFileListBtn = document.getElementById("clearFileListBtn");
+
+// Open modal
+openFileListBtn.onclick = () => {
+  fileListModal.style.display = "flex"; // use flex to match modal CSS
+};
+
+// Close modal
+closeFileListBtn.onclick = () => {
+  fileListModal.style.display = "none";
+};
+
+// Clear file list
+clearFileListBtn.onclick = () => {
+    if (!selectedFiles.length) return; // nothing to clear
+
+    showDeleteConfirm("Are you sure you want to delete ALL files?", (confirmed) => {
+    if (!confirmed) return; // cancel action
+
+    selectedFiles = [];
+    renderFileList();
+
+    // Reset the file input so user can select the same files again
+    const fileInput = document.getElementById('file-input'); // replace with your input's actual ID
+    if (fileInput) fileInput.value = '';
+
+
+   showMessage("File list cleared!"); // optional feedback message
+    });
+};
+
+// Close if click outside modal
+window.onclick = (e) => {
+  if (e.target === fileListModal) {
+    fileListModal.style.display = "none";
+  }
+};
+
+
+function showDeleteConfirm(message, callback) {
+    const box = document.getElementById("message-box2");
+    const text = document.getElementById("message-text");
+    const cancelBtn = document.getElementById("cancel-btn");
+    const confirmBtn = document.getElementById("confirm-btn");
+
+    text.textContent = message;
+    box.style.display = "block";
+
+    cancelBtn.onclick = () => {
+        box.style.display = "none";
+        callback(false);
+    };
+
+    confirmBtn.onclick = () => {
+        box.style.display = "none";
+        callback(true);
+    };
+}
+
+
+let currentPage = 1;
+const itemsPerPage = 10;
+
+function renderFileList() {
+    const fileListContainer = document.getElementById('file-list');
+    fileListContainer.innerHTML = '';
+
+    if (!selectedFiles.length) {
+        fileListContainer.style.display = 'none';
+        document.getElementById('file-label').textContent = 'Choose Files';
+        document.getElementById('file-pagination').innerHTML = '';
+        return;
+    }
+
+    fileListContainer.style.display = 'flex';
+    fileListContainer.style.flexDirection = 'column';
+    fileListContainer.style.gap = '4px';
+
+    // --- Select All Container (Top) ---
+    const selectAllContainer = document.createElement('div');
+    selectAllContainer.style.display = 'flex';
+    selectAllContainer.style.alignItems = 'center';
+    selectAllContainer.style.gap = '8px';
+    selectAllContainer.style.marginBottom = '8px';
+
+    const selectAllCheckbox = document.createElement('input');
+    selectAllCheckbox.type = 'checkbox';
+    selectAllCheckbox.className = 'modal-select-all';
+    selectAllCheckbox.style.width = '20px';
+    selectAllCheckbox.style.height = '20px';
+    selectAllCheckbox.style.margin = '0';
+
+    const selectAllLabel = document.createElement('label');
+    selectAllLabel.textContent = 'Select All';
+    selectAllLabel.style.cursor = 'pointer';
+    selectAllLabel.style.fontSize = '15px';
+    selectAllLabel.style.fontWeight = 'bold';
+    selectAllLabel.style.margin = '0';
+
+    selectAllContainer.appendChild(selectAllCheckbox);
+    selectAllContainer.appendChild(selectAllLabel);
+    fileListContainer.appendChild(selectAllContainer);
+
+    // --- Render Files with Checkboxes ---
+    const totalPages = Math.ceil(selectedFiles.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedFiles = selectedFiles.slice(startIndex, startIndex + itemsPerPage);
+
+    paginatedFiles.forEach((file, index) => {
+        const actualIndex = startIndex + index;
+
+        const div = document.createElement('div');
+        div.className = 'file-item';
+        div.style.display = 'flex';
+        div.style.alignItems = 'center';
+        div.style.gap = '6px';
+
+         // --- FIXED: Unique ID for each file ---
+        const uniqueId = `modal-file-${actualIndex}`;
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'modal-file-checkbox';
+        checkbox.dataset.index = actualIndex;
+        checkbox.id = uniqueId;
+
+        const label = document.createElement('label');
+        label.htmlFor =  uniqueId;
+        label.textContent = file.name;
+        label.style.margin = '0';
+        label.style.cursor = 'pointer';
+
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        fileListContainer.appendChild(div);
+    });
+
+    // --- Pagination Footer ---
+    const paginationFooter = document.getElementById('file-pagination');
+    paginationFooter.innerHTML = '';
+
+    const paginationDiv = document.createElement('div');
+    paginationDiv.id = 'file-pagination';
+    paginationDiv.style.display = 'flex';
+    paginationDiv.style.gap = '5px';
+    paginationDiv.style.alignItems = 'center';
+    paginationDiv.style.marginRight = 'auto';
+
+    if (totalPages > 1) {
+        const prevBtn = document.createElement('button');
+        prevBtn.textContent = 'Prev';
+        prevBtn.style.padding = '4px 8px';
+        prevBtn.style.cursor = 'pointer';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderFileList();
+            }
+        });
+
+        const nextBtn = document.createElement('button');
+        nextBtn.textContent = 'Next';
+        nextBtn.style.padding = '4px 8px';
+        nextBtn.style.cursor = 'pointer';
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderFileList();
+            }
+        });
+
+        const pageIndicator = document.createElement('span');
+        pageIndicator.textContent = `Page ${currentPage} / ${totalPages}`;
+        pageIndicator.style.margin = '0 5px';
+        pageIndicator.style.fontWeight = 'bold';
+
+        paginationDiv.appendChild(prevBtn);
+        paginationDiv.appendChild(pageIndicator);
+        paginationDiv.appendChild(nextBtn);
+    }
+
+    paginationFooter.appendChild(paginationDiv);
+
+    // --- Delete Selected Button (Footer) ---
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '🗑 Delete Selected';
+    deleteBtn.style.padding = '5px 10px';
+    deleteBtn.style.cursor = 'not-allowed';
+    deleteBtn.style.backgroundColor = 'gray';
+    deleteBtn.style.color = 'white';
+    deleteBtn.style.border = 'none';
+    deleteBtn.style.borderRadius = '5px';
+    deleteBtn.style.fontWeight = 'bold';
+    deleteBtn.disabled = true;
+
+    paginationFooter.appendChild(deleteBtn);
+
+    // --- Enable/disable Delete button ---
+// --- Enable/disable Delete button and change color ---
+function updateDeleteButtonState() {
+    const anyChecked = document.querySelectorAll('.modal-file-checkbox:checked').length > 0;
+    deleteBtn.disabled = !anyChecked;
+
+    if (anyChecked) {
+        deleteBtn.style.backgroundColor = 'blue'; // active color
+        deleteBtn.style.cursor = 'pointer';
+    } else {
+        deleteBtn.style.backgroundColor = '#999'; // disabled color (gray)
+        deleteBtn.style.cursor = 'not-allowed';
+    }
+}
+
+// --- Checkbox logic ---
+selectAllCheckbox.addEventListener('change', (e) => {
+    const checked = e.target.checked;
+    document.querySelectorAll('.modal-file-checkbox').forEach(cb => cb.checked = checked);
+    updateDeleteButtonState();
+});
+
+document.querySelectorAll('.modal-file-checkbox').forEach(cb => {
+    cb.addEventListener('change', () => {
+        const allChecked = document.querySelectorAll('.modal-file-checkbox:checked').length === selectedFiles.length;
+        selectAllCheckbox.checked = allChecked;
+        updateDeleteButtonState();
+    });
+});
+
+
+    // --- Delete Selected click ---
+    deleteBtn.addEventListener('click', () => {
+        const checkedBoxes = document.querySelectorAll('.modal-file-checkbox:checked');
+
+        // If Select All is checked → user is deleting all files
+    const deletingAll = checkedBoxes.length === selectedFiles.length;
+
+    const message = deletingAll
+        ? "Are you sure you want to delete ALL files?"
+        : "Are you sure you want to delete the selected file(s)?";
+
+// ⭐ Replace confirm() with your custom message box
+
+    showDeleteConfirm(message, (confirmed) => {
+        if (!confirmed) return;
+
+        const indicesToRemove = Array.from(checkedBoxes).map(cb =>
+            parseInt(cb.dataset.index)
+        );
+
+        selectedFiles = selectedFiles.filter((_, idx) =>
+            !indicesToRemove.includes(idx)
+            
+        );
+      // Reset the file input so user can reselect the same files again
+const fileInput = document.getElementById('file-input'); // use your real ID
+if (fileInput) fileInput.value = '';
+
+        const totalPages = Math.ceil(selectedFiles.length / itemsPerPage);
+        if (currentPage > totalPages) currentPage = totalPages || 1;
+
+        renderFileList();
+
+
+    });
+});
+
+    document.getElementById('file-label').textContent = `Choose Files (${selectedFiles.length})`;
+}
+  </script>
+</body>
+
+</html>

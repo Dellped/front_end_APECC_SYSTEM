@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>VDPM Portal</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    #sidebar {
+      width: 200px;
+      background: wheat;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding-top: 20px;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      transition: width 0.3s, opacity 0.3s, transform 0.3s;
+      position: relative;
+      opacity: 1;
+      transform: translateX(0);
+    }
+    #sidebar.collapsed #sidebarLogo {
+  display: none !important;
+}
+
+    /* Sidebar collapsed style */
+    #sidebar.collapsed {
+      width: 0px; /* small sidebar width */
+
+    }
+
+    #sidebar.hidden {
+      opacity: 0; /* Fade out effect, but still occupies space */
+    }
+
+    #sidebar img {
+  width: 100px;
+  height: 90px;
+  margin-bottom: 20px;
+  transition: all 0.3s;
+    }
+
+    #sidebar.collapsed img {
+  width: 40px;
+  height: 36px;
+  margin-bottom: 10px;
+    }
+    button {
+    font-weight: bold;
+}
+
+button.active {
+    font-weight: bold;
+}
+
+
+    #sidebar button {
+      background: none;
+      border: none;
+      color:white;
+      padding: 15px 20px;
+      font-size: 16px;
+      text-align: left;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.3s, padding 0.3s;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    #sidebar.collapsed button {
+      padding-left: 30px;
+      text-align: center;
+    }
+
+    #sidebar button:hover, #sidebar button.active {
+      background: orange;
+    }
+
+    /* Main content */
+    #main-content {
+      flex: 1;
+  transition: all 0.3s;
+  overflow: hidden;
+    }
+
+    /* Make main content take full space when sidebar collapsed */
+#main-content.expanded {
+  width: calc(100% - 60px); /* matches collapsed sidebar width */
+}
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    /* Fully collapsed sidebar: hide buttons */
+#sidebar.collapsed button {
+  display: none; /* hide all buttons */
+}
+
+/* Keep toggle button visible */
+#toggleSidebar {
+  display: flex !important;
+}
+
+
+    /* Collapse toggle */
+    #toggleSidebar {
+      position: absolute;
+      top: 10px;
+      right: -40px;
+      background: orange;
+      border: 2px solid white;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      z-index: 10;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div id="sidebar">
+    <div id="toggleSidebar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+        <line x1="10" y1="6" x2="10" y2="18"></line>
+        <line x1="14" y1="6" x2="14" y2="18"></line>
+      </svg>
+    </div>
+    <center>
+      <img id="sidebarLogo"
+      src="https://raw.githubusercontent.com/rodelpeligro-oss/image-hosting/main/head.png"
+           alt="Logo" style="width:90px; height:120px; margin-bottom: 20px;">
+    </center>
+
+    <button id="btnUpload" class="active">📑Upload Forms</button>
+    <button id="btnValidate">📋Validate Reports</button>
+    <button id="btnGenerate">📈Generate Reports</button>
+    <button id="btnSummary">🧾Summary Reports</button>
+    <button id="btnArchive">🗂️Archive</button>
+    <button id="btnCorporate">🏢Corporate Reports</button>
+
+    <div style="flex: 1;"></div>
+
+    <button id="btnLogout" style="margin-bottom: 20px; background-color: olive;">Logout</button>
+  </div>
+
+  <div id="main-content">
+    <iframe id="content-frame" src="upload.html"></iframe>
+  </div>
+
+ <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const role = sessionStorage.getItem("role");
+
+  const btnUpload = document.getElementById('btnUpload');
+  const btnValidate = document.getElementById('btnValidate');
+  const btnGenerate = document.getElementById('btnGenerate');
+  const btnArchive = document.getElementById('btnArchive');
+  const btnSummary = document.getElementById('btnSummary');
+  const btnCorporate = document.getElementById('btnCorporate');
+  const contentFrame = document.getElementById('content-frame');
+
+  // ROLE-BASED PERMISSIONS
+  if (role !== "ADMIN") {
+    // All non-admin roles cannot access Archive
+    btnArchive.style.display = "none";
+  }
+    if (role == "BM") {
+    // All non-admin roles cannot access Archive
+    btnSummary.style.display = "none";
+    btnCorporate.style.display ="none";
+  }
+if (role === "AA" || role === "RA" || role === "AVP" || role === "SVP" || role === "CFOO" || role === "IM" || role === "ITR") {
+    // Hide the button for specified roles
+    btnCorporate.style.display = "none";
+}
+// === NEW: CHIEF ONLY SEES SUMMARY REPORTS ===
+if (role === "CHIEF") {
+  btnUpload.style.display = "none";
+  btnValidate.style.display = "none";
+  btnGenerate.style.display = "none";
+  btnArchive.style.display = "none";
+  btnSummary.style.display = "none"; 
+  // Only btnSummary remains visible
+  btnCorporate.classList.add('active');
+  contentFrame.src = 'corporate.html'; // default to summary page
+}
+  // Function to remove active class from all buttons
+  const clearActive = () => {
+    [btnUpload, btnValidate, btnGenerate, btnArchive, btnSummary, btnCorporate].forEach(btn => {
+      btn.classList.remove('active');
+    });
+  }
+
+  // CLICK EVENTS
+  btnUpload.addEventListener('click', () => {
+    contentFrame.src = 'upload.html';
+    clearActive();
+    btnUpload.classList.add('active');
+  });
+
+  btnValidate.addEventListener('click', () => {
+    contentFrame.src = 'validate.html';
+    clearActive();
+    btnValidate.classList.add('active');
+  });
+
+  btnGenerate.addEventListener('click', () => {
+    contentFrame.src = 'generate.html';
+    clearActive();
+    btnGenerate.classList.add('active');
+  });
+
+  btnArchive.addEventListener('click', () => {
+    contentFrame.src = 'archive.html';
+    clearActive();
+    btnArchive.classList.add('active');
+  });
+    btnSummary.addEventListener('click', () => {
+    contentFrame.src = 'summary.html';
+    clearActive();
+    btnSummary.classList.add('active');
+  });
+    btnCorporate.addEventListener('click', () => {
+    contentFrame.src = 'corporate.html';
+    clearActive();
+    btnCorporate.classList.add('active');
+  });
+
+  // OPTIONAL: Logout button
+  const btnLogout = document.getElementById('btnLogout');
+  btnLogout.addEventListener('click', () => {
+    sessionStorage.clear();
+    window.location.href = 'login.html';
+  });
+
+ const toggleSidebar = document.getElementById('toggleSidebar');
+const sidebar = document.getElementById('sidebar');
+const mainContent = document.getElementById('main-content');
+
+toggleSidebar.addEventListener('click', () => {
+  sidebar.classList.toggle('collapsed'); // shrink sidebar
+  mainContent.classList.toggle('expanded'); // expand main content
+});
+ // --- AUTO REFRESH BRANCH SUMMARY ---
+  // On iframe load
+  contentFrame.addEventListener('load', () => {
+    try {
+      if (typeof contentFrame.contentWindow.refreshBranchSummary === 'function') {
+        contentFrame.contentWindow.refreshBranchSummary();
+      }
+    } catch (err) {
+      console.error("Cannot refresh iframe summary on load:", err);
+    }
+  });
+
+  // On tab focus
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && contentFrame.contentWindow) {
+      try {
+        if (typeof contentFrame.contentWindow.refreshBranchSummary === 'function') {
+          contentFrame.contentWindow.refreshBranchSummary();
+        }
+      } catch (err) {
+        console.error("Cannot refresh iframe summary on visibility change:", err);
+      }
+    }
+  });
+
+});
+</script>
+
+
+
+</body>
+</html>

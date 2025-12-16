@@ -1,0 +1,625 @@
+  <style>
+/* Keep all original styles (from your provided CSS) */
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  background-color: #fafafa;
+  overflow-x: hidden;
+  margin-top: -10px;
+  margin-left: 35px;
+}
+#branch-display {
+  font-weight: bold;
+  color: orange;
+  font-size: 22px; 
+  margin-bottom: 15px;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+.container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+  padding: 20px 25px;
+  width: 100%;
+  max-width: 1250px;
+  text-align: center;
+  position: relative;
+  z-index: 5;
+  margin-top: 20px;
+}
+.tabs {
+  display:flex;
+  gap:8px;
+  margin-top:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+.tab-btn {
+  padding:8px 14px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  background:#e7eef2;
+  color:#333;
+  font-weight:700;
+}
+.tab-btn.active {
+  background: mediumseagreen;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.floating-tables { margin-top: 16px; display:block; }
+.table-wrapper { width:100%;display: none; }
+.table-container {
+  width:100%;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin-bottom: 14px;
+  display:none;
+  margin-left: -10px;
+}
+.table-title {
+  background-color:darkorange;
+  color: white;
+  padding: 8px;
+  font-weight: bold;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  width: 98.6%;
+}
+table { border-collapse: collapse; width: 100%; min-width: 900px; }
+th, td { border: 1px solid #ccc; padding: 8px; text-align: center; white-space: nowrap; font-size:13px;}
+th { background-color: orange; color: white; position: sticky; top:40px; z-index: 2; border-bottom: 2px solid #ccc;}
+#loading-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: none; justify-content: center; align-items: center; z-index: 9999; flex-direction: column;
+}
+.loader-spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #007bff;
+  border-radius: 50%; width: 50px; height: 50px;
+  animation: spin 1s linear infinite; margin-bottom: 15px;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+#message-box {
+  display: none;
+  position: fixed; top: 20px; left: 50%;
+  transform: translateX(-50%);
+  background-color: #ff4d4d; color: white;
+  padding: 15px 25px; border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); z-index: 10000; font-weight: bold;
+}
+#message-box.success { background-color: #4CAF50; }
+
+/* Preview Modal (kept from your original) */
+#preview-modal {
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
+  background:rgba(0,0,0,0.5);
+  justify-content:center;
+  align-items:center;
+  z-index:10000;
+}
+#preview-modal .modal-content {
+  background:white;
+  border-radius:10px;
+  padding:16px;
+  width:95%;
+  max-width:1200px;
+  max-height:85vh;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  position:relative;
+}
+#preview-modal .modal-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+#preview-modal h4 { margin:0; }
+#modal-close {
+  border:none;
+  background:#3498db;
+  color:#fff;
+  padding:6px 10px;
+  border-radius:6px;
+  align-items: flex-end;
+  cursor:pointer;
+}
+#preview-table-wrapper {
+  overflow:auto;
+  flex:1 1 auto;
+}
+#preview-table {
+  width:100%;
+  border-collapse:collapse;
+}
+#preview-table th, #preview-table td {
+  border:1px solid #ccc;
+  padding:6px;
+  text-align:center;
+  white-space:nowrap;
+  font-size:12px;
+}
+#preview-table th {
+  background:mediumseagreen;
+  color:white;
+  position:sticky;
+  top:0;
+  z-index:3;
+}
+
+/* Modal pagination controls */
+.modal-pagination {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:6px 0;
+}
+.modal-pagination button {
+  padding:6px 12px;
+  border-radius:6px;
+  border:none;
+  background:#3498db;
+  color:#fff;
+  cursor:pointer;
+}
+.modal-pagination button:disabled {
+  opacity:0.5;
+  cursor:not-allowed;
+}
+.modal-pagination .page-indicator {
+  font-weight:600;
+  color:#333;
+}
+
+/* responsive tweak */
+@media (max-width: 1100px) {
+  table { min-width: 800px; }
+}
+#modal-downloads button {
+  background-color: #007bff; /* Blue */
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-right: 6px;
+  transition: background 0.3s;
+}
+
+#modal-downloads button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div id="loading-overlay">
+    <div class="loader-spinner"></div>
+    <div>Generating corporate report...</div>
+  </div>
+
+  <div class="container">
+    <div id="message-box"></div>
+    <img src="https://raw.githubusercontent.com/rodelpeligro-oss/image-hosting/main/nav3%20(1).png"
+         alt="Logo" style="width:200px; height:70px;">
+    <h3>Value-Driven Performance Management Form</h3>
+    <h3>Corporate Summary Reports</h3>
+  <!-- Department Table -->
+    <div class="table-wrapper">
+      <div class="table-title">DEPARTMENT SUMMARY</div>
+      <table id="table-department-summary">
+        <thead>
+          <tr>
+            <th>Department</th><th>EE</th><th>EE %</th>
+            <th>ME</th><th>ME %</th>
+            <th>DM</th><th>DM %</th>
+            <th>Total</th>
+            <th>Preview</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <br />
+    <!-- Operation Table -->
+    <div class="table-wrapper">
+      <div class="table-title">OPERATION SUMMARY</div>
+      <table id="table-operation-summary">
+        <thead>
+          <tr>
+            <th>Operation</th><th>EE</th><th>EE %</th>
+            <th>ME</th><th>ME %</th>
+            <th>DM</th><th>DM %</th>
+            <th>Total</th>
+            <th>Preview</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Preview Modal -->
+  <div id="preview-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="preview-title">Detail Records</h4>
+       <div id="modal-downloads">
+        <button onclick="downloadPreviewTable('csv',modalTitle)">Download CSV</button>
+        <button onclick="downloadPreviewTable('xlsx',modalTitle)">Download Excel</button>
+        <button id="modal-close" type="button">Close</button>
+              </div>
+      </div>
+
+      <div id="preview-table-wrapper">
+        <table id="preview-table">
+          <thead>
+            <tr>
+              <th>EMP ID</th><th>Employee Name</th><th>Position Title</th>
+              <th>Date Hired</th><th>Immediate Superior</th><th>Department</th>
+              <th>Group</th><th>Division</th><th>Region</th><th>Area</th>
+              <th>Branch</th><th>Satellite</th><th>Month From</th>
+              <th>Month To</th><th>Year</th><th>Part A Total Rating</th>
+              <th>Part A Overall Weight Allocation</th><th>Part A Subtotal</th>
+              <th>Part B Total Rating</th><th>Part B Overall Weight Allocation</th>
+              <th>Part B Subtotal</th><th>Overall Numeric Rating</th>
+              <th>Overall Adjectival Rating</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<script>
+function el(selector){ return document.querySelector(selector); }
+
+let modalRecords = [];
+let modalTitle = ''; 
+
+// Modal
+function openPreviewModal(title){
+  el('#preview-modal').style.display='flex';
+  el('#preview-title').textContent = title;
+}
+
+function closePreviewModal(){
+  el('#preview-modal').style.display='none';
+  el('#preview-table tbody').innerHTML='';
+  modalRecords=[];
+}
+el('#modal-close').addEventListener('click', closePreviewModal);
+el('#preview-modal').addEventListener('click', e => { if(e.target.id==='preview-modal') closePreviewModal(); });
+
+
+function applyRoleVisibility() {
+  const role = sessionStorage.getItem('role');
+
+  const deptWrapper = document
+    .querySelector('#table-department-summary')
+    .closest('.table-wrapper');
+
+  const opWrapper = document
+    .querySelector('#table-operation-summary')
+    .closest('.table-wrapper');
+
+  if (role === 'CHIEF') {
+    deptWrapper.style.display = 'block';
+    opWrapper.style.display = 'none';
+  } else {
+    deptWrapper.style.display = 'block';
+    opWrapper.style.display = 'block';
+  }
+}
+
+
+// Fetch detail records
+async function fetchPreview(id, type, name) {
+  modalTitle = name; // store for download
+  openPreviewModal(`${type} Detail: ${name}`);
+  const tbody = el('#preview-table tbody');
+  tbody.innerHTML = '<tr><td colspan="23">Loading...</td></tr>';
+
+  try {
+    let endpoint = '';
+    let query = '';
+
+    if (type === 'Department') {
+      endpoint = '/api/corporate-summary/details/department';
+       query = `?department=${encodeURIComponent(name)}`;   
+    } else if (type === 'Operation') {
+      endpoint = '/api/corporate-summary/details/operation';
+        query = `?operation_name=${encodeURIComponent(name)}`; // must send operation_name
+    }
+
+    const res = await fetch(`${endpoint}${query}`);
+    const data = await res.json();
+    modalRecords = data.records || [];
+
+    renderPreviewPage();
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="23">${err.message}</td></tr>`;
+  }
+}
+
+
+// Render preview modal table
+function renderPreviewPage(){
+  const tbody = el('#preview-table tbody');
+  tbody.innerHTML='';
+  if(!modalRecords.length){ tbody.innerHTML='<tr><td colspan="23">No records</td></tr>'; return; }
+
+  modalRecords.forEach(emp=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${emp.emp_id||''}</td>
+      <td style="text-align:left">${emp.employee_name||''}</td>
+      <td>${emp.position_title||''}</td>
+      <td>${emp.date_hired||''}</td>
+      <td>${emp.immediate_superior||''}</td>
+      <td>${emp.department||''}</td>
+      <td>${emp.group||''}</td>
+      <td>${emp.division||''}</td>
+      <td>${emp.region||''}</td>
+      <td>${emp.area||''}</td>
+      <td>${emp.branch||''}</td>
+      <td>${emp.satellite||''}</td>
+      <td>${emp.month_from||''}</td>
+      <td>${emp.month_to||''}</td>
+      <td>${emp.year||''}</td>
+      <td>${emp.part_a_total_rating||''}</td>
+      <td>${emp.part_a_overall_weight||''}</td>
+      <td>${emp.part_a_subtotal||''}</td>
+      <td>${emp.part_b_total_rating||''}</td>
+      <td>${emp.part_b_overall_weight||''}</td>
+      <td>${emp.part_b_subtotal||''}</td>
+      <td>${emp.overall_numeric_rating||''}</td>
+      <td>${emp.overall_adjectival_rating||''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Grand Total helper
+function addGrandTotal(tbodySelector, records){
+  if(!records.length) return;
+  let totalEE=0,totalME=0,totalDM=0,totalAll=0;
+  records.forEach(r=>{
+    totalEE += Number(r.EE_count)||0;
+    totalME += Number(r.ME_count)||0;
+    totalDM += Number(r.DM_count)||0;
+    totalAll += Number(r.total_employees)||0;
+  });
+  const EE_percent = totalAll?((totalEE/totalAll)*100).toFixed(0):0;
+  const ME_percent = totalAll?((totalME/totalAll)*100).toFixed(0):0;
+  const DM_percent = totalAll?((totalDM/totalAll)*100).toFixed(0):0;
+  const tbody=el(tbodySelector);
+  const tr=document.createElement('tr');
+  tr.style.fontWeight='bold';
+  tr.style.background='#e0f7e0';
+  tr.style.color='red';
+  tr.innerHTML=`
+    <td style="text-align:left">GRAND TOTAL</td>
+    <td>${totalEE}</td><td>${EE_percent}%</td>
+    <td>${totalME}</td><td>${ME_percent}%</td>
+    <td>${totalDM}</td><td>${DM_percent}%</td>
+    <td>${totalAll}</td>
+    <td colspan="2"></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+// Render Department Summary
+function renderDepartmentSummary(records){
+  const tbody = el('#table-department-summary tbody'); 
+  tbody.innerHTML = '';
+
+  if(!records.length){ 
+    tbody.innerHTML = '<tr><td colspan="9">No department data</td></tr>'; 
+    return; 
+  }
+
+  records.forEach(r => {
+    const total = Number(r.total_employees) || 0;
+    const EE = Number(r.EE_count) || 0;
+    const ME = Number(r.ME_count) || 0;
+    const DM = Number(r.DM_count) || 0;
+    const EE_percent = total ? Math.round((EE/total)*100) : 0;
+    const ME_percent = total ? Math.round((ME/total)*100) : 0;
+    const DM_percent = total ? Math.round((DM/total)*100) : 0;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:left">${r.department_name}</td>
+      <td>${EE}</td><td>${EE_percent}%</td>
+      <td>${ME}</td><td>${ME_percent}%</td>
+      <td>${DM}</td><td>${DM_percent}%</td>
+      <td>${total}</td>
+      <td><button class="preview-btn" data-department="${encodeURIComponent(r.department_name)}">Preview</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Attach event listeners after table rows are created
+  document.querySelectorAll('.preview-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const deptName = decodeURIComponent(btn.getAttribute('data-department'));
+      fetchPreview(null, 'Department', deptName);
+    });
+  });
+
+  addGrandTotal('#table-department-summary tbody', records);
+}
+
+
+function renderOperationSummary(records) {
+  const tbody = el('#table-operation-summary tbody');
+  tbody.innerHTML = '';
+
+  if (!records.length) {
+    tbody.innerHTML = '<tr><td colspan="9">No operation data</td></tr>';
+    return;
+  }
+
+  records.forEach(r => {
+    const total = Number(r.total_employees) || 0;
+    const EE = Number(r.EE_count) || 0;
+    const ME = Number(r.ME_count) || 0;
+    const DM = Number(r.DM_count) || 0;
+    const EE_percent = total ? Math.round((EE / total) * 100) : 0;
+    const ME_percent = total ? Math.round((ME / total) * 100) : 0;
+    const DM_percent = total ? Math.round((DM / total) * 100) : 0;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:left">${r.operation_name}</td>
+      <td>${EE}</td><td>${EE_percent}%</td>
+      <td>${ME}</td><td>${ME_percent}%</td>
+      <td>${DM}</td><td>${DM_percent}%</td>
+      <td>${total}</td>
+      <td>
+        <button class="preview-operation-btn" data-operation-name="${encodeURIComponent(r.operation_name)}">
+          Preview
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Attach preview event
+  document.querySelectorAll('.preview-operation-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const opName = decodeURIComponent(btn.getAttribute('data-operation-name'));
+      fetchPreview(null, 'Operation', opName); // send operation_name to backend
+    });
+  });
+
+  addGrandTotal('#table-operation-summary tbody', records);
+}
+
+
+// Fetch corporate summary from backend
+async function fetchCorporateSummary(){
+  try{
+    const res = await fetch('/api/corporate-summary?role=COO');
+    const data = await res.json();
+    renderDepartmentSummary(data.departmentSummary || []);
+    renderOperationSummary(data.operationSummary || []);
+  }catch(err){
+    console.error(err);
+    el('#table-department-summary tbody').innerHTML='<tr><td colspan="10">Error fetching data</td></tr>';
+    el('#table-operation-summary tbody').innerHTML='<tr><td colspan="10">Error fetching data</td></tr>';
+  }
+}
+
+async function fetchChiefDepartments() {
+  const chief_id = sessionStorage.getItem('chief_id'); // must be set
+  if (!chief_id) return;
+
+  try {
+    const res = await fetch(`/api/corporate-summary/chief/departments?chief_id=${chief_id}`);
+    const data = await res.json();
+    renderDepartmentSummary(data.departmentSummary || []);
+
+    const opWrapper = document.querySelector('#table-operation-summary').closest('.table-wrapper');
+    opWrapper.style.display = 'none';
+  } catch (err) {
+    console.error(err);
+    el('#table-department-summary tbody').innerHTML = '<tr><td colspan="9">Error fetching data</td></tr>';
+  }
+}
+
+function downloadPreviewTable(fileType = 'csv', name = 'preview_table') {
+    if (!modalRecords.length) {
+        alert('No records to download');
+        return;
+    }
+
+    // Clean file name (remove invalid chars)
+    const fileName = name.replace(/[^a-z0-9_\-]/gi, '_');
+
+    // Header
+    const header = [
+        "EMP ID","Employee Name","Position Title","Date Hired","Immediate Superior","Department",
+        "Group","Division","Region","Area","Branch","Satellite","Month From","Month To","Year",
+        "Part A Total Rating","Part A Overall Weight Allocation","Part A Subtotal",
+        "Part B Total Rating","Part B Overall Weight Allocation","Part B Subtotal",
+        "Overall Numeric Rating","Overall Adjectival Rating"
+    ];
+
+    // Data rows
+    const rows = modalRecords.map(emp => [
+        emp.emp_id||'', emp.employee_name||'', emp.position_title||'', emp.date_hired||'', emp.immediate_superior||'',
+        emp.department||'', emp.group||'', emp.division||'', emp.region||'', emp.area||'',
+        emp.branch||'', emp.satellite||'', emp.month_from||'', emp.month_to||'', emp.year||'',
+        emp.part_a_total_rating||'', emp.part_a_overall_weight||'', emp.part_a_subtotal||'',
+        emp.part_b_total_rating||'', emp.part_b_overall_weight||'', emp.part_b_subtotal||'',
+        emp.overall_numeric_rating||'', emp.overall_adjectival_rating||''
+    ]);
+
+    const tableData = [header, ...rows];
+
+    // CSV
+ if (fileType === 'csv') {
+        const csvContent = '\uFEFF' + tableData
+            .map(r => r.map(c => `"${(c||'').toString().replace(/"/g,'""')}"`).join(','))
+            .join('\r\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${fileName}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    }
+
+    // Excel
+    if (fileType === 'xlsx') {
+        const ws = XLSX.utils.aoa_to_sheet(tableData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Preview");
+        XLSX.writeFile(wb, `${fileName}.xlsx`);
+    }
+}
+
+
+// Load on page ready
+window.addEventListener('DOMContentLoaded', () => {
+  applyRoleVisibility();
+
+  const role = sessionStorage.getItem('role');
+
+  if (role === 'CHIEF') {
+    fetchChiefDepartments();
+  } else {
+    fetchCorporateSummary();
+  }
+});
+</script>
+</body>
+</html>
