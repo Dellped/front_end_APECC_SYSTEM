@@ -46,7 +46,7 @@ export default function CorporatePage() {
     name = "",
     displayKey = ""
   ) => {
-    setModalTitle(`Detail Records: ${name || filterKey}`);
+    setModalTitle(`INDIVIDUAL PM SUMMARY: ${name || filterKey}`);
     setModalDisplayName(name || filterKey);
     setModalOpen(true);
     setModalRecords([]);
