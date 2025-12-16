@@ -556,7 +556,7 @@ export default function UploadPage() {
   );
 
   return (
-    <Box sx={{ p: 3, bgcolor: "background.default", minHeight: "100vh" }}>
+    <Box sx={{ p: 3, bgcolor: "background.default", minHeight: "100vh", position: "relative" }}>
       {loading && <LoadingOverlay message={loadingMessage} />}
       <MessageBanner
         message={message}

@@ -1,5 +1,11 @@
-import { useState, useEffect } from "react";
-import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
+import {
+  Outlet,
+  useNavigate,
+  NavLink,
+  useLocation,
+  Link as RouterLink,
+} from "react-router-dom";
 import {
   Drawer,
   Box,
@@ -10,9 +16,11 @@ import {
   ListItemText,
   IconButton,
   Button,
-  Avatar,
   Divider,
   Toolbar,
+  Breadcrumbs,
+  Typography,
+  Paper,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -23,6 +31,9 @@ import {
   Archive as ArchiveIcon,
   Business as CorporateIcon,
   Logout as LogoutIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+  Home as HomeIcon,
 } from "@mui/icons-material";
 import { getRole, clearSession, isLoggedIn } from "../lib/storage";
 import {
@@ -37,48 +48,185 @@ import {
 } from "../lib/roles";
 
 const DRAWER_WIDTH = 240;
+const DRAWER_WIDTH_COLLAPSED = 64;
+
+// Memoized drawer content component to prevent unnecessary re-renders
+const DrawerContent = memo(({ menuItems, onLogout, collapsed }) => {
+  const location = useLocation();
+
+  return (
+    <Box
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        background: "linear-gradient(180deg, #FFFFFF 0%, #FFF4D6 100%)",
+      }}
+    >
+      <Toolbar
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "80px !important",
+          px: collapsed ? 1 : 2,
+          borderBottom: "1px solid rgba(0, 0, 0, 0.08)",
+          background: "linear-gradient(135deg, #FFFFFF 0%, #FFF4D6 100%)",
+        }}
+      >
+        {collapsed ? (
+          <img
+            src="https://raw.githubusercontent.com/rodelpeligro-oss/image-hosting/main/head.png"
+            alt="Logo"
+            style={{
+              maxWidth: "40px",
+              maxHeight: "40px",
+              objectFit: "contain",
+            }}
+          />
+        ) : (
+          <img
+            src="https://raw.githubusercontent.com/rodelpeligro-oss/image-hosting/main/head.png"
+            alt="Logo"
+            style={{ maxWidth: "90px", maxHeight: "120px" }}
+          />
+        )}
+      </Toolbar>
+      <Divider sx={{ borderColor: "rgba(0, 0, 0, 0.08)" }} />
+      <List sx={{ flexGrow: 1, pt: 2, px: collapsed ? 0.5 : 1 }}>
+        {menuItems.map((item) => {
+          const IconComponent = item.icon;
+          const isActive = location.pathname === item.path;
+          return (
+            <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
+              <ListItemButton
+                component={NavLink}
+                to={item.path}
+                selected={isActive}
+                sx={{
+                  justifyContent: collapsed ? "center" : "flex-start",
+                  px: collapsed ? 1 : 2,
+                  py: 1.25,
+                  borderRadius: 2,
+                  "&.Mui-selected": {
+                    bgcolor: (theme) => theme.palette.primary.main,
+                    color: "white",
+                    boxShadow: "0 4px 12px rgba(255, 107, 53, 0.3)",
+                    "&:hover": {
+                      bgcolor: (theme) => theme.palette.primary.dark,
+                      boxShadow: "0 6px 16px rgba(255, 107, 53, 0.4)",
+                    },
+                    "& .MuiListItemIcon-root": {
+                      color: "white",
+                    },
+                    "& .MuiListItemText-primary": {
+                      fontWeight: 600,
+                    },
+                  },
+                  "&:hover": {
+                    bgcolor: (theme) => `${theme.palette.primary.main}15`,
+                    transform: "translateX(4px)",
+                  },
+                }}
+                title={collapsed ? item.label : ""}
+              >
+                <ListItemIcon
+                  sx={{
+                    color: isActive
+                      ? "white"
+                      : (theme) => theme.palette.text.secondary,
+                    minWidth: collapsed ? 0 : 40,
+                    justifyContent: "center",
+                  }}
+                >
+                  <IconComponent />
+                </ListItemIcon>
+                {!collapsed && (
+                  <ListItemText
+                    primary={item.label}
+                    primaryTypographyProps={{
+                      fontSize: "0.9375rem",
+                      fontWeight: isActive ? 600 : 500,
+                    }}
+                  />
+                )}
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
+      </List>
+      <Divider sx={{ borderColor: "rgba(0, 0, 0, 0.08)" }} />
+      <Box sx={{ p: collapsed ? 1.5 : 2 }}>
+        <Button
+          fullWidth={!collapsed}
+          variant="contained"
+          startIcon={!collapsed && <LogoutIcon />}
+          onClick={onLogout}
+          sx={{
+            bgcolor: (theme) => theme.palette.success.dark,
+            minWidth: collapsed ? 48 : "auto",
+            minHeight: collapsed ? 48 : "auto",
+            borderRadius: 2,
+            boxShadow: "0 4px 12px rgba(46, 125, 50, 0.25)",
+            "&:hover": {
+              bgcolor: (theme) => theme.palette.success.main,
+              boxShadow: "0 6px 16px rgba(46, 125, 50, 0.35)",
+              transform: "translateY(-1px)",
+            },
+          }}
+          title={collapsed ? "Logout" : ""}
+        >
+          {collapsed ? <LogoutIcon /> : "Logout"}
+        </Button>
+      </Box>
+    </Box>
+  );
+});
+
+DrawerContent.displayName = "DrawerContent";
 
 const menuItems = [
   {
     path: "/upload",
     label: "Upload Forms",
-    icon: <UploadIcon />,
+    icon: UploadIcon,
     canAccess: canAccessUpload,
   },
   {
     path: "/validate",
     label: "Validate Reports",
-    icon: <ValidateIcon />,
+    icon: ValidateIcon,
     canAccess: canAccessValidate,
   },
   {
     path: "/generate",
     label: "Generate Reports",
-    icon: <GenerateIcon />,
+    icon: GenerateIcon,
     canAccess: canAccessGenerate,
   },
   {
     path: "/summary",
     label: "Summary Reports",
-    icon: <SummaryIcon />,
+    icon: SummaryIcon,
     canAccess: canAccessSummary,
   },
   {
     path: "/archive",
     label: "Archive",
-    icon: <ArchiveIcon />,
+    icon: ArchiveIcon,
     canAccess: canAccessArchive,
   },
   {
     path: "/corporate",
     label: "Corporate Reports",
-    icon: <CorporateIcon />,
+    icon: CorporateIcon,
     canAccess: canAccessCorporate,
   },
 ];
 
 export default function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const role = getRole();
@@ -96,98 +244,92 @@ export default function MainLayout() {
     }
   }, [navigate, role]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     clearSession();
     navigate("/login", { replace: true });
-  };
+  }, [navigate]);
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
+  const handleDrawerToggle = useCallback(() => {
+    setMobileOpen((prev) => !prev);
+  }, []);
 
-  const filteredMenuItems = menuItems.filter((item) => item.canAccess(role));
+  const handleSidebarToggle = useCallback(() => {
+    setSidebarCollapsed((prev) => !prev);
+  }, []);
 
-  const drawer = (
-    <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <Toolbar
+  const filteredMenuItems = useMemo(
+    () => menuItems.filter((item) => item.canAccess(role)),
+    [role]
+  );
+
+  // Generate breadcrumbs based on current route
+  const breadcrumbs = useMemo(() => {
+    const pathnames = location.pathname.split("/").filter((x) => x);
+    const crumbs = [
+      <Typography
+        key="home"
+        component={RouterLink}
+        to="/upload"
         sx={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          minHeight: "80px !important",
-          bgcolor: "wheat",
+          textDecoration: "none",
+          color: "text.secondary",
+          "&:hover": {
+            color: "primary.main",
+          },
         }}
       >
-        <img
-          src="https://raw.githubusercontent.com/rodelpeligro-oss/image-hosting/main/head.png"
-          alt="Logo"
-          style={{ maxWidth: "90px", maxHeight: "120px" }}
-        />
-      </Toolbar>
-      <Divider />
-      <List sx={{ flexGrow: 1, pt: 1 }}>
-        {filteredMenuItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          return (
-            <ListItem key={item.path} disablePadding>
-              <ListItemButton
-                component={NavLink}
-                to={item.path}
-                selected={isActive}
-                sx={{
-                  "&.Mui-selected": {
-                    bgcolor: "orange",
-                    color: "white",
-                    "&:hover": {
-                      bgcolor: "orange",
-                    },
-                  },
-                  "&:hover": {
-                    bgcolor: "rgba(255, 165, 0, 0.1)",
-                  },
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    color: isActive ? "white" : "inherit",
-                    minWidth: 40,
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText primary={item.label} />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
-      </List>
-      <Divider />
-      <Box sx={{ p: 2 }}>
-        <Button
-          fullWidth
-          variant="contained"
-          startIcon={<LogoutIcon />}
-          onClick={handleLogout}
-          sx={{
-            bgcolor: "olive",
-            "&:hover": {
-              bgcolor: "#4a4a00",
-            },
-          }}
-        >
-          Logout
-        </Button>
-      </Box>
-    </Box>
-  );
+        <HomeIcon sx={{ mr: 0.5, fontSize: 20 }} />
+        Home
+      </Typography>,
+    ];
+
+    pathnames.forEach((value, index) => {
+      const to = `/${pathnames.slice(0, index + 1).join("/")}`;
+      const menuItem = menuItems.find((item) => item.path === to);
+      const label = menuItem
+        ? menuItem.label
+        : value.charAt(0).toUpperCase() + value.slice(1);
+      const isLast = index === pathnames.length - 1;
+
+      crumbs.push(
+        isLast ? (
+          <Typography key={to} color="text.primary" sx={{ fontWeight: 500 }}>
+            {label}
+          </Typography>
+        ) : (
+          <Typography
+            key={to}
+            component={RouterLink}
+            to={to}
+            sx={{
+              textDecoration: "none",
+              color: "text.secondary",
+              "&:hover": {
+                color: "primary.main",
+              },
+            }}
+          >
+            {label}
+          </Typography>
+        )
+      );
+    });
+
+    return crumbs;
+  }, [location.pathname]);
+
+  const drawerWidth = sidebarCollapsed ? DRAWER_WIDTH_COLLAPSED : DRAWER_WIDTH;
 
   return (
     <Box sx={{ display: "flex", height: "100vh" }}>
       <Box
         component="nav"
         sx={{
-          width: { sm: DRAWER_WIDTH },
+          width: { sm: drawerWidth },
           flexShrink: { sm: 0 },
+          transition: "width 0.3s ease",
         }}
       >
         <Drawer
@@ -202,11 +344,15 @@ export default function MainLayout() {
             "& .MuiDrawer-paper": {
               boxSizing: "border-box",
               width: DRAWER_WIDTH,
-              bgcolor: "wheat",
+              bgcolor: (theme) => theme.palette.secondary.light,
             },
           }}
         >
-          {drawer}
+          <DrawerContent
+            menuItems={filteredMenuItems}
+            onLogout={handleLogout}
+            collapsed={false}
+          />
         </Drawer>
         <Drawer
           variant="permanent"
@@ -214,13 +360,21 @@ export default function MainLayout() {
             display: { xs: "none", sm: "block" },
             "& .MuiDrawer-paper": {
               boxSizing: "border-box",
-              width: DRAWER_WIDTH,
-              bgcolor: "wheat",
+              width: drawerWidth,
+              background: "linear-gradient(180deg, #FFFFFF 0%, #FFF4D6 100%)",
+              borderRight: "1px solid rgba(0, 0, 0, 0.08)",
+              transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              overflowX: "hidden",
+              boxShadow: "2px 0 8px rgba(0, 0, 0, 0.04)",
             },
           }}
           open
         >
-          {drawer}
+          <DrawerContent
+            menuItems={filteredMenuItems}
+            onLogout={handleLogout}
+            collapsed={sidebarCollapsed}
+          />
         </Drawer>
       </Box>
       <Box
@@ -228,21 +382,88 @@ export default function MainLayout() {
         sx={{
           flexGrow: 1,
           p: 0,
-          width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` },
-          bgcolor: "#f3f4f6",
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          bgcolor: "background.default",
           overflow: "auto",
+          transition:
+            "width 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
-        <Toolbar>
+        <Toolbar
+          sx={{
+            bgcolor: "background.paper",
+            borderBottom: "1px solid",
+            borderColor: "rgba(0, 0, 0, 0.08)",
+            px: 3,
+            py: 1.5,
+            minHeight: "72px !important",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+          }}
+        >
           <IconButton
             color="inherit"
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: "none" } }}
+            sx={{
+              mr: 2,
+              display: { sm: "none" },
+              color: "text.primary",
+              "&:hover": {
+                bgcolor: "rgba(255, 107, 53, 0.08)",
+              },
+            }}
           >
             <MenuIcon />
           </IconButton>
+          <IconButton
+            color="inherit"
+            aria-label="toggle sidebar"
+            edge="start"
+            onClick={handleSidebarToggle}
+            sx={{
+              mr: 2,
+              display: { xs: "none", sm: "flex" },
+              color: "text.primary",
+              bgcolor: "rgba(0, 0, 0, 0.04)",
+              "&:hover": {
+                bgcolor: "rgba(255, 107, 53, 0.12)",
+                color: "primary.main",
+              },
+              transition: "all 0.2s ease-in-out",
+            }}
+          >
+            {sidebarCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+          </IconButton>
+          <Box
+            sx={{
+              flexGrow: 1,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <Breadcrumbs
+              aria-label="breadcrumb"
+              separator={
+                <Typography
+                  sx={{
+                    color: "primary.main",
+                    fontWeight: 600,
+                    fontSize: "1.125rem",
+                  }}
+                >
+                  ›
+                </Typography>
+              }
+              sx={{
+                "& .MuiBreadcrumbs-ol": {
+                  flexWrap: "nowrap",
+                },
+              }}
+            >
+              {breadcrumbs}
+            </Breadcrumbs>
+          </Box>
         </Toolbar>
         <Outlet />
       </Box>

@@ -127,7 +127,14 @@ export default function ArchivePage() {
   const paginatedFiles = archiveFiles.slice(start, start + rowsPerPage);
 
   return (
-    <Box sx={{ p: 3, bgcolor: "background.default", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        p: 3,
+        bgcolor: "background.default",
+        minHeight: "100vh",
+        position: "relative",
+      }}
+    >
       {loading && <LoadingOverlay message="Loading archived forms..." />}
       <MessageBanner
         message={message}
