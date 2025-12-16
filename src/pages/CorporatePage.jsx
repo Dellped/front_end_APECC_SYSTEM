@@ -12,7 +12,9 @@ import {
   TableRow,
   Paper,
   Button,
+  Tooltip,
 } from "@mui/material";
+import { Visibility as VisibilityIcon } from "@mui/icons-material";
 import apiClient from "../lib/apiClient";
 import { getSession, getRole, SESSION_KEYS } from "../lib/storage";
 import { ROLES } from "../lib/roles";
@@ -146,11 +148,12 @@ export default function CorporatePage() {
           sx={{
             bgcolor: "primary.main",
             color: "white",
-            p: 1.5,
+            p: 2,
             textAlign: "center",
+            background: "linear-gradient(135deg, #FF6B35 0%, #E55A2B 100%)",
           }}
         >
-          <Typography variant="h6" fontWeight="bold">
+          <Typography variant="h6" fontWeight={700} letterSpacing="0.5px">
             {label}
           </Typography>
         </Box>
@@ -158,17 +161,132 @@ export default function CorporatePage() {
           <Table stickyHeader size="small">
             <TableHead>
               <TableRow>
-                <TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                  }}
+                >
                   {type === "department" ? "Department" : "Operation"}
                 </TableCell>
-                <TableCell>EE</TableCell>
-                <TableCell>EE %</TableCell>
-                <TableCell>ME</TableCell>
-                <TableCell>ME %</TableCell>
-                <TableCell>DM</TableCell>
-                <TableCell>DM %</TableCell>
-                <TableCell>Total</TableCell>
-                <TableCell>Preview</TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                  }}
+                >
+                  EE
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                  }}
+                >
+                  EE %
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                  }}
+                >
+                  ME
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                  }}
+                >
+                  ME %
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                  }}
+                >
+                  DM
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                  }}
+                >
+                  DM %
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                  }}
+                >
+                  Total
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                    minWidth: 120,
+                  }}
+                >
+                  Action
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -180,34 +298,83 @@ export default function CorporatePage() {
                 const name = r[nameField] || "";
 
                 return (
-                  <TableRow key={idx} hover>
-                    <TableCell sx={{ textAlign: "left" }}>
+                  <TableRow
+                    key={idx}
+                    hover
+                    sx={{
+                      "&:hover": {
+                        bgcolor: "rgba(255, 107, 53, 0.04)",
+                      },
+                      transition: "background-color 0.2s ease-in-out",
+                    }}
+                  >
+                    <TableCell
+                      sx={{
+                        textAlign: "left",
+                        fontWeight: 500,
+                        fontSize: "0.875rem",
+                      }}
+                    >
                       {type === "department"
                         ? r.department_name
                         : r.operation_name}
                     </TableCell>
-                    <TableCell>{EE}</TableCell>
-                    <TableCell>{Math.round(r.EE_percent || 0)}%</TableCell>
-                    <TableCell>{ME}</TableCell>
-                    <TableCell>{Math.round(r.ME_percent || 0)}%</TableCell>
-                    <TableCell>{DM}</TableCell>
-                    <TableCell>{Math.round(r.DM_percent || 0)}%</TableCell>
-                    <TableCell>{total}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={() =>
-                          fetchDetailsAndShow(
-                            name,
-                            type,
-                            name,
-                            r.department_name || r.operation_name
-                          )
-                        }
-                      >
-                        Preview
-                      </Button>
+                    <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
+                      {EE}
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
+                      {Math.round(r.EE_percent || 0)}%
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
+                      {ME}
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
+                      {Math.round(r.ME_percent || 0)}%
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
+                      {DM}
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
+                      {Math.round(r.DM_percent || 0)}%
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center", fontWeight: 600 }}>
+                      {total}
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center" }}>
+                      <Tooltip title="Preview Details" arrow placement="top">
+                        <Button
+                          variant="contained"
+                          size="small"
+                          startIcon={<VisibilityIcon sx={{ fontSize: 18 }} />}
+                          onClick={() =>
+                            fetchDetailsAndShow(
+                              name,
+                              type,
+                              name,
+                              r.department_name || r.operation_name
+                            )
+                          }
+                          sx={{
+                            minWidth: 110,
+                            height: 32,
+                            fontSize: "0.8125rem",
+                            fontWeight: 600,
+                            textTransform: "none",
+                            borderRadius: 2,
+                            bgcolor: "primary.main",
+                            color: "white",
+                            boxShadow: "0 2px 8px rgba(255, 107, 53, 0.25)",
+                            "&:hover": {
+                              bgcolor: "primary.dark",
+                              boxShadow: "0 4px 12px rgba(255, 107, 53, 0.35)",
+                              transform: "translateY(-1px)",
+                            },
+                            transition: "all 0.2s ease-in-out",
+                          }}
+                        >
+                          Preview
+                        </Button>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 );
