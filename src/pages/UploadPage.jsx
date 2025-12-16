@@ -789,7 +789,7 @@ export default function UploadPage() {
               >
                 <Button
                   variant="contained"
-                  color="error"
+                  color="warning"
                   startIcon={<DeleteIcon />}
                   onClick={handleDeleteFiles}
                   disabled={checkedFiles.size === 0 || isAdmin}
@@ -934,7 +934,7 @@ export default function UploadPage() {
                     <Typography variant="body2">{file.name}</Typography>
                     <IconButton
                       size="small"
-                      color="error"
+                      color="warning"
                       onClick={() => removeSelectedFile(actualIdx)}
                     >
                       <DeleteIcon fontSize="small" />
@@ -951,7 +951,7 @@ export default function UploadPage() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button color="error" onClick={() => setSelectedFiles([])}>
+          <Button color="warning" onClick={() => setSelectedFiles([])}>
             Delete All
           </Button>
           <Button
@@ -990,7 +990,7 @@ export default function UploadPage() {
           </Button>
           <Button
             variant="contained"
-            color="error"
+            color="warning"
             onClick={() => {
               setShowConfirmDelete(false);
               deleteResolve?.(true);
