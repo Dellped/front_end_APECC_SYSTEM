@@ -12,7 +12,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install app dependencies for building (including devDependencies for build tools)
-RUN npm ci
+# Using npm install instead of npm ci to handle lock file sync issues
+RUN npm install
 
 # Copy the rest of the application code to the working directory
 COPY . ./
@@ -31,10 +32,12 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
 # Copy package.json and package-lock.json to the working directory in the final image
+# Copy the updated lock file from builder stage (will be synced after npm install)
 COPY --from=builder /app/package*.json ./
 
 # Install only production dependencies
-RUN npm ci --only=production && \
+# Use npm install with --production flag (lock file will be synced from builder stage)
+RUN npm install --production && \
     npm cache clean --force
 
 # Copy the built Vite application from the builder stage
