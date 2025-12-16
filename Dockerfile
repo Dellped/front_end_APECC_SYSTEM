@@ -19,7 +19,8 @@ RUN npm install
 COPY . ./
 
 # Build the Vite application
-RUN npm run $BUILD_COMMAND
+# Ensure node_modules/.bin is in PATH and use npm run with explicit path
+RUN export PATH="/app/node_modules/.bin:$PATH" && npm run $BUILD_COMMAND
 
 # Use an official lightweight Node.js LTS image for serving
 FROM node:22-alpine
