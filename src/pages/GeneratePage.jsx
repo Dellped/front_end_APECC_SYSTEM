@@ -230,7 +230,14 @@ export default function GeneratePage() {
   );
 
   return (
-    <Box sx={{ p: 3, bgcolor: "background.default", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        p: 3,
+        bgcolor: "background.default",
+        minHeight: "100vh",
+        position: "relative",
+      }}
+    >
       {loading && <LoadingOverlay message="Generating report..." />}
       <MessageBanner
         message={message}

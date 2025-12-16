@@ -156,7 +156,7 @@ export default function ValidatePage() {
     incompleteStart + perPage
   );
 
-  const renderRecordRow = (r, isComplete = true) => {
+  const renderRecordRow = (r, isComplete = true, index = null) => {
     const empIdDup = r.duplicateEmpID;
     const nameDup = r.duplicateName;
     const status = isComplete
@@ -182,8 +182,13 @@ export default function ValidatePage() {
       ? "error"
       : "warning";
 
+    // Create a unique key combining multiple fields to ensure uniqueness
+    // Use a combination of type, emp_id, id, drive_file_id, and index
+    // This ensures uniqueness even when multiple records have the same emp_id
+    const uniqueKey = `${isComplete ? 'complete' : 'incomplete'}-${r.id || `emp-${r.emp_id || 'unknown'}-idx-${index !== null ? index : 0}`}-${r.drive_file_id || 'no-file'}`;
+
     return (
-      <TableRow key={r.emp_id || r.id || Math.random()} hover>
+      <TableRow key={uniqueKey} hover>
         <TableCell>
           <Chip label={status} color={statusColor} size="small" />
         </TableCell>
@@ -247,7 +252,7 @@ export default function ValidatePage() {
   };
 
   return (
-    <Box sx={{ p: 3, bgcolor: "background.default", minHeight: "100vh" }}>
+    <Box sx={{ p: 3, bgcolor: "background.default", minHeight: "100vh", position: "relative" }}>
       {loading && <LoadingOverlay message="Validating report..." />}
       <MessageBanner
         message={message}
@@ -340,7 +345,7 @@ export default function ValidatePage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    paginatedComplete.map((r) => renderRecordRow(r, true))
+                    paginatedComplete.map((r, idx) => renderRecordRow(r, true, idx))
                   )}
                 </TableBody>
               </Table>
@@ -414,7 +419,7 @@ export default function ValidatePage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      paginatedIncomplete.map((r) => renderRecordRow(r, false))
+                      paginatedIncomplete.map((r, idx) => renderRecordRow(r, false, idx))
                     )}
                   </TableBody>
                 </Table>
