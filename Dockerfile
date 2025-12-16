@@ -3,7 +3,8 @@ FROM node:22-alpine as builder
 
 # Accept build-time arguments
 ARG BUILD_COMMAND=build
-ARG NODE_ENV=production
+# Don't set NODE_ENV=production during build stage - we need devDependencies
+# ARG NODE_ENV=production
 
 # Set the working directory in the container
 WORKDIR /app
@@ -11,12 +12,12 @@ WORKDIR /app
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
-# Install app dependencies for building (including devDependencies for build tools)
-# Using npm install instead of npm ci to handle lock file sync issues
-RUN npm install
+# Install ALL dependencies including devDependencies (needed for vite build)
+# Unset NODE_ENV to ensure devDependencies are installed
+RUN unset NODE_ENV && npm install
 
-# Verify vite is installed (for debugging)
-RUN ls -la node_modules/.bin/vite || echo "Vite binary not found after install"
+# Verify vite is actually installed
+RUN npm list vite && ls -la node_modules/.bin/vite
 
 # Copy the rest of the application code to the working directory
 # Note: .dockerignore should exclude node_modules to prevent overwriting installed packages
