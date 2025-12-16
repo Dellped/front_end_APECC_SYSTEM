@@ -15,19 +15,18 @@ COPY package*.json ./
 # Using npm install instead of npm ci to handle lock file sync issues
 RUN npm install
 
+# Verify vite is installed (for debugging)
+RUN ls -la node_modules/.bin/vite || echo "Vite binary not found after install"
+
 # Copy the rest of the application code to the working directory
 # Note: .dockerignore should exclude node_modules to prevent overwriting installed packages
 COPY . ./
 
-# Build the Vite application
-# Try multiple methods to ensure vite is found
-RUN if [ -f node_modules/.bin/vite ]; then \
-      ./node_modules/.bin/vite build; \
-    elif command -v vite >/dev/null 2>&1; then \
-      vite build; \
-    else \
-      npx vite build; \
-    fi
+# Verify vite still exists after copying files
+RUN ls -la node_modules/.bin/vite || echo "Vite binary not found after copy"
+
+# Build the Vite application using npm run (npm handles PATH resolution automatically)
+RUN npm run build
 
 # Use an official lightweight Node.js LTS image for serving
 FROM node:22-alpine
