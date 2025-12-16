@@ -1,0 +1,46 @@
+steps:
+  # Build the container image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "--build-arg"
+      - "BUILD_COMMAND=build:prod" # Use a substitution variable for build command
+      - "-t"
+      - "asia-southeast1-docker.pkg.dev/${_PROJECT_ID}/performance-management-front-end/${_IMAGE_NAME}:latest"
+      - "." # Set the build context to the root directory of your project
+
+  # Push the Docker image to Artifact Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "asia-southeast1-docker.pkg.dev/${_PROJECT_ID}/performance-management-front-end/${_IMAGE_NAME}:latest"
+
+  # Deploy container image to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      - "run"
+      - "deploy"
+      - "${_SERVICE_NAME}"
+      - "--image"
+      - "asia-southeast1-docker.pkg.dev/${_PROJECT_ID}/performance-management-front-end/${_IMAGE_NAME}:latest"
+      - "--project"
+      - "${_PROJECT_ID}"
+      - "--region"
+      - "${_REGION}" # Make sure to replace this with your desired region
+      - "--platform"
+      - "managed"
+      - "--allow-unauthenticated"
+
+# Set a timeout for the build step
+timeout: "1200s" # This is 20 minutes
+
+# Options for Cloud Build
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+# Tags for identifying the build job
+tags:
+  - "project-${_PROJECT_ID}"
+  - "env-${_ENV}"
+  - "webapp-front-end"
