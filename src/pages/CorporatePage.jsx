@@ -168,7 +168,9 @@ export default function CorporatePage() {
 
                 return (
                   <TableRow key={idx} hover>
-                    <TableCell sx={{ textAlign: "left" }}>{name}</TableCell>
+                    <TableCell sx={{ textAlign: "left" }}>
+                      {r.department_name}
+                    </TableCell>
                     <TableCell>{EE}</TableCell>
                     <TableCell>{Math.round(r.EE_percent || 0)}%</TableCell>
                     <TableCell>{ME}</TableCell>
