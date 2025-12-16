@@ -4,7 +4,7 @@ steps:
     args:
       - "build"
       - "--build-arg"
-      - "BUILD_COMMAND=build:prod" # Use a substitution variable for build command
+      - "BUILD_COMMAND=build" # Use build script for production build
       - "-t"
       - "asia-southeast1-docker.pkg.dev/${_PROJECT_ID}/performance-management-front-end/${_IMAGE_NAME}:latest"
       - "." # Set the build context to the root directory of your project
