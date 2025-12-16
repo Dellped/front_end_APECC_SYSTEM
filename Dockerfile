@@ -16,11 +16,18 @@ COPY package*.json ./
 RUN npm install
 
 # Copy the rest of the application code to the working directory
+# Note: .dockerignore should exclude node_modules to prevent overwriting installed packages
 COPY . ./
 
 # Build the Vite application
-# Ensure node_modules/.bin is in PATH and use npm run with explicit path
-RUN export PATH="/app/node_modules/.bin:$PATH" && npm run $BUILD_COMMAND
+# Try multiple methods to ensure vite is found
+RUN if [ -f node_modules/.bin/vite ]; then \
+      ./node_modules/.bin/vite build; \
+    elif command -v vite >/dev/null 2>&1; then \
+      vite build; \
+    else \
+      npx vite build; \
+    fi
 
 # Use an official lightweight Node.js LTS image for serving
 FROM node:22-alpine
