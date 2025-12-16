@@ -51,7 +51,7 @@ const DRAWER_WIDTH = 240;
 const DRAWER_WIDTH_COLLAPSED = 64;
 
 // Memoized drawer content component to prevent unnecessary re-renders
-const DrawerContent = memo(({ menuItems, onLogout, collapsed }) => {
+const DrawerContent = memo(({ menuItems, collapsed }) => {
   const location = useLocation();
 
   return (
@@ -155,30 +155,6 @@ const DrawerContent = memo(({ menuItems, onLogout, collapsed }) => {
           );
         })}
       </List>
-      <Divider sx={{ borderColor: "rgba(0, 0, 0, 0.08)" }} />
-      <Box sx={{ p: collapsed ? 1.5 : 2 }}>
-        <Button
-          fullWidth={!collapsed}
-          variant="contained"
-          startIcon={!collapsed && <LogoutIcon />}
-          onClick={onLogout}
-          sx={{
-            bgcolor: (theme) => theme.palette.success.dark,
-            minWidth: collapsed ? 48 : "auto",
-            minHeight: collapsed ? 48 : "auto",
-            borderRadius: 2,
-            boxShadow: "0 4px 12px rgba(46, 125, 50, 0.25)",
-            "&:hover": {
-              bgcolor: (theme) => theme.palette.success.main,
-              boxShadow: "0 6px 16px rgba(46, 125, 50, 0.35)",
-              transform: "translateY(-1px)",
-            },
-          }}
-          title={collapsed ? "Logout" : ""}
-        >
-          {collapsed ? <LogoutIcon /> : "Logout"}
-        </Button>
-      </Box>
     </Box>
   );
 });
@@ -348,11 +324,7 @@ export default function MainLayout() {
             },
           }}
         >
-          <DrawerContent
-            menuItems={filteredMenuItems}
-            onLogout={handleLogout}
-            collapsed={false}
-          />
+          <DrawerContent menuItems={filteredMenuItems} collapsed={false} />
         </Drawer>
         <Drawer
           variant="permanent"
@@ -372,7 +344,6 @@ export default function MainLayout() {
         >
           <DrawerContent
             menuItems={filteredMenuItems}
-            onLogout={handleLogout}
             collapsed={sidebarCollapsed}
           />
         </Drawer>
@@ -463,6 +434,32 @@ export default function MainLayout() {
             >
               {breadcrumbs}
             </Breadcrumbs>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Button
+              variant="contained"
+              startIcon={<LogoutIcon />}
+              onClick={handleLogout}
+              sx={{
+                bgcolor: "success.dark",
+                color: "white",
+                textTransform: "none",
+                fontWeight: 600,
+                borderRadius: 2,
+                px: 2.5,
+                py: 1,
+                fontSize: "0.875rem",
+                boxShadow: "0 4px 12px rgba(46, 125, 50, 0.25)",
+                "&:hover": {
+                  bgcolor: "success.main",
+                  boxShadow: "0 6px 16px rgba(46, 125, 50, 0.35)",
+                  transform: "translateY(-1px)",
+                },
+                transition: "all 0.2s ease-in-out",
+              }}
+            >
+              Logout
+            </Button>
           </Box>
         </Toolbar>
         <Outlet />
