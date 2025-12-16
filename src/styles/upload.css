@@ -302,7 +302,7 @@
 }
 
 .modal-buttons button.danger {
-  background: #f44336;
+  background: #FF7F7F;
   color: white;
 }
 
@@ -333,7 +333,7 @@
 .file-list-modal .remove-btn {
   background: none;
   border: none;
-  color: #ff4d4f;
+  color: #FF7F7F;
   font-size: 18px;
   cursor: pointer;
 }
