@@ -15,7 +15,10 @@ import {
   Tabs,
   Tab,
   Button,
+  Tooltip,
+  CircularProgress,
 } from "@mui/material";
+import { Visibility as VisibilityIcon } from "@mui/icons-material";
 import apiClient from "../lib/apiClient";
 import { getSession, getRole, SESSION_KEYS } from "../lib/storage";
 import { ROLES, EXPORT_RESTRICTED_ROLES } from "../lib/roles";
@@ -26,6 +29,7 @@ import PreviewModal from "../components/PreviewModal";
 
 export default function SummaryPage() {
   const [loading, setLoading] = useState(true);
+  const [tabLoading, setTabLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("error");
 
@@ -174,12 +178,11 @@ export default function SummaryPage() {
       const { entity } = getEntityInfo();
 
       try {
-        const res = await fetch(
+        const { data } = await apiClient.get(
           `/api/summary?entity=${encodeURIComponent(
             entity
           )}&role=${encodeURIComponent(role)}`
         );
-        const data = await res.json();
 
         if (data.error) {
           setMessage(data.error);
@@ -286,11 +289,12 @@ export default function SummaryPage() {
           sx={{
             bgcolor: "primary.main",
             color: "white",
-            p: 1.5,
+            p: 2,
             textAlign: "center",
+            background: "linear-gradient(135deg, #FF6B35 0%, #E55A2B 100%)",
           }}
         >
-          <Typography variant="h6" fontWeight="bold">
+          <Typography variant="h6" fontWeight={700} letterSpacing="0.5px">
             {label}
           </Typography>
         </Box>
@@ -298,17 +302,132 @@ export default function SummaryPage() {
           <Table stickyHeader size="small">
             <TableHead>
               <TableRow>
-                <TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                  }}
+                >
                   {type === "branch" ? "BRANCH" : type.toUpperCase()}
                 </TableCell>
-                <TableCell>EE</TableCell>
-                <TableCell>EE %</TableCell>
-                <TableCell>ME</TableCell>
-                <TableCell>ME %</TableCell>
-                <TableCell>DM</TableCell>
-                <TableCell>DM %</TableCell>
-                <TableCell>Total</TableCell>
-                <TableCell>Preview</TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                  }}
+                >
+                  EE
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                  }}
+                >
+                  EE %
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                  }}
+                >
+                  ME
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                  }}
+                >
+                  ME %
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                  }}
+                >
+                  DM
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                  }}
+                >
+                  DM %
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                  }}
+                >
+                  Total
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    bgcolor: "grey.50",
+                    borderBottom: "2px solid",
+                    borderColor: "primary.main",
+                    textAlign: "center",
+                    minWidth: 120,
+                  }}
+                >
+                  Action
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -326,33 +445,82 @@ export default function SummaryPage() {
                     : name;
 
                 return (
-                  <TableRow key={idx} hover>
-                    <TableCell sx={{ textAlign: "left" }}>
+                  <TableRow
+                    key={idx}
+                    hover
+                    sx={{
+                      "&:hover": {
+                        bgcolor: "rgba(255, 107, 53, 0.04)",
+                      },
+                      transition: "background-color 0.2s ease-in-out",
+                    }}
+                  >
+                    <TableCell
+                      sx={{
+                        textAlign: "left",
+                        fontWeight: 500,
+                        fontSize: "0.875rem",
+                      }}
+                    >
                       {displayKey}
                     </TableCell>
-                    <TableCell>{EE}</TableCell>
-                    <TableCell>{Math.round(r.EE_percent || 0)}%</TableCell>
-                    <TableCell>{ME}</TableCell>
-                    <TableCell>{Math.round(r.ME_percent || 0)}%</TableCell>
-                    <TableCell>{DM}</TableCell>
-                    <TableCell>{Math.round(r.DM_percent || 0)}%</TableCell>
-                    <TableCell>{total}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={() =>
-                          fetchDetailsAndShow(
-                            type === "branch"
-                              ? r.branch_no || r.Branch || r.branch
-                              : name,
-                            type,
-                            displayKey
-                          )
-                        }
-                      >
-                        Preview
-                      </Button>
+                    <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
+                      {EE}
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
+                      {Math.round(r.EE_percent || 0)}%
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
+                      {ME}
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
+                      {Math.round(r.ME_percent || 0)}%
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
+                      {DM}
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
+                      {Math.round(r.DM_percent || 0)}%
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center", fontWeight: 600 }}>
+                      {total}
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center" }}>
+                      <Tooltip title="Preview Details" arrow placement="top">
+                        <Button
+                          variant="contained"
+                          size="small"
+                          startIcon={<VisibilityIcon sx={{ fontSize: 18 }} />}
+                          onClick={() =>
+                            fetchDetailsAndShow(
+                              type === "branch"
+                                ? r.branch_no || r.Branch || r.branch
+                                : name,
+                              type,
+                              displayKey
+                            )
+                          }
+                          sx={{
+                            minWidth: 110,
+                            height: 32,
+                            fontSize: "0.8125rem",
+                            fontWeight: 600,
+                            textTransform: "none",
+                            borderRadius: 2,
+                            bgcolor: "primary.main",
+                            color: "white",
+                            boxShadow: "0 2px 8px rgba(255, 107, 53, 0.25)",
+                            "&:hover": {
+                              bgcolor: "primary.dark",
+                              boxShadow: "0 4px 12px rgba(255, 107, 53, 0.35)",
+                              transform: "translateY(-1px)",
+                            },
+                            transition: "all 0.2s ease-in-out",
+                          }}
+                        >
+                          Preview
+                        </Button>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 );
@@ -499,7 +667,14 @@ export default function SummaryPage() {
           <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
             <Tabs
               value={activeTab}
-              onChange={(e, newValue) => setActiveTab(newValue)}
+              onChange={(e, newValue) => {
+                setTabLoading(true);
+                setActiveTab(newValue);
+                // Clear loading after a brief delay for smooth UX
+                setTimeout(() => {
+                  setTabLoading(false);
+                }, 300);
+              }}
               variant="scrollable"
               scrollButtons="auto"
             >
@@ -510,7 +685,40 @@ export default function SummaryPage() {
           </Box>
 
           {/* Active Tab Content */}
-          <Box>{getActiveContent()}</Box>
+          <Box sx={{ position: "relative", minHeight: 200 }}>
+            {tabLoading && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bgcolor: "rgba(255, 255, 255, 0.9)",
+                  zIndex: 10,
+                  borderRadius: 2,
+                  backdropFilter: "blur(2px)",
+                }}
+              >
+                <CircularProgress
+                  size={50}
+                  thickness={4}
+                  sx={{
+                    color: "primary.main",
+                    mb: 2,
+                  }}
+                />
+                <Typography variant="body2" color="text.secondary">
+                  Loading...
+                </Typography>
+              </Box>
+            )}
+            {!tabLoading && getActiveContent()}
+          </Box>
 
           {/* Operations Support Summary (for CFOO) */}
           {role === ROLES.CFOO && operationSupportSummary?.length > 0 && (
@@ -554,21 +762,52 @@ export default function SummaryPage() {
                         <TableCell>{Math.round(r.ME_percent || 0)}%</TableCell>
                         <TableCell>{r.DM_count || 0}</TableCell>
                         <TableCell>{Math.round(r.DM_percent || 0)}%</TableCell>
-                        <TableCell>{r.total_employees || 0}</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={() =>
-                              fetchDetailsAndShow(
-                                "OPERATIONS SUPPORT",
-                                "department",
-                                "OPERATIONS SUPPORT"
-                              )
-                            }
+                        <TableCell
+                          sx={{ textAlign: "center", fontWeight: 600 }}
+                        >
+                          {r.total_employees || 0}
+                        </TableCell>
+                        <TableCell sx={{ textAlign: "center" }}>
+                          <Tooltip
+                            title="Preview Details"
+                            arrow
+                            placement="top"
                           >
-                            Preview
-                          </Button>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              startIcon={
+                                <VisibilityIcon sx={{ fontSize: 18 }} />
+                              }
+                              onClick={() =>
+                                fetchDetailsAndShow(
+                                  "OPERATIONS SUPPORT",
+                                  "department",
+                                  "OPERATIONS SUPPORT"
+                                )
+                              }
+                              sx={{
+                                minWidth: 110,
+                                height: 32,
+                                fontSize: "0.8125rem",
+                                fontWeight: 600,
+                                textTransform: "none",
+                                borderRadius: 2,
+                                bgcolor: "primary.main",
+                                color: "white",
+                                boxShadow: "0 2px 8px rgba(255, 107, 53, 0.25)",
+                                "&:hover": {
+                                  bgcolor: "primary.dark",
+                                  boxShadow:
+                                    "0 4px 12px rgba(255, 107, 53, 0.35)",
+                                  transform: "translateY(-1px)",
+                                },
+                                transition: "all 0.2s ease-in-out",
+                              }}
+                            >
+                              Preview
+                            </Button>
+                          </Tooltip>
                         </TableCell>
                       </TableRow>
                     ))}
