@@ -48,6 +48,10 @@ export function getUserId() {
   return getSession(SESSION_KEYS.USER_ID);
 }
 
+export function getToken() {
+  return getSession(SESSION_KEYS.TOKEN);
+}
+
 export function isLoggedIn() {
   return !!getSession(SESSION_KEYS.TOKEN);
 }
