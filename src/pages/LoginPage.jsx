@@ -114,7 +114,7 @@ export default function LoginPage() {
       }, 1000);
     } catch (err) {
       console.error(err);
-      setError("Login failed. Please try again.");
+      setError(err.message);
     }
   };
 

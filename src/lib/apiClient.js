@@ -1,5 +1,6 @@
 // Axios API client with base URL configuration
 import axios from "axios";
+import { getToken } from "./storage";
 
 // Get base URL from runtime config (window.__ENV__) or build-time env var, or use default
 // Runtime config takes precedence (set by server-web.js from Cloud Run env vars)
@@ -36,13 +37,20 @@ const apiClient = axios.create({
   baseURL: baseURL,
 });
 
-// Request interceptor - set Content-Type for JSON requests
+// Request interceptor - set Content-Type for JSON requests and add Authorization token
 apiClient.interceptors.request.use(
   (config) => {
     // Only set Content-Type if it's not FormData
     if (!(config.data instanceof FormData) && !config.headers["Content-Type"]) {
       config.headers["Content-Type"] = "application/json";
     }
+    
+    // Add Authorization token if available
+    const token = getToken();
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    
     return config;
   },
   (error) => {
