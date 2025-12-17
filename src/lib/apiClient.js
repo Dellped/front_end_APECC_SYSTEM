@@ -1,8 +1,12 @@
 // Axios API client with base URL configuration
 import axios from "axios";
 
-// Get base URL from environment variable or use default
-let baseURL = import.meta.env.VITE_API_URL || "http://127.0.0.1:3000";
+// Get base URL from runtime config (window.__ENV__) or build-time env var, or use default
+// Runtime config takes precedence (set by server-web.js from Cloud Run env vars)
+let baseURL =
+  (typeof window !== "undefined" && window.__ENV__?.API_URL) ||
+  import.meta.env.VITE_API_URL ||
+  "http://127.0.0.1:3000";
 
 // Ensure baseURL is properly formatted
 if (baseURL) {
@@ -17,9 +21,15 @@ if (baseURL) {
   baseURL = "http://127.0.0.1:3000";
 }
 
-// Debug: Log the baseURL in development
+// Debug: Log the baseURL and its source
 if (import.meta.env.DEV) {
-  console.log("API Base URL:", baseURL);
+  const source =
+    typeof window !== "undefined" && window.__ENV__?.API_URL
+      ? "runtime (window.__ENV__)"
+      : import.meta.env.VITE_API_URL
+      ? "build-time (VITE_API_URL)"
+      : "default";
+  console.log("API Base URL:", baseURL, `[from ${source}]`);
 }
 
 const apiClient = axios.create({

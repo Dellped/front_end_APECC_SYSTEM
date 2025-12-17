@@ -362,6 +362,8 @@ export default function MainLayout() {
       >
         <Toolbar
           sx={{
+            position: "sticky",
+            top: 0,
             bgcolor: "background.paper",
             borderBottom: "1px solid",
             borderColor: "rgba(0, 0, 0, 0.08)",
@@ -369,6 +371,9 @@ export default function MainLayout() {
             py: 1.5,
             minHeight: "72px !important",
             boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+            zIndex: 1100,
+            backdropFilter: "blur(10px)",
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
           }}
         >
           <IconButton

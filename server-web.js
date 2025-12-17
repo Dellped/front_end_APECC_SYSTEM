@@ -21,7 +21,22 @@ app.get("/health", (req, res) => {
 app.get("*", (req, res) => {
   try {
     const indexPath = join(__dirname, "dist", "index.html");
-    const indexContent = readFileSync(indexPath, "utf-8");
+    let indexContent = readFileSync(indexPath, "utf-8");
+    
+    // Inject runtime configuration from environment variables
+    // This allows Cloud Run to set API_URL at runtime
+    const apiUrl = process.env.API_URL || process.env.VITE_API_URL || "";
+    const configScript = `
+    <script>
+      window.__ENV__ = {
+        API_URL: ${JSON.stringify(apiUrl)}
+      };
+    </script>
+    `;
+    
+    // Inject the config script before the closing </head> tag
+    indexContent = indexContent.replace("</head>", `${configScript}</head>`);
+    
     res.send(indexContent);
   } catch (error) {
     res.status(500).send("Error loading application");
