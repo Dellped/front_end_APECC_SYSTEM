@@ -28,6 +28,8 @@ import Pagination from "../components/Pagination";
 import PreviewModal from "../components/PreviewModal";
 
 export default function SummaryPage() {
+  const loggedInUserId = getSession(SESSION_KEYS.USER_ID);
+
   const [loading, setLoading] = useState(true);
   const [tabLoading, setTabLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -151,12 +153,12 @@ export default function SummaryPage() {
         )}`;
       else if (type === "im")
         url = `/api/summary/preview?role=IM&userId=${encodeURIComponent(
-          filterKey
-        )}`;
+          loggedInUserId
+        )}&department=${encodeURIComponent(filterKey)}`;
       else if (type === "itr")
         url = `/api/summary/preview?role=ITR&userId=${encodeURIComponent(
-          filterKey
-        )}`;
+          loggedInUserId
+        )}&department=${encodeURIComponent(filterKey)}`;
 
       const { data } = await apiClient.get(url);
 
