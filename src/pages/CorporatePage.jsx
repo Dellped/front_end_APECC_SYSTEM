@@ -46,8 +46,11 @@ export default function CorporatePage() {
     name = "",
     displayKey = ""
   ) => {
-    setModalTitle(`INDIVIDUAL PM SUMMARY: ${name || filterKey}`);
-    setModalDisplayName(name || filterKey);
+
+     const title = type === "department" ? displayKey : name || filterKey;
+
+    setModalTitle(`INDIVIDUAL PM SUMMARY:  ${title}`);
+    setModalDisplayName(title);
     setModalOpen(true);
     setModalRecords([]);
 
@@ -60,8 +63,10 @@ export default function CorporatePage() {
       }
 
       const { data } = await apiClient.get(
-        `${endpoint}?operation_name=${encodeURIComponent(filterKey)}`
-      );
+        type === "department"
+    ? `${endpoint}?department=${encodeURIComponent(displayKey)}`
+    : `${endpoint}?operation_name=${encodeURIComponent(filterKey)}`
+);
 
       if (data.error) {
         setMessage(data.error);
@@ -70,7 +75,7 @@ export default function CorporatePage() {
 
       const filteredRecords = data.records.filter((r) => {
         if (type === "department") {
-          return r.department === displayKey;
+           return r.department === displayKey;
         } else if (type === "operation") {
           return r.group === displayKey;
         }

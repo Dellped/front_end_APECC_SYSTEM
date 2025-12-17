@@ -608,7 +608,7 @@ export default function UploadPage() {
                         setShowEditCountModal(true);
                       }}
                       sx={{ p: 0.5 }}
-                    ></IconButton>
+                    ><EditIcon fontSize="small" /></IconButton>
                   )}
                 </Box>
                 <Typography variant="h6" fontWeight="bold">
