@@ -130,6 +130,7 @@ export default function UploadPage() {
   }, [role]);
 
   const getRoleValue = useCallback(() => {
+    if (role === ROLES.ADMIN) return "ADMIN";
 
     switch (role) {
       case ROLES.BM:
