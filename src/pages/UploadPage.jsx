@@ -676,7 +676,6 @@ export default function UploadPage() {
                 component="label"
                 variant="contained"
                 startIcon={<UploadIcon />}
-                disabled={isAdmin}
                 sx={{ mr: 1 }}
               >
                 Choose Files{" "}
@@ -688,7 +687,6 @@ export default function UploadPage() {
                   accept=".xlsx,.xls"
                   multiple
                   onChange={handleFileChange}
-                  disabled={isAdmin}
                   hidden
                 />
               </Button>
@@ -696,7 +694,7 @@ export default function UploadPage() {
                 variant="contained"
                 color="success"
                 onClick={handleSubmit}
-                disabled={isAdmin || selectedFiles.length === 0}
+                disabled={selectedFiles.length === 0}
               >
                 Upload
               </Button>
@@ -704,7 +702,6 @@ export default function UploadPage() {
                 variant="outlined"
                 startIcon={<FolderIcon />}
                 onClick={() => setShowFileListModal(true)}
-                disabled={isAdmin}
               >
                 Files for Review
               </Button>
@@ -735,7 +732,7 @@ export default function UploadPage() {
                           checkedFiles.size === uploadedFiles.length
                         }
                         onChange={(e) => toggleSelectAll(e.target.checked)}
-                        disabled={isAdmin || uploadedFiles.length === 0}
+                        disabled={uploadedFiles.length === 0}
                       />
                       Select All
                     </TableCell>
@@ -764,7 +761,6 @@ export default function UploadPage() {
                             <Checkbox
                               checked={checkedFiles.has(file.id)}
                               onChange={() => toggleFileCheck(file.id)}
-                              disabled={isAdmin}
                             />
                           </TableCell>
                           <TableCell>{file.filename}</TableCell>
@@ -792,7 +788,7 @@ export default function UploadPage() {
                   color="warning"
                   startIcon={<DeleteIcon />}
                   onClick={handleDeleteFiles}
-                  disabled={checkedFiles.size === 0 || isAdmin}
+                  disabled={checkedFiles.size === 0}
                 >
                   Delete Selected ({checkedFiles.size})
                 </Button>
