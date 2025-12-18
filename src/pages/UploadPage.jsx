@@ -120,7 +120,7 @@ export default function UploadPage() {
         break;
       case ROLES.ADMIN:
         entityName = "";
-        entityCode = "";
+        entityCode = "ADMIN";
         break;
       default:
         entityName = "Unknown";
