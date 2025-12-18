@@ -62,4 +62,4 @@ export const ROLE_HEADER_MAP = {
 };
 
 // Restricted roles for export in summary page
-export const EXPORT_RESTRICTED_ROLES = ["AVP", "SVP", "RA", "AA", "BM"];
+export const EXPORT_RESTRICTED_ROLES = ["AVP", "SVP", "RA", "AA", "BM", "IM"];
