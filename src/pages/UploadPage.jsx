@@ -600,7 +600,7 @@ export default function UploadPage() {
                   <Typography variant="body2" fontWeight="bold">
                     Total Expected
                   </Typography>
-                  {!isAdmin && (
+                  {(
                     <IconButton
                       size="small"
                       onClick={() => {
