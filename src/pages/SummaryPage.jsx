@@ -100,7 +100,7 @@ export default function SummaryPage() {
         break;
       case ROLES.CHIEF:
         entity = getSession(SESSION_KEYS.CHIEF_ID) || "";
-        displayName = "";
+        displayName =  "";
         break;
       case ROLES.IM:
         entity = getSession(SESSION_KEYS.USER_ID) || "";
@@ -111,7 +111,7 @@ export default function SummaryPage() {
         displayName = getSession(SESSION_KEYS.DEP_NAME) || "";
         break;
       case ROLES.ADMIN:
-        entity = "ALL";
+        entity = "ADMIN";
         displayName = "ADMIN";
         break;
       default:
