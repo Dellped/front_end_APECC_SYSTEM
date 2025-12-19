@@ -42,7 +42,7 @@ export default function GeneratePage() {
     let branchParam = "";
 
     if (role === ROLES.ADMIN) {
-      return { entityName: "ALL RECORDS", entityCode: "", branchParam: "" };
+      return { entityName: "ADMIN", entityCode: "", branchParam: "ADMIN" };
     }
 
     switch (role) {
