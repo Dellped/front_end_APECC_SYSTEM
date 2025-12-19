@@ -28,7 +28,6 @@ import Pagination from "../components/Pagination";
 import PreviewModal from "../components/PreviewModal";
 
 export default function SummaryPage() {
-  const loggedInUserId = getSession(SESSION_KEYS.USER_ID);
   const [loading, setLoading] = useState(true);
   const [tabLoading, setTabLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -57,6 +56,7 @@ export default function SummaryPage() {
 
   const role = getRole();
   const allowExport = !EXPORT_RESTRICTED_ROLES.includes(role);
+  const userId = getSession(SESSION_KEYS.USER_ID);
 
   // Get entity info based on role
   const getEntityInfo = useCallback(() => {
@@ -152,11 +152,11 @@ export default function SummaryPage() {
         )}`;
        else if (type === "im")
         url = `/api/summary/preview?role=IM&userId=${encodeURIComponent(
-          loggedInUserId
+          userId
         )}&department=${encodeURIComponent(filterKey)}`;
       else if (type === "itr")
         url = `/api/summary/preview?role=ITR&userId=${encodeURIComponent(
-          loggedInUserId
+          userId
         )}&department=${encodeURIComponent(filterKey)}`;
 
       const { data } = await apiClient.get(url);
@@ -217,20 +217,38 @@ export default function SummaryPage() {
             availableTabs.push({ id: "operation", label: "Operation Summary" });
         }
 
-        if (role === ROLES.ITR && data.itrSummary?.length) {
-          availableTabs.push({ id: "itr", label: "Department Summary" });
+        else if (role === ROLES.IM) {
+          if (data.imSummary?.length) {
+            availableTabs.push({
+              id: "im",
+              label: "Department Summary"
+            });
+          }
         }
 
-        if (role === ROLES.IM && data.imSummary?.length) {
-          availableTabs.push({ id: "im", label: "Department Summary" });
+        else if (role === ROLES.ITR) {
+          if (data.itrSummary?.length) {
+            availableTabs.push({
+              id: "itr",
+              label: "Department Summary"
+            });
+          }
         }
 
-        if (role === ROLES.CFOO) {
+        // if (role === ROLES.ITR && data.itrSummary?.length) {
+        //   availableTabs.push({ id: "itr", label: "Department Summary" });
+        // }
+
+        // if (role === ROLES.IM && data.imSummary?.length) {
+        //   availableTabs.push({ id: "im", label: "Department Summary" });
+        // }
+
+        else if (role === ROLES.CFOO) {
           if (data.operationSummary?.length)
             availableTabs.push({ id: "operation", label: "Operation Summary" });
         }
 
-        if (role === ROLES.AVP) {
+        else if (role === ROLES.AVP) {
           if (data.regionSummary?.length)
             availableTabs.push({ id: "region", label: "Region Summary" });
           if (data.areaSummary?.length)
