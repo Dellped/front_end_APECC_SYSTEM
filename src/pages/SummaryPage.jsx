@@ -96,7 +96,7 @@ export default function SummaryPage() {
         break;
       case ROLES.COO:
         entity = getSession(SESSION_KEYS.COO_ID) || "";
-        displayName = getSession(SESSION_KEYS.COO_NAME) || "";
+        displayName = "";
         break;
       case ROLES.CHIEF:
         entity = getSession(SESSION_KEYS.CHIEF_ID) || "";
