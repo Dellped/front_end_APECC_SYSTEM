@@ -182,14 +182,10 @@ export default function GeneratePage() {
       const { branchParam } = getEntityInfo();
 
       try {
-        let url;
-        if (role === ROLES.ADMIN) {
-          url = `/api/validate-reports?all=true`;
-        } else {
-          url = `/api/validate-reports?entity=${encodeURIComponent(
-            branchParam
+           const url = `/api/validate-reports?entity=${encodeURIComponent(
+           branchParam
           )}&role=${encodeURIComponent(role)}`;
-        }
+
 
         const { data } = await apiClient.get(url);
 
