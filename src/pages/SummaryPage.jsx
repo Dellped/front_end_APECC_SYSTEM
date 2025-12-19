@@ -675,11 +675,13 @@ export default function SummaryPage() {
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 500 }}>
               Summary Reports
             </Typography>
+            {role !== 'COO' && (
             <Chip
               label={displayName || ""}
               color="primary"
               sx={{ mt: 2 }}
             />
+            )}
           </Box>
 
           {/* Tabs */}
