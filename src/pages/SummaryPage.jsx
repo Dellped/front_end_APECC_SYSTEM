@@ -675,7 +675,7 @@ export default function SummaryPage() {
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 500 }}>
               Summary Reports
             </Typography>
-            {role !== 'COO' && (
+            {role !== 'COO' && role !== 'ADMIN' && (
             <Chip
               label={displayName || ""}
               color="primary"

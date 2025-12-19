@@ -255,7 +255,7 @@ export default function GeneratePage() {
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 500 }}>
               Generate Reports
             </Typography>
-             {role !== 'COO' && (
+             {role !== 'COO' && role !== 'ADMIN' &&(
             <Chip label={displayName} color="primary" sx={{ mt: 2 }} />
             )}
           </Box>
