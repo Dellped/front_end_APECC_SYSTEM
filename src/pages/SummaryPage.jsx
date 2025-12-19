@@ -676,7 +676,7 @@ export default function SummaryPage() {
               Summary Reports
             </Typography>
             <Chip
-              label={displayName || "Unknown"}
+              label={displayName || ""}
               color="primary"
               sx={{ mt: 2 }}
             />
