@@ -110,7 +110,7 @@ export default function UploadPage() {
         entityCode = getSession(SESSION_KEYS.CFO_ID) || "";
         break;
       case ROLES.COO:
-        entityName = getSession(SESSION_KEYS.COO_NAME) || "Unknown COO";
+        entityName =  "";
         entityCode = getSession(SESSION_KEYS.COO_ID) || "";
         break;
       case ROLES.IM:
