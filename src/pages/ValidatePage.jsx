@@ -50,7 +50,7 @@ export default function ValidatePage() {
     let branchParam = "";
 
     if (role === ROLES.ADMIN) {
-      return { entityName: "ADMIN", entityCode: "", branchParam: "" };
+      return { entityName: "ADMIN", entityCode: "ADMIN", branchParam: "" };
     }
 
     switch (role) {
