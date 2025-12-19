@@ -670,7 +670,9 @@ export default function UploadPage() {
               sx={{ mb: 2 }}
             >
               <Chip label={`Role: ${role}`} color="primary" />
+              {role !== 'CFOO' && (
               <Chip label={displayName} color="warning" />
+              )}
               <Box sx={{ flexGrow: 1 }} />
               <Button
                 component="label"
