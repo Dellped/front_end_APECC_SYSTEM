@@ -52,7 +52,7 @@ export default function ArchivePage() {
   // Get entity info
   const getEntityInfo = useCallback(() => {
     if (role === ROLES.ADMIN) {
-      return { entityName: "ALL RECORDS", branchParam: "" };
+      return { entityName: "ADMIN", branchParam: "" };
     }
 
     const entityName = getSession(SESSION_KEYS.BRANCH) || "Unknown Branch";
