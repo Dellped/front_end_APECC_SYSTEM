@@ -14,6 +14,10 @@ import {
   Chip,
   Stack,
   Link,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import apiClient from "../lib/apiClient";
 import { getSession, getRole, SESSION_KEYS } from "../lib/storage";
@@ -40,6 +44,22 @@ export default function ValSummaryPage() {
   const [completePage, setCompletePage] = useState(1);
   const [incompletePage, setIncompletePage] = useState(1);
   const perPage = 10;
+
+  // Filter dropdowns
+  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [operationFilter, setOperationFilter] = useState("");
+  const [divisionFilter, setDivisionFilter] = useState("");
+  const [regionFilter, setRegionFilter] = useState("");
+  const [areaFilter, setAreaFilter] = useState("");
+  const [branchFilter, setBranchFilter] = useState("");
+
+  // Filter options from backend
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [operationOptions, setOperationOptions] = useState([]);
+  const [divisionOptions, setDivisionOptions] = useState([]);
+  const [regionOptions, setRegionOptions] = useState([]);
+  const [areaOptions, setAreaOptions] = useState([]);
+  const [branchOptions, setBranchOptions] = useState([]);
 
   const role = getRole();
 
@@ -96,16 +116,16 @@ export default function ValSummaryPage() {
     return { entityName, entityCode, branchParam };
   }, [role]);
 
-  // Fetch data
+  // Fetch validation data
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       const { branchParam } = getEntityInfo();
 
       try {
-       const url = `/api/validate-reports?entity=${encodeURIComponent(
-           branchParam
-          )}&role=${encodeURIComponent(role)}`;
+        const url = `/api/validate-reports?entity=${encodeURIComponent(
+          branchParam
+        )}&role=${encodeURIComponent(role)}`;
 
         const { data } = await apiClient.get(url);
 
@@ -132,21 +152,56 @@ export default function ValSummaryPage() {
     fetchData();
   }, [role, getEntityInfo]);
 
+  // Fetch filter dropdown options from backend
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const { data } = await apiClient.get("/api/filters");
+        if (data.success) {
+          setDepartmentOptions(data.data.departments.map((d) => d.name));
+          setOperationOptions(data.data.operations.map((o) => o.name));
+          setDivisionOptions(data.data.divisions.map((d) => d.division));
+          setRegionOptions(data.data.regions.map((r) => r.region_name));
+          setAreaOptions(data.data.areas.map((a) => a.area_name));
+          setBranchOptions(data.data.branches.map((b) => b.Branch));
+        }
+      } catch (err) {
+        console.error("Failed to fetch filter options", err);
+      }
+    };
+    fetchFilterOptions();
+  }, []);
+
   const { entityName, entityCode } = getEntityInfo();
   const displayName =
     role === ROLES.BM ? `${entityCode} - (${entityName})` : entityName;
 
+  // Apply filters
+  const applyFilters = (records) =>
+    records.filter(
+      (r) =>
+        (!departmentFilter || r.department === departmentFilter) &&
+        (!operationFilter || r.group === operationFilter) &&
+        (!divisionFilter || r.division === divisionFilter) &&
+        (!regionFilter || r.region === regionFilter) &&
+        (!areaFilter || r.area === areaFilter) &&
+        (!branchFilter || r.branch === branchFilter)
+    );
+
+  const filteredComplete = applyFilters(completeRecords);
+  const filteredIncomplete = applyFilters(incompleteRecords);
+
   // Pagination
-  const completeTotalPages = Math.ceil(completeRecords.length / perPage);
+  const completeTotalPages = Math.ceil(filteredComplete.length / perPage);
   const completeStart = (completePage - 1) * perPage;
-  const paginatedComplete = completeRecords.slice(
+  const paginatedComplete = filteredComplete.slice(
     completeStart,
     completeStart + perPage
   );
 
-  const incompleteTotalPages = Math.ceil(incompleteRecords.length / perPage);
+  const incompleteTotalPages = Math.ceil(filteredIncomplete.length / perPage);
   const incompleteStart = (incompletePage - 1) * perPage;
-  const paginatedIncomplete = incompleteRecords.slice(
+  const paginatedIncomplete = filteredIncomplete.slice(
     incompleteStart,
     incompleteStart + perPage
   );
@@ -177,10 +232,9 @@ export default function ValSummaryPage() {
       ? "info"
       : "warning";
 
-    // Create a unique key combining multiple fields to ensure uniqueness
-    // Use a combination of type, emp_id, id, drive_file_id, and index
-    // This ensures uniqueness even when multiple records have the same emp_id
-    const uniqueKey = `${isComplete ? 'complete' : 'incomplete'}-${r.id || `emp-${r.emp_id || 'unknown'}-idx-${index !== null ? index : 0}`}-${r.drive_file_id || 'no-file'}`;
+    const uniqueKey = `${isComplete ? "complete" : "incomplete"}-${
+      r.id || `emp-${r.emp_id || "unknown"}-idx-${index !== null ? index : 0}`
+    }-${r.drive_file_id || "no-file"}`;
 
     return (
       <TableRow key={uniqueKey} hover>
@@ -269,9 +323,9 @@ export default function ValSummaryPage() {
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 500 }}>
               Validation Summary
             </Typography>
-             {role !== 'COO' && role !== 'ADMIN' &&(
-            <Chip label={displayName} color="primary" sx={{ mt: 2 }} />
-             )}
+            {role !== "COO" && role !== "ADMIN" && (
+              <Chip label={displayName} color="primary" sx={{ mt: 2 }} />
+            )}
           </Box>
 
           {/* Legend */}
@@ -281,25 +335,107 @@ export default function ValSummaryPage() {
             </Typography>
             <Chip label={`Complete Records: ${validCount}`} color="success" />
             <Chip label={`Duplicate Records: ${errorCount}`} color="info" />
-            <Chip
-              label={`Incomplete Records: ${warningCount}`}
-              color="warning"
-            />
+            <Chip label={`Incomplete Records: ${warningCount}`} color="warning" />
           </Stack>
 
+          {/* Filters */}
+          <Stack direction="row" spacing={2} sx={{ mb: 3, flexWrap: "wrap" }}>
+            {/* Department */}
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel>Department</InputLabel>
+              <Select
+                value={departmentFilter}
+                label="Department"
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+              >
+                <MenuItem value="">All</MenuItem>
+                {departmentOptions.map((d) => (
+                  <MenuItem key={d} value={d}>{d}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Operation */}
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel>Operation</InputLabel>
+              <Select
+                value={operationFilter}
+                label="Operation"
+                onChange={(e) => setOperationFilter(e.target.value)}
+              >
+                <MenuItem value="">All</MenuItem>
+                {operationOptions.map((o) => (
+                  <MenuItem key={o} value={o}>{o}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Division */}
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel>Division</InputLabel>
+              <Select
+                value={divisionFilter}
+                label="Division"
+                onChange={(e) => setDivisionFilter(e.target.value)}
+              >
+                <MenuItem value="">All</MenuItem>
+                {divisionOptions.map((d) => (
+                  <MenuItem key={d} value={d}>{d}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Region */}
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel>Region</InputLabel>
+              <Select
+                value={regionFilter}
+                label="Region"
+                onChange={(e) => setRegionFilter(e.target.value)}
+              >
+                <MenuItem value="">All</MenuItem>
+                {regionOptions.map((r) => (
+                  <MenuItem key={r} value={r}>{r}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Area */}
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel>Area</InputLabel>
+              <Select
+                value={areaFilter}
+                label="Area"
+                onChange={(e) => setAreaFilter(e.target.value)}
+              >
+                <MenuItem value="">All</MenuItem>
+                {areaOptions.map((a) => (
+                  <MenuItem key={a} value={a}>{a}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Branch */}
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel>Branch</InputLabel>
+              <Select
+                value={branchFilter}
+                label="Branch"
+                onChange={(e) => setBranchFilter(e.target.value)}
+              >
+                <MenuItem value="">All</MenuItem>
+                {branchOptions.map((b) => (
+                  <MenuItem key={b} value={b}>{b}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
+
+          {/* Tables */}
           {/* Valid Records Table */}
           <Paper elevation={2} sx={{ mb: 3 }}>
-            <Box
-              sx={{
-                bgcolor: "success.main",
-                color: "white",
-                p: 1.5,
-                textAlign: "center",
-              }}
-            >
-              <Typography variant="h6" fontWeight="bold">
-                Valid Records
-              </Typography>
+            <Box sx={{ bgcolor: "success.main", color: "white", p: 1.5, textAlign: "center" }}>
+              <Typography variant="h6" fontWeight="bold">Valid Records</Typography>
             </Box>
             <TableContainer sx={{ maxHeight: 600, overflowX: "auto" }}>
               <Table stickyHeader size="small">
@@ -336,9 +472,7 @@ export default function ValSummaryPage() {
                   {paginatedComplete.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={25} align="center" sx={{ py: 4 }}>
-                        <Typography color="text.secondary">
-                          No complete records found
-                        </Typography>
+                        <Typography color="text.secondary">No complete records found</Typography>
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -348,31 +482,16 @@ export default function ValSummaryPage() {
               </Table>
             </TableContainer>
             <Box sx={{ p: 2 }}>
-              <Pagination
-                currentPage={completePage}
-                totalPages={completeTotalPages}
-                onPageChange={setCompletePage}
-              />
+              <Pagination currentPage={completePage} totalPages={completeTotalPages} onPageChange={setCompletePage} />
             </Box>
           </Paper>
 
           {/* Invalid Records Table */}
           {incompleteRecords.length > 0 && (
             <Paper elevation={2}>
-              <Box
-                sx={{
-                  bgcolor: "info.main",
-                  color: "white",
-                  p: 1.5,
-                  textAlign: "center",
-                }}
-              >
-                <Typography variant="h6" fontWeight="bold">
-                  Invalid Records
-                </Typography>
-                <Typography variant="caption">
-                  Please reupload the file.
-                </Typography>
+              <Box sx={{ bgcolor: "info.main", color: "white", p: 1.5, textAlign: "center" }}>
+                <Typography variant="h6" fontWeight="bold">Invalid Records</Typography>
+                <Typography variant="caption">Please reupload the file.</Typography>
               </Box>
               <TableContainer sx={{ maxHeight: 600, overflowX: "auto" }}>
                 <Table stickyHeader size="small">
@@ -410,9 +529,7 @@ export default function ValSummaryPage() {
                     {paginatedIncomplete.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={26} align="center" sx={{ py: 4 }}>
-                          <Typography color="text.secondary">
-                            No incomplete records found
-                          </Typography>
+                          <Typography color="text.secondary">No incomplete records found</Typography>
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -422,11 +539,7 @@ export default function ValSummaryPage() {
                 </Table>
               </TableContainer>
               <Box sx={{ p: 2 }}>
-                <Pagination
-                  currentPage={incompletePage}
-                  totalPages={incompleteTotalPages}
-                  onPageChange={setIncompletePage}
-                />
+                <Pagination currentPage={incompletePage} totalPages={incompleteTotalPages} onPageChange={setIncompletePage} />
               </Box>
             </Paper>
           )}
