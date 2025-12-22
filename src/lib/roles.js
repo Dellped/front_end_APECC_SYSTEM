@@ -40,6 +40,11 @@ export function canAccessCorporate(role) {
   return role === ROLES.COO || role === ROLES.ADMIN || role === ROLES.CHIEF;
 }
 
+export function canAccessValSummary(role) {
+  return true;
+}
+
+
 // Get default route for a role
 export function getDefaultRouteForRole(role) {
   if (role === ROLES.CHIEF) {

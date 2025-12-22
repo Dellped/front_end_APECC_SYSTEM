@@ -43,6 +43,7 @@ import {
   canAccessSummary,
   canAccessArchive,
   canAccessCorporate,
+  canAccessValSummary,
   getDefaultRouteForRole,
   ROLES,
 } from "../lib/roles";
@@ -173,6 +174,12 @@ const menuItems = [
     label: "Validate Reports",
     icon: ValidateIcon,
     canAccess: canAccessValidate,
+  },
+    {
+    path: "/valsummary",
+    label: "Validation Summary",
+    icon: ValidateIcon,
+    canAccess: canAccessValSummary,
   },
   {
     path: "/generate",

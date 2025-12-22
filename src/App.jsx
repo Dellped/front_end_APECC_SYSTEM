@@ -7,6 +7,7 @@ import GeneratePage from "./pages/GeneratePage";
 import SummaryPage from "./pages/SummaryPage";
 import ArchivePage from "./pages/ArchivePage";
 import CorporatePage from "./pages/CorporatePage";
+import ValSummaryPage from "./pages/ValSummaryPage";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="summary" element={<SummaryPage />} />
         <Route path="archive" element={<ArchivePage />} />
         <Route path="corporate" element={<CorporatePage />} />
+        <Route path="valsummary" element={<ValSummaryPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
