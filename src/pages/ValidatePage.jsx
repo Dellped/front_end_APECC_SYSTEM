@@ -174,7 +174,7 @@ export default function ValidatePage() {
     const statusColor = isComplete
       ? "success"
       : empIdDup || nameDup
-      ? "error.light"
+      ? "info"
       : "warning";
 
     // Create a unique key combining multiple fields to ensure uniqueness
@@ -187,10 +187,10 @@ export default function ValidatePage() {
         <TableCell>
           <Chip label={status} color={statusColor} size="small" />
         </TableCell>
-        <TableCell sx={{ bgcolor: empIdDup ? "error.light" : "transparent" }}>
+        <TableCell sx={{ bgcolor: empIdDup ? "info.light" : "transparent" }}>
           {r.emp_id || ""}
         </TableCell>
-        <TableCell sx={{ bgcolor: nameDup ? "error.light" : "transparent" }}>
+        <TableCell sx={{ bgcolor: nameDup ? "info.light" : "transparent" }}>
           {r.employee_name || ""}
         </TableCell>
         <TableCell>{r.position_title || ""}</TableCell>
@@ -224,7 +224,7 @@ export default function ValidatePage() {
         <TableCell>{r.overall_adjectival_rating || ""}</TableCell>
         <TableCell>
           {openLink ? (
-            <Link href={openLink} target="_blank" rel="noopener noreferrer">
+            <Link href={openLink} target="_blank" rel="noopener noreferrer" color="info">
               Open
             </Link>
           ) : (
@@ -280,7 +280,7 @@ export default function ValidatePage() {
               Legend:
             </Typography>
             <Chip label={`Complete Records: ${validCount}`} color="success" />
-            <Chip label={`Duplicate Records: ${errorCount}`} color="error" />
+            <Chip label={`Duplicate Records: ${errorCount}`} color="info" />
             <Chip
               label={`Incomplete Records: ${warningCount}`}
               color="warning"
@@ -361,7 +361,7 @@ export default function ValidatePage() {
             <Paper elevation={2}>
               <Box
                 sx={{
-                  bgcolor: "error.main",
+                  bgcolor: "info.main",
                   color: "white",
                   p: 1.5,
                   textAlign: "center",
