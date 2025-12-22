@@ -22,7 +22,6 @@ function App() {
         <Route path="summary" element={<SummaryPage />} />
         <Route path="archive" element={<ArchivePage />} />
         <Route path="corporate" element={<CorporatePage />} />
-        <Route path="validationsummary" element={<ValidationSummaryPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
