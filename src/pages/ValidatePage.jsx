@@ -174,7 +174,7 @@ export default function ValidatePage() {
     const statusColor = isComplete
       ? "success"
       : empIdDup || nameDup
-      ? "error"
+      ? "info"
       : "warning";
 
     // Create a unique key combining multiple fields to ensure uniqueness
