@@ -234,7 +234,7 @@ export default function ValidatePage() {
         {!isComplete && (
           <TableCell>
             {downloadLink ? (
-              <Link href={downloadLink} download>
+              <Link href={downloadLink} download color="info">
                 Download
               </Link>
             ) : (
