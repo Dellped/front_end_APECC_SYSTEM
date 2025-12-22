@@ -578,7 +578,8 @@ export default function UploadPage() {
           </Box>
 
           {/* Summary Cards */}
-          <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+          <Grid  container spacing={2} sx={{  maxWidth: 1200  }}>
             <Grid item xs={12} sm={4}>
               <Paper
                 elevation={2}
@@ -587,6 +588,10 @@ export default function UploadPage() {
                   textAlign: "center",
                   bgcolor: "#e0efff",
                   borderRadius: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  height: "100%", // ensure full height
                 }}
               >
                 <Box
@@ -624,6 +629,10 @@ export default function UploadPage() {
                   textAlign: "center",
                   bgcolor: "#eaffea",
                   borderRadius: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  height: "100%",
                 }}
               >
                 <Typography variant="body2" fontWeight="bold">
@@ -642,6 +651,10 @@ export default function UploadPage() {
                   textAlign: "center",
                   bgcolor: "#fff3cd",
                   borderRadius: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  height: "100%",
                 }}
               >
                 <Typography variant="body2" fontWeight="bold">
@@ -653,6 +666,7 @@ export default function UploadPage() {
               </Paper>
             </Grid>
           </Grid>
+          </Box>
 
           {/* Reminder Alert */}
           <Alert severity="warning" sx={{ mb: 3 }}>
