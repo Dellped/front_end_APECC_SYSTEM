@@ -25,7 +25,7 @@ import Pagination from "../components/Pagination";
 export default function ValidatePage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("error");
+  const [messageType, setMessageType] = useState("info");
 
   // Records
   const [completeRecords, setCompleteRecords] = useState([]);
