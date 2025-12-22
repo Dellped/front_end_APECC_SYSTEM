@@ -267,7 +267,7 @@ export default function ValSummaryPage() {
               Value-Driven Performance Management Form
             </Typography>
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 500 }}>
-              Validate Reports
+              Validation Summary
             </Typography>
              {role !== 'COO' && role !== 'ADMIN' &&(
             <Chip label={displayName} color="primary" sx={{ mt: 2 }} />
