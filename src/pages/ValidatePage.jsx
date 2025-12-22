@@ -25,7 +25,7 @@ import Pagination from "../components/Pagination";
 export default function ValidatePage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("info");
+  const [messageType, setMessageType] = useState("error");
 
   // Records
   const [completeRecords, setCompleteRecords] = useState([]);
@@ -174,7 +174,7 @@ export default function ValidatePage() {
     const statusColor = isComplete
       ? "success"
       : empIdDup || nameDup
-      ? "info"
+      ? "error.light"
       : "warning";
 
     // Create a unique key combining multiple fields to ensure uniqueness
