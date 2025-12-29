@@ -322,6 +322,9 @@ export default function UploadPage() {
         safeValue(getSession(SESSION_KEYS.USER_ID))
       );
     }
+    if (role === ROLES.ADMIN) {
+      formData.append("uploaded_by", "ADMIN"); 
+    }
 
     try {
       const { data: result } = await apiClient.post(
