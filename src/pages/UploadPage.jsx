@@ -323,7 +323,9 @@ export default function UploadPage() {
       );
     }
     if (role === ROLES.ADMIN) {
-      formData.append("uploaded_by", "ADMIN"); 
+      formData.append( "uploaded_by",
+        safeValue(getSession(SESSION_KEYS.USER_ID))
+      ); 
     }
 
     try {
