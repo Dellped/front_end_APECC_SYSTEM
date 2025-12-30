@@ -103,9 +103,13 @@ export default function ValidatePage() {
       const { branchParam } = getEntityInfo();
 
       try {
-       const url = `/api/validate-all?entity=${encodeURIComponent(
-           branchParam
-          )}&role=${encodeURIComponent(role)}`;
+       const url = 
+      role === ROLES.ADMIN
+       ? `/api/validate-all?role=ADMIN&all=true`
+       : `/api/validate-all?entity=${encodeURIComponent(
+        branchParam
+      )}&role=${encodeURIComponent(role)}`;
+
 
         const { data } = await apiClient.get(url);
 
@@ -267,7 +271,7 @@ export default function ValidatePage() {
               Value-Driven Performance Management Form
             </Typography>
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 500 }}>
-              Validate Reports
+              Validation Summary
             </Typography>
              {role !== 'COO' && role !== 'ADMIN' &&(
             <Chip label={displayName} color="primary" sx={{ mt: 2 }} />
