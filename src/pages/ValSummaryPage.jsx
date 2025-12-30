@@ -103,7 +103,7 @@ export default function ValidatePage() {
       const { branchParam } = getEntityInfo();
 
       try {
-       const url = `/api/filters?entity=${encodeURIComponent(
+       const url = `/api/validate-all?entity=${encodeURIComponent(
            branchParam
           )}&role=${encodeURIComponent(role)}`;
 
