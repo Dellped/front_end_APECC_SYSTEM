@@ -61,6 +61,14 @@ export default function UploadPage() {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showConfirmUpload, setShowConfirmUpload] = useState(false);
 
+  // Local delete confirmations (selectedFiles only)
+  const [showConfirmLocalDelete, setShowConfirmLocalDelete] = useState(false);
+  const [localDeleteMode, setLocalDeleteMode] = useState(null);
+  const [localDeleteIndex, setLocalDeleteIndex] = useState(null);
+
+  //checkbox
+  const [checkedSelectedFiles, setCheckedSelectedFiles] = useState(new Set());
+
   // Form inputs
   const [mfoInput, setMfoInput] = useState("");
   const [editCountInput, setEditCountInput] = useState("");
@@ -369,7 +377,7 @@ export default function UploadPage() {
     // Check file limits
     if (formsCount + selectedFiles.length > expectedCount) {
       showMsg(
-        `You can upload only ${expectedCount - formsCount} more file(s).`
+        `You can upload only ${expectedCount - formsCount} more file(s) from the total expected count!!.`
       );
       return;
     }
@@ -515,6 +523,16 @@ export default function UploadPage() {
       setLoading(false);
     }
   };
+
+    // Select all selectedFiles (File List Modal)
+    const toggleSelectAllSelectedFiles = (checked) => {
+     if (checked) {
+    const allIndices = selectedFiles.map((_, idx) => idx);
+    setCheckedSelectedFiles(new Set(allIndices));
+     } else {
+    setCheckedSelectedFiles(new Set());
+      }
+      };
 
   // Toggle file checkbox
   const toggleFileCheck = (fileId) => {
@@ -928,6 +946,18 @@ export default function UploadPage() {
         fullWidth
       >
         <DialogTitle>File List</DialogTitle>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 1,  justifyContent: "flex-end",}}>
+        <Typography sx={{ mr: 3 }}>Select All</Typography>
+        <Checkbox
+        checked={
+          selectedFiles.length > 0 &&
+          checkedSelectedFiles.size === selectedFiles.length
+           }
+          onChange={(e) => toggleSelectAllSelectedFiles(e.target.checked)}
+          disabled={selectedFiles.length === 0}
+          sx={{ transform: "translateX(-23px)" }}
+        />
+        </Box>
         <DialogContent>
           {selectedFiles.length === 0 ? (
             <Typography color="text.secondary">No files selected</Typography>
@@ -947,13 +977,16 @@ export default function UploadPage() {
                     }}
                   >
                     <Typography variant="body2">{file.name}</Typography>
-                    <IconButton
-                      size="small"
-                      color="warning"
-                      onClick={() => removeSelectedFile(actualIdx)}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
+                  <Checkbox
+                  checked={checkedSelectedFiles.has(actualIdx)}
+                   onChange={() => {
+                  setCheckedSelectedFiles((prev) => {
+                 const next = new Set(prev);
+                  next.has(actualIdx) ? next.delete(actualIdx) : next.add(actualIdx);
+                  return next;
+                  });
+                    }}
+                  />
                   </Box>
                 );
               })}
@@ -966,9 +999,27 @@ export default function UploadPage() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button color="warning" onClick={() => setSelectedFiles([])}>
-            Delete All
-          </Button>
+          <Button
+             color="warning"
+              disabled={checkedSelectedFiles.size === 0}
+              onClick={() => {
+              setLocalDeleteMode("multiple");
+             setShowConfirmLocalDelete(true);
+              }}
+            sx={{ mr: 1 }}
+           >
+           Delete Selected ({checkedSelectedFiles.size})
+         </Button>
+          <Button
+           color="warning"
+                disabled={selectedFiles.length === 0}
+                onClick={() => {
+                 setLocalDeleteMode("all");
+                 setShowConfirmLocalDelete(true);
+                 }}
+              >
+             Delete All
+            </Button>
           <Button
             variant="contained"
             onClick={() => setShowFileListModal(false)}
@@ -991,7 +1042,7 @@ export default function UploadPage() {
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete {checkedFiles.size} file(s)?
+            Are you sure you want to delete {checkedFiles.size} file(s) from the uploaded?
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -1004,17 +1055,65 @@ export default function UploadPage() {
             Cancel
           </Button>
           <Button
-            variant="contained"
-            color="warning"
-            onClick={() => {
-              setShowConfirmDelete(false);
-              deleteResolve?.(true);
-            }}
+           variant="contained"
+          color="warning"
+          onClick={() => {
+          deleteResolve?.(true);
+           setShowConfirmDelete(false); 
+           }}
           >
-            Delete
+           Delete
           </Button>
+
         </DialogActions>
       </Dialog>
+      {/* Confirm Local Delete (Selected Files Only) */}
+      <Dialog
+        open={showConfirmLocalDelete}
+       onClose={() => setShowConfirmLocalDelete(false)}
+       maxWidth="xs"
+       fullWidth
+      >
+       <DialogTitle>Confirm Delete</DialogTitle>
+     <DialogContent>
+     <Typography>
+      {localDeleteMode === "all" &&
+        "Are you sure you want to delete all selected files?"}
+
+      {localDeleteMode === "multiple" &&
+        `Are you sure you want to delete ${checkedSelectedFiles.size} selected file(s)?`}
+    </Typography>
+      </DialogContent>
+     <DialogActions>
+    <Button onClick={() => setShowConfirmLocalDelete(false)}>
+      Cancel
+    </Button>
+
+    {/* ✅ FIXED DELETE */}
+    <Button
+      variant="contained"
+      color="warning"
+      onClick={() => {
+        if (localDeleteMode === "all") {
+          setSelectedFiles([]);
+          setCheckedSelectedFiles(new Set());
+        }
+
+        if (localDeleteMode === "multiple") {
+          setSelectedFiles((prev) =>
+            prev.filter((_, index) => !checkedSelectedFiles.has(index))
+          );
+          setCheckedSelectedFiles(new Set());
+        }
+
+        setShowConfirmLocalDelete(false);
+        setLocalDeleteMode(null);
+      }}
+    >
+      Delete
+    </Button>
+  </DialogActions>
+</Dialog>
     </Box>
   );
 }
