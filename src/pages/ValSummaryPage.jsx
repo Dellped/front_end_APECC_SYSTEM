@@ -23,6 +23,8 @@ import MessageBanner from "../components/MessageBanner";
 import Pagination from "../components/Pagination";
 
 export default function ValidatePage() {
+  const adminLikeRoles = [ROLES.ADMIN, ROLES.COO];
+
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("error");
@@ -49,9 +51,11 @@ export default function ValidatePage() {
     let entityCode = "";
     let branchParam = "";
 
-    if (role === ROLES.ADMIN) {
+
+    if (adminLikeRoles.includes(role)) {
       return { entityName: "ADMIN", entityCode: "", branchParam: "ADMIN" };
     }
+
 
     switch (role) {
       case ROLES.BM:
@@ -80,10 +84,6 @@ export default function ValidatePage() {
         entityName = getSession(SESSION_KEYS.CFO_NAME) || "Unknown CFO";
         branchParam = getSession(SESSION_KEYS.CFO_ID) || "";
         break;
-      case ROLES.COO:
-        entityName = "";
-        branchParam = getSession(SESSION_KEYS.COO_ID) || "";
-        break;
       case ROLES.IM:
       case ROLES.ITR:
         entityName = getSession(SESSION_KEYS.DEP_NAME) || "Unknown Department";
@@ -103,12 +103,16 @@ export default function ValidatePage() {
       const { branchParam } = getEntityInfo();
 
       try {
-       const url = 
-      role === ROLES.ADMIN
-       ? `/api/validate-all?role=ADMIN&all=true`
-       : `/api/validate-all?entity=${encodeURIComponent(
-        branchParam
-      )}&role=${encodeURIComponent(role)}`;
+       const url = (() => {
+      if (role === ROLES.CFOO) {
+       return `/api/validate-all?role=${role}`;
+       }
+       if (role === ROLES.ADMIN || role === ROLES.COO) {
+          return `/api/validate-all?role=${role}&all=true`;
+        }
+     return `/api/validate-all?entity=${encodeURIComponent(branchParam)}&role=${encodeURIComponent(role)}`;
+      })();
+
 
 
         const { data } = await apiClient.get(url);
