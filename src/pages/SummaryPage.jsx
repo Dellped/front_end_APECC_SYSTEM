@@ -209,10 +209,7 @@ export default function SummaryPage() {
 
         if (role === ROLES.ADMIN || role === ROLES.COO) {
           if (data.departmentSummary?.length)
-            availableTabs.push({
-              id: "department",
-              label: "Department Summary",
-            });
+            availableTabs.push({ id: "department", label: "Department Summary",  });
           if (data.operationSummary?.length)
             availableTabs.push({ id: "operation", label: "Operation Summary" });
         }
@@ -254,11 +251,7 @@ export default function SummaryPage() {
             availableTabs.push({ id: "area", label: "Area Summary" });
           if (data.branchSummary?.length)
             availableTabs.push({ id: "branch", label: "Branch Summary" });
-        } else (
-           role === ROLES.ADMIN ||
-           role === ROLES.COO ||
-           role === ROLES.CFOO
-          ) 
+        }
           {
           if (data.divisionSummary?.length)
             availableTabs.push({ id: "division", label: "Division Summary" });
