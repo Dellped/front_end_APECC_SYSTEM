@@ -409,7 +409,7 @@ export default function UploadPage() {
     const count = parseInt(mfoInput);
 
     if (isNaN(count) || count < 0 || count > 15) {
-      showMsg("Enter a valid number 0-15.");
+      showMsg("Enter a valid number");
       return;
     }
 
