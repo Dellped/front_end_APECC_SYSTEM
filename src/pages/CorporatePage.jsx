@@ -14,13 +14,40 @@ import {
   Button,
   Tooltip,
 } from "@mui/material";
-import { Visibility as VisibilityIcon } from "@mui/icons-material";
+import { Visibility as VisibilityIcon, Download as DownloadIcon } from "@mui/icons-material";
+import * as XLSX from "xlsx";
 import apiClient from "../lib/apiClient";
 import { getSession, getRole, SESSION_KEYS } from "../lib/storage";
 import { ROLES } from "../lib/roles";
 import LoadingOverlay from "../components/LoadingOverlay";
 import MessageBanner from "../components/MessageBanner";
 import PreviewModal from "../components/PreviewModal";
+
+const PREVIEW_COLUMNS = [
+  "emp_id",
+  "employee_name",
+  "position_title",
+  "date_hired",
+  "immediate_superior",
+  "department",
+  "group",
+  "division",
+  "region",
+  "area",
+  "branch",
+  "satellite",
+  "month_from",
+  "month_to",
+  "year",
+  "part_a_total_rating",
+  "part_a_overall_weight",
+  "part_a_subtotal",
+  "part_b_total_rating",
+  "part_b_overall_weight",
+  "part_b_subtotal",
+  "overall_numeric_rating",
+  "overall_adjectival_rating",
+];
 
 export default function CorporatePage() {
   const [loading, setLoading] = useState(true);
@@ -38,6 +65,7 @@ export default function CorporatePage() {
   const [modalDisplayName, setModalDisplayName] = useState("");
 
   const role = getRole();
+  const canDownloadAll = role === ROLES.COO || role === ROLES.ADMIN;
 
   // Fetch preview details
   const fetchDetailsAndShow = async (
@@ -138,6 +166,97 @@ export default function CorporatePage() {
       totals.total += parseInt(r.total_employees || 0);
     });
     return totals;
+  };
+
+  // Fetch all detailed records used in previews (department + operation)
+  const fetchAllPreviewRecords = async () => {
+    const allRecords = [];
+
+    // Department records
+    for (const r of departmentSummary) {
+      const departmentName = r.department_name || r.department;
+      if (!departmentName) continue;
+
+      try {
+        const { data } = await apiClient.get(
+          `/api/corporate-summary/details/department?department=${encodeURIComponent(
+            departmentName
+          )}`
+        );
+
+        if (data?.records?.length) {
+          const filtered = data.records.filter(
+            (rec) => rec.department === departmentName
+          );
+          allRecords.push(...filtered);
+        }
+      } catch (err) {
+        // Ignore individual fetch errors; user will still get what we can load
+      }
+    }
+
+    // Operation records
+    for (const r of operationSummary) {
+      const operationName = r.operation_name;
+      if (!operationName) continue;
+
+      try {
+        const { data } = await apiClient.get(
+          `/api/corporate-summary/details/operation?operation_name=${encodeURIComponent(
+            operationName
+          )}`
+        );
+
+        if (data?.records?.length) {
+          const filtered = data.records.filter(
+            (rec) => rec.group === operationName
+          );
+          allRecords.push(...filtered);
+        }
+      } catch (err) {
+        // Ignore individual fetch errors
+      }
+    }
+
+    return allRecords;
+  };
+
+  const downloadAllCSV = async () => {
+    const records = await fetchAllPreviewRecords();
+    if (!records.length) return;
+
+    const csvRows = [];
+    csvRows.push(PREVIEW_COLUMNS.join(","));
+
+    records.forEach((row) => {
+      const values = PREVIEW_COLUMNS.map((col) => `"${row[col] ?? ""}"`);
+      csvRows.push(values.join(","));
+    });
+
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Corporate_Preview_All.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadAllExcel = async () => {
+    const records = await fetchAllPreviewRecords();
+    if (!records.length) return;
+
+    const wsData = records.map((row) =>
+      PREVIEW_COLUMNS.reduce(
+        (obj, col) => ({ ...obj, [col]: row[col] ?? "" }),
+        {}
+      )
+    );
+
+    const ws = XLSX.utils.json_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Corporate Preview");
+    XLSX.writeFile(wb, "Corporate_Preview_All.xlsx");
   };
 
   // Render summary table
@@ -451,6 +570,38 @@ export default function CorporatePage() {
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 500 }}>
               Corporate Summary Reports
             </Typography>
+            {canDownloadAll && (
+              <Box
+                sx={{
+                  mt: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 2,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  startIcon={<DownloadIcon />}
+                  onClick={downloadAllCSV}
+                  disabled={
+                    !departmentSummary.length && !operationSummary.length
+                  }
+                >
+                  Download All CSV
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<DownloadIcon />}
+                  onClick={downloadAllExcel}
+                  disabled={
+                    !departmentSummary.length && !operationSummary.length
+                  }
+                >
+                  Download All Excel
+                </Button>
+              </Box>
+            )}
           </Box>
 
           {/* Department Summary */}
