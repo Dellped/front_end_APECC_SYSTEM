@@ -107,7 +107,7 @@ td {
 /* Branch display */
 .branch-display {
   font-weight: bold;
-  color: orange;
+  color: #ffd580; /* light orange */
   font-size: 22px;
   margin-bottom: 15px;
   text-align: center;
@@ -138,7 +138,7 @@ td {
 }
 
 .status-badge.incomplete {
-  background-color: orange;
+  background-color: #ffd580; /* light orange */
 }
 
 .status-badge.duplicate {

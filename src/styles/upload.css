@@ -63,7 +63,7 @@
   margin-top: 10px;
   font-size: 13px;
   font-weight: bold;
-  color: orange;
+  color: #ffd580; /* light orange */
   box-sizing: border-box;
   text-align: left;
   margin-bottom: -10px;
@@ -91,13 +91,13 @@
 
 .role-display {
   font-weight: bold;
-  color: orange;
+  color: #ffd580; /* light orange */
   font-size: 20px;
 }
 
 .upload-page .branch-display {
   font-weight: bold;
-  color: orange;
+  color: #ffd580; /* light orange */
   font-size: 20px;
 }
 

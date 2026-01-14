@@ -55,6 +55,7 @@ export function getDefaultRouteForRole(role) {
 
 // Role header mapping for summary tables
 export const ROLE_HEADER_MAP = {
+  ADMIN: "Department",
   ITR: "Department",
   IM: "Department",
   COO: "Department",

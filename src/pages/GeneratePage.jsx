@@ -91,6 +91,7 @@ export default function GeneratePage() {
   // Get group key for summary based on role
   const getGroupKey = (r) => {
     switch (role) {
+      case ROLES.ADMIN:
       case ROLES.ITR:
       case ROLES.IM:
       case ROLES.COO:

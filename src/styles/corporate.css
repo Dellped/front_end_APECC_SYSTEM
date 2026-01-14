@@ -22,7 +22,7 @@
 }
 
 .corporate-page .table-title {
-  background-color: darkorange;
+  background-color: #ffb347; /* light orange for title */
   color: white;
   padding: 8px;
   font-weight: bold;
@@ -50,7 +50,7 @@
 }
 
 .corporate-page th {
-  background-color: orange;
+  background-color: #ffd580; /* light orange for header */
   color: white;
   position: sticky;
   top: 40px;

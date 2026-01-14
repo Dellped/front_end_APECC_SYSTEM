@@ -51,7 +51,7 @@
   position: absolute;
   top: 10px;
   right: -40px;
-  background: orange;
+  background: #ffd580; /* light orange */
   border: 2px solid white;
   border-radius: 50%;
   width: 30px;
@@ -89,7 +89,7 @@
 
 .sidebar-nav a:hover,
 .sidebar-nav a.active {
-  background: orange;
+  background: #ffd580; /* light orange */
 }
 
 .sidebar-spacer {
