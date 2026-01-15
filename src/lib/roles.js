@@ -15,6 +15,10 @@ export const ROLES = {
 };
 
 // Sidebar visibility rules (matching main.html logic)
+export const canAccessUserManagement = (role) => {
+  return [ROLES.ADMIN, ROLES.RA].includes(role);
+};
+
 export function canAccessUpload(role) {
   return role !== ROLES.CHIEF;
 }

@@ -34,6 +34,7 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   Home as HomeIcon,
+  People as PeopleIcon,
 } from "@mui/icons-material";
 import { getRole, clearSession, isLoggedIn } from "../lib/storage";
 import {
@@ -44,6 +45,7 @@ import {
   canAccessArchive,
   canAccessCorporate,
   canAccessValSummary,
+  canAccessUserManagement,
   getDefaultRouteForRole,
   ROLES,
 } from "../lib/roles";
@@ -175,7 +177,7 @@ const menuItems = [
     icon: ValidateIcon,
     canAccess: canAccessValidate,
   },
-    {
+  {
     path: "/valsummary",
     label: "Validation Summary",
     icon: ValidateIcon,
@@ -204,6 +206,12 @@ const menuItems = [
     label: "Corporate Reports",
     icon: CorporateIcon,
     canAccess: canAccessCorporate,
+  },
+  {
+    path: "/user-management",
+    label: "User Management",
+    icon: PeopleIcon,
+    canAccess: canAccessUserManagement,
   },
 ];
 
