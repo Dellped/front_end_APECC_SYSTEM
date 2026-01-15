@@ -14,7 +14,13 @@ import {
   Chip,
   Stack,
   Link,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
+import { Delete as DeleteIcon } from "@mui/icons-material";
 import apiClient from "../lib/apiClient";
 import { getSession, getRole, SESSION_KEYS } from "../lib/storage";
 import { ROLES } from "../lib/roles";
@@ -24,6 +30,7 @@ import Pagination from "../components/Pagination";
 
 export default function ValidatePage() {
   const [loading, setLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState("Validating report...");
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("error");
 
@@ -40,6 +47,10 @@ export default function ValidatePage() {
   const [completePage, setCompletePage] = useState(1);
   const [incompletePage, setIncompletePage] = useState(1);
   const perPage = 10;
+
+  // Delete confirmation
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState(null);
 
   const role = getRole();
 
@@ -100,6 +111,7 @@ export default function ValidatePage() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setLoadingMessage("Validating report...");
       const { branchParam } = getEntityInfo();
 
       try {
@@ -151,6 +163,45 @@ export default function ValidatePage() {
     incompleteStart + perPage
   );
 
+  // Handle delete record
+  const handleDeleteClick = (record) => {
+    setRecordToDelete(record);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!recordToDelete || !recordToDelete.id) {
+      setShowDeleteConfirm(false);
+      return;
+    }
+
+    setLoading(true);
+    setLoadingMessage("Deleting record...");
+    try {
+      const { data } = await apiClient.post("/api/delete-files", {
+        ids: [recordToDelete.id],
+      });
+
+      if (data.success) {
+        // Remove from incomplete records
+        setIncompleteRecords((prev) =>
+          prev.filter((r) => r.id !== recordToDelete.id)
+        );
+        // Update counts
+        setWarningCount((prev) => Math.max(prev - 1, 0));
+        showMsg("Record deleted successfully!", "success");
+      } else {
+        showMsg("Failed to delete record.");
+      }
+    } catch (err) {
+      showMsg(err.message || "Error deleting record.");
+    } finally {
+      setLoading(false);
+      setShowDeleteConfirm(false);
+      setRecordToDelete(null);
+    }
+  };
+
   const renderRecordRow = (r, isComplete = true, index = null) => {
     const empIdDup = r.duplicateEmpID;
     const nameDup = r.duplicateName;
@@ -177,6 +228,15 @@ export default function ValidatePage() {
       ? "info"
       : "warning";
 
+    const isIncompleteStatus = status === "Incomplete";
+    const getCellStyle = (value, extra = {}) => {
+      const str = value != null ? String(value).trim() : "";
+      if (isIncompleteStatus && !str) {
+        return { ...extra, bgcolor: "warning.light" };
+      }
+      return extra;
+    };
+
     // Create a unique key combining multiple fields to ensure uniqueness
     // Use a combination of type, emp_id, id, drive_file_id, and index
     // This ensures uniqueness even when multiple records have the same emp_id
@@ -187,41 +247,77 @@ export default function ValidatePage() {
         <TableCell>
           <Chip label={status} color={statusColor} size="small" />
         </TableCell>
-        <TableCell sx={{ bgcolor: empIdDup ? "info.light" : "transparent" }}>
+        <TableCell
+          sx={getCellStyle(r.emp_id, {
+            bgcolor: empIdDup ? "info.light" : "transparent",
+          })}
+        >
           {r.emp_id || ""}
         </TableCell>
-        <TableCell sx={{ bgcolor: nameDup ? "info.light" : "transparent" }}>
+        <TableCell
+          sx={getCellStyle(r.employee_name, {
+            bgcolor: nameDup ? "info.light" : "transparent",
+          })}
+        >
           {r.employee_name || ""}
         </TableCell>
-        <TableCell>{r.position_title || ""}</TableCell>
-        <TableCell>{r.date_hired || ""}</TableCell>
-        <TableCell>{r.immediate_superior || ""}</TableCell>
-        <TableCell>{r.department || ""}</TableCell>
-        <TableCell>{r.group || ""}</TableCell>
-        <TableCell>{r.division || ""}</TableCell>
-        <TableCell>{r.region || ""}</TableCell>
-        <TableCell>{r.area || ""}</TableCell>
-        <TableCell>{r.branch || ""}</TableCell>
-        <TableCell>{r.satellite || ""}</TableCell>
-        <TableCell>{r.month_from || ""}</TableCell>
-        <TableCell>{r.month_to || ""}</TableCell>
-        <TableCell>{r.year || ""}</TableCell>
-        <TableCell>{r.part_a_total_rating || ""}</TableCell>
-        <TableCell>
+        <TableCell sx={getCellStyle(r.position_title)}>
+          {r.position_title || ""}
+        </TableCell>
+        <TableCell sx={getCellStyle(r.date_hired)}>
+          {r.date_hired || ""}
+        </TableCell>
+        <TableCell sx={getCellStyle(r.immediate_superior)}>
+          {r.immediate_superior || ""}
+        </TableCell>
+        <TableCell sx={getCellStyle(r.department)}>
+          {r.department || ""}
+        </TableCell>
+        <TableCell sx={getCellStyle(r.group)}>{r.group || ""}</TableCell>
+        <TableCell sx={getCellStyle(r.division)}>
+          {r.division || ""}
+        </TableCell>
+        <TableCell sx={getCellStyle(r.region)}>{r.region || ""}</TableCell>
+        <TableCell sx={getCellStyle(r.area)}>{r.area || ""}</TableCell>
+        <TableCell sx={getCellStyle(r.branch)}>{r.branch || ""}</TableCell>
+        <TableCell sx={getCellStyle(r.satellite)}>
+          {r.satellite || ""}
+        </TableCell>
+        <TableCell sx={getCellStyle(r.month_from)}>
+          {r.month_from || ""}
+        </TableCell>
+        <TableCell sx={getCellStyle(r.month_to)}>
+          {r.month_to || ""}
+        </TableCell>
+        <TableCell sx={getCellStyle(r.year)}>{r.year || ""}</TableCell>
+        <TableCell sx={getCellStyle(r.part_a_total_rating)}>
+          {r.part_a_total_rating || ""}
+        </TableCell>
+        <TableCell sx={getCellStyle(r.part_a_overall_weight)}>
           {r.part_a_overall_weight
             ? Math.round(r.part_a_overall_weight) + "%"
             : ""}
         </TableCell>
-        <TableCell>{r.part_a_subtotal || ""}</TableCell>
-        <TableCell>{r.part_b_total_rating || ""}</TableCell>
-        <TableCell>
+        <TableCell sx={getCellStyle(r.part_a_subtotal)}>
+          {r.part_a_subtotal || ""}
+        </TableCell>
+        <TableCell sx={getCellStyle(r.part_b_total_rating)}>
+          {r.part_b_total_rating || ""}
+        </TableCell>
+        <TableCell sx={getCellStyle(r.part_b_overall_weight)}>
           {r.part_b_overall_weight
             ? Math.round(r.part_b_overall_weight) + "%"
             : ""}
         </TableCell>
-        <TableCell>{r.part_b_subtotal || ""}</TableCell>
-        <TableCell>{r.overall_numeric_rating || ""}</TableCell>
-        <TableCell>{r.overall_adjectival_rating || ""}</TableCell>
+        <TableCell sx={getCellStyle(r.part_b_subtotal)}>
+          {r.part_b_subtotal || ""}
+        </TableCell>
+        <TableCell sx={getCellStyle(r.overall_numeric_rating)}>
+          {r.overall_numeric_rating || ""}
+        </TableCell>
+        <TableCell sx={getCellStyle(r.overall_adjectival_rating)}>
+          {r.overall_adjectival_rating || ""}
+        </TableCell>
         <TableCell>
           {openLink ? (
             <Link href={openLink} target="_blank" rel="noopener noreferrer" color="info">
@@ -232,15 +328,37 @@ export default function ValidatePage() {
           )}
         </TableCell>
         {!isComplete && (
-          <TableCell>
-            {downloadLink ? (
-              <Link href={downloadLink} download color="info">
-                Download
-              </Link>
-            ) : (
-              "-"
-            )}
-          </TableCell>
+          <>
+            <TableCell>
+              {downloadLink ? (
+                <Link href={downloadLink} download color="info">
+                  Download
+                </Link>
+              ) : (
+                "-"
+              )}
+            </TableCell>
+            <TableCell>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<DeleteIcon />}
+                onClick={() => handleDeleteClick(r)}
+                sx={{
+                  minWidth: "auto",
+                  px: 1,
+                  borderColor: "#ffe5b4",
+                  color: "#ff9800",
+                  "&:hover": {
+                    borderColor: "#ffc98b",
+                    backgroundColor: "#fff3e0",
+                  },
+                }}
+              >
+                Delete
+              </Button>
+            </TableCell>
+          </>
         )}
       </TableRow>
     );
@@ -248,7 +366,7 @@ export default function ValidatePage() {
 
   return (
     <Box sx={{ p: 3, bgcolor: "background.default", minHeight: "100vh", position: "relative" }}>
-      {loading && <LoadingOverlay message="Validating report..." />}
+      {loading && <LoadingOverlay message={loadingMessage} />}
       <MessageBanner
         message={message}
         type={messageType}
@@ -404,12 +522,13 @@ export default function ValidatePage() {
                       <TableCell>Overall Adjectival Rating</TableCell>
                       <TableCell>Preview</TableCell>
                       <TableCell>Download</TableCell>
+                      <TableCell>Action</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {paginatedIncomplete.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={26} align="center" sx={{ py: 4 }}>
+                        <TableCell colSpan={27} align="center" sx={{ py: 4 }}>
                           <Typography color="text.secondary">
                             No incomplete records found
                           </Typography>
@@ -432,6 +551,53 @@ export default function ValidatePage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setRecordToDelete(null);
+        }}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this record? This action cannot be
+            undone.
+          </Typography>
+          {recordToDelete && (
+            <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
+              Employee: {recordToDelete.employee_name || recordToDelete.emp_id}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setShowDeleteConfirm(false);
+              setRecordToDelete(null);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleDeleteConfirm}
+            sx={{
+              backgroundColor: "#ffe5b4",
+              color: "#ff9800",
+              "&:hover": {
+                backgroundColor: "#ffc98b",
+              },
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
