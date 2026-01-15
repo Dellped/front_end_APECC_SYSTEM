@@ -83,17 +83,28 @@ export default function PreviewModal({
   allowExport = true,
 }) {
   const [page, setPage] = useState(1);
+  const [ratingFilter, setRatingFilter] = useState("ALL"); // ALL, EE, ME, DM
   const perPage = 10;
 
   useEffect(() => {
     setPage(1);
+    setRatingFilter("ALL");
   }, [records]);
 
   if (!isOpen) return null;
 
-  const totalPages = Math.ceil(records.length / perPage) || 1;
+  const filteredRecords =
+    ratingFilter === "ALL"
+      ? records
+      : records.filter(
+          (row) =>
+            (row.overall_adjectival_rating || "").trim().toUpperCase() ===
+            ratingFilter
+        );
+
+  const totalPages = Math.ceil(filteredRecords.length / perPage) || 1;
   const start = (page - 1) * perPage;
-  const pageData = records.slice(start, start + perPage);
+  const pageData = filteredRecords.slice(start, start + perPage);
 
   const formatValue = (row, col) => {
     const val = row[col];
@@ -104,10 +115,10 @@ export default function PreviewModal({
   };
 
   const exportToCSV = () => {
-    if (!records.length) return;
+    if (!filteredRecords.length) return;
     const csvRows = [];
     csvRows.push(PREVIEW_COLUMNS.join(","));
-    records.forEach((row) => {
+    filteredRecords.forEach((row) => {
       const values = PREVIEW_COLUMNS.map((col) => `"${row[col] ?? ""}"`);
       csvRows.push(values.join(","));
     });
@@ -121,8 +132,8 @@ export default function PreviewModal({
   };
 
   const exportToExcel = () => {
-    if (!records.length) return;
-    const wsData = records.map((row) =>
+    if (!filteredRecords.length) return;
+    const wsData = filteredRecords.map((row) =>
       PREVIEW_COLUMNS.reduce(
         (obj, col) => ({ ...obj, [col]: row[col] ?? "" }),
         {}
@@ -150,9 +161,69 @@ export default function PreviewModal({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            gap: 2,
           }}
         >
-          <Box component="span">{title}</Box>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              flexWrap: "wrap",
+            }}
+          >
+            <Box component="span" sx={{ fontWeight: 600 }}>
+              {title}
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1,
+                flexWrap: "wrap",
+              }}
+            >
+              <Button
+                size="small"
+                variant={ratingFilter === "ALL" ? "contained" : "outlined"}
+                onClick={() => {
+                  setRatingFilter("ALL");
+                  setPage(1);
+                }}
+              >
+                All
+              </Button>
+              <Button
+                size="small"
+                variant={ratingFilter === "EE" ? "contained" : "outlined"}
+                onClick={() => {
+                  setRatingFilter("EE");
+                  setPage(1);
+                }}
+              >
+                EE
+              </Button>
+              <Button
+                size="small"
+                variant={ratingFilter === "ME" ? "contained" : "outlined"}
+                onClick={() => {
+                  setRatingFilter("ME");
+                  setPage(1);
+                }}
+              >
+                ME
+              </Button>
+              <Button
+                size="small"
+                variant={ratingFilter === "DM" ? "contained" : "outlined"}
+                onClick={() => {
+                  setRatingFilter("DM");
+                  setPage(1);
+                }}
+              >
+                DM
+              </Button>
+            </Box>
+          </Box>
           <IconButton onClick={onClose} size="small">
             <CloseIcon />
           </IconButton>

@@ -44,6 +44,12 @@ export default function SummaryPage() {
   const [imSummary, setImSummary] = useState([]);
   const [operationSupportSummary, setOperationSupportSummary] = useState([]);
 
+  // Pagination for summaries (10 per page)
+  const [divisionPage, setDivisionPage] = useState(1);
+  const [regionPage, setRegionPage] = useState(1);
+  const [areaPage, setAreaPage] = useState(1);
+  const [branchPage, setBranchPage] = useState(1);
+
   // Active tab
   const [activeTab, setActiveTab] = useState("");
   const [tabs, setTabs] = useState([]);
@@ -299,6 +305,40 @@ export default function SummaryPage() {
 
     const totals = calculateTotals(data);
 
+    const perPage = 10;
+    const isPaginatedType =
+      type === "division" ||
+      type === "region" ||
+      type === "area" ||
+      type === "branch";
+
+    let currentPage = 1;
+    let setPage = null;
+
+    if (isPaginatedType) {
+      if (type === "division") {
+        currentPage = divisionPage;
+        setPage = setDivisionPage;
+      } else if (type === "region") {
+        currentPage = regionPage;
+        setPage = setRegionPage;
+      } else if (type === "area") {
+        currentPage = areaPage;
+        setPage = setAreaPage;
+      } else if (type === "branch") {
+        currentPage = branchPage;
+        setPage = setBranchPage;
+      }
+    }
+
+    const totalPages = isPaginatedType
+      ? Math.max(1, Math.ceil(data.length / perPage))
+      : 1;
+    const startIndex = isPaginatedType ? (currentPage - 1) * perPage : 0;
+    const paginatedData = isPaginatedType
+      ? data.slice(startIndex, startIndex + perPage)
+      : data;
+
     return (
       <Paper elevation={2} sx={{ mb: 3 }}>
         <Box
@@ -447,7 +487,7 @@ export default function SummaryPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.map((r, idx) => {
+              {paginatedData.map((r, idx) => {
                 const EE = parseInt(r.EE_count || 0);
                 const ME = parseInt(r.ME_count || 0);
                 const DM = parseInt(r.DM_count || 0);
@@ -574,6 +614,15 @@ export default function SummaryPage() {
             </TableBody>
           </Table>
         </TableContainer>
+        {isPaginatedType && totalPages > 1 && setPage && (
+          <Box sx={{ p: 2, display: "flex", justifyContent: "center" }}>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
+          </Box>
+        )}
       </Paper>
     );
   };

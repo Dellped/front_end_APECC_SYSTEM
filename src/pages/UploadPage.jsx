@@ -30,6 +30,7 @@ import {
   Edit as EditIcon,
   FolderOpen as FolderIcon,
 } from "@mui/icons-material";
+import * as XLSX from "xlsx";
 import apiClient from "../lib/apiClient";
 import { getSession, getRole, SESSION_KEYS } from "../lib/storage";
 import { ROLES } from "../lib/roles";
@@ -365,6 +366,41 @@ export default function UploadPage() {
     if (!selectedFiles.length) {
       showMsg("Choose files first.");
       return;
+    }
+
+    // Validate that each selected Excel file has a "C Summary" sheet
+    const validateFileHasCSummary = (file) =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+            const hasSheet = workbook.SheetNames.includes("C Summary");
+            resolve(hasSheet);
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsArrayBuffer(file);
+      });
+
+    for (const file of selectedFiles) {
+      try {
+        const ok = await validateFileHasCSummary(file);
+        if (!ok) {
+          showMsg(
+            `Invalid file "${file.name}": missing required "C Summary" sheet.`
+          );
+          return;
+        }
+      } catch (err) {
+        showMsg(
+          `Invalid file "${file.name}": unable to read Excel file. Please re-check the template.`
+        );
+        return;
+      }
     }
 
     // Check if employee count is set
