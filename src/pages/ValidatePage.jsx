@@ -28,6 +28,19 @@ import LoadingOverlay from "../components/LoadingOverlay";
 import MessageBanner from "../components/MessageBanner";
 import Pagination from "../components/Pagination";
 
+const formatPercent = (value) => {
+  if (value === null || value === undefined) return "";
+
+  // If already a string like "80%"
+  if (typeof value === "string" && value.includes("%")) {
+    return value.trim();
+  }
+
+  // If number or numeric string
+  const num = Number(value);
+  return Number.isFinite(num) ? `${Math.round(num)}%` : "";
+};
+
 export default function ValidatePage() {
   const [loading, setLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState("Validating report...");
@@ -294,9 +307,7 @@ export default function ValidatePage() {
           {r.part_a_total_rating || ""}
         </TableCell>
         <TableCell sx={getCellStyle(r.part_a_overall_weight)}>
-          {r.part_a_overall_weight
-            ? Math.round(r.part_a_overall_weight) + "%"
-            : ""}
+        {formatPercent(r.part_a_overall_weight)}
         </TableCell>
         <TableCell sx={getCellStyle(r.part_a_subtotal)}>
           {r.part_a_subtotal || ""}
@@ -305,9 +316,7 @@ export default function ValidatePage() {
           {r.part_b_total_rating || ""}
         </TableCell>
         <TableCell sx={getCellStyle(r.part_b_overall_weight)}>
-          {r.part_b_overall_weight
-            ? Math.round(r.part_b_overall_weight) + "%"
-            : ""}
+        {formatPercent(r.part_b_overall_weight)}
         </TableCell>
         <TableCell sx={getCellStyle(r.part_b_subtotal)}>
           {r.part_b_subtotal || ""}

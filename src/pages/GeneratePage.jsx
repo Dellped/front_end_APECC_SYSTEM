@@ -20,6 +20,19 @@ import LoadingOverlay from "../components/LoadingOverlay";
 import MessageBanner from "../components/MessageBanner";
 import Pagination from "../components/Pagination";
 
+const formatPercent = (value) => {
+  if (value === null || value === undefined) return "";
+
+  // If already a string like "80%"
+  if (typeof value === "string" && value.includes("%")) {
+    return value.trim();
+  }
+
+  // If number or numeric string
+  const num = Number(value);
+  return Number.isFinite(num) ? `${Math.round(num)}%` : "";
+};
+
 export default function GeneratePage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -333,16 +346,12 @@ export default function GeneratePage() {
                         <TableCell>{r.year || ""}</TableCell>
                         <TableCell>{r.part_a_total_rating || ""}</TableCell>
                         <TableCell>
-                          {r.part_a_overall_weight
-                            ? Math.round(r.part_a_overall_weight) + "%"
-                            : ""}
+                        {formatPercent(r.part_a_overall_weight)}
                         </TableCell>
                         <TableCell>{r.part_a_subtotal || ""}</TableCell>
                         <TableCell>{r.part_b_total_rating || ""}</TableCell>
                         <TableCell>
-                          {r.part_b_overall_weight
-                            ? Math.round(r.part_b_overall_weight) + "%"
-                            : ""}
+                        {formatPercent(r.part_b_overall_weight)}
                         </TableCell>
                         <TableCell>{r.part_b_subtotal || ""}</TableCell>
                         <TableCell>{r.overall_numeric_rating || ""}</TableCell>
