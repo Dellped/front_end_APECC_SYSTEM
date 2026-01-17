@@ -581,19 +581,21 @@ export default function SummaryPage() {
                   </TableRow>
                 );
               })}
-              <TableRow sx={{ bgcolor: "grey.200", fontWeight: "bold" }}>
-                <TableCell sx={{ textAlign: "left", fontWeight: "bold" }}>
+              <TableRow sx={{ bgcolor: "grey.200",fontWeight: "bold", "& .MuiTableCell-root":
+               {textAlign: "center",fontWeight: "bold", verticalAlign: "middle",color: "red"},
+                 }}>
+                <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>
                   Subtotal
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>{totals.EE}</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>
+                <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>{totals.EE}</TableCell>
+                <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>
                   {totals.total > 0
                     ? Math.round((totals.EE / totals.total) * 100)
                     : 0}
                   %
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>{totals.ME}</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>
+                <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>{totals.ME}</TableCell>
+                <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>
                   {totals.total > 0
                     ? Math.round((totals.ME / totals.total) * 100)
                     : 0}

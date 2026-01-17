@@ -503,7 +503,9 @@ export default function CorporatePage() {
                   </TableRow>
                 );
               })}
-              <TableRow sx={{ bgcolor: "grey.200", fontWeight: "bold" }}>
+              <TableRow sx={{ bgcolor: "grey.200", fontWeight: "bold", "& .MuiTableCell-root":
+               {textAlign: "center",fontWeight: "bold", verticalAlign: "middle",color: "red"},
+                 }}>
                 <TableCell sx={{ textAlign: "left", fontWeight: "bold" }}>
                   Subtotal
                 </TableCell>

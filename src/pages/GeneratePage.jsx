@@ -388,7 +388,14 @@ export default function GeneratePage() {
               </Typography>
             </Box>
             <TableContainer sx={{ maxHeight: 400, overflowX: "auto" }}>
-              <Table stickyHeader size="small">
+              <Table stickyHeader size="small"
+              sx={{
+                "& th, & td": {
+                  textAlign: "center",
+                  verticalAlign: "middle",
+                },
+              }}
+              >
                 <TableHead>
                   <TableRow>
                     <TableCell>{firstColumnHeader}</TableCell>
