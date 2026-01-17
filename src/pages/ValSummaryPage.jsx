@@ -443,7 +443,10 @@ export default function ValidatePage() {
               </Typography>
             </Box>
             <TableContainer sx={{ maxHeight: 600, overflowX: "auto" }}>
-              <Table stickyHeader size="small">
+              <Table stickyHeader size="small"sx={{"& th, & td": {textAlign: "center",
+               verticalAlign: "middle",
+              },
+               }}>
                 <TableHead>
                   <TableRow>
                     <TableCell>Status</TableCell>
@@ -516,7 +519,10 @@ export default function ValidatePage() {
                 </Typography>
               </Box>
               <TableContainer sx={{ maxHeight: 600, overflowX: "auto" }}>
-                <Table stickyHeader size="small">
+                <Table stickyHeader size="small" sx={{"& th, & td": {textAlign: "center",
+                verticalAlign: "middle",
+                 },
+                 }}>
                   <TableHead>
                     <TableRow>
                       <TableCell>Status</TableCell>
