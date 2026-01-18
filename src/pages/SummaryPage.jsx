@@ -826,36 +826,36 @@ export default function SummaryPage() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-  {operationSupportSummary.map((r, idx) => {
-    const EE = parseInt(r.EE_count || 0);
-    const ME = parseInt(r.ME_count || 0);
-    const DM = parseInt(r.DM_count || 0);
-    const total = parseInt(r.total_employees || 0);
+        {operationSupportSummary.map((r, idx) => {
+          const EE = parseInt(r.EE_count || 0);
+          const ME = parseInt(r.ME_count || 0);
+          const DM = parseInt(r.DM_count || 0);
+          const total = parseInt(r.total_employees || 0);
 
-    const percent = (count) => (total > 0 ? Math.round((count / total) * 100) : 0);
+          const percent = (count) => (total > 0 ? Math.round((count / total) * 100) : 0);
 
-    return (
-      <TableRow key={idx} hover>
-        <TableCell sx={{ textAlign: "center" }}>OPERATIONS SUPPORT</TableCell>
-        <TableCell sx={{ textAlign: "center" }}>{r.EE_count || 0}</TableCell>
-        <TableCell sx={{ textAlign: "center" }}>{percent(EE)}%</TableCell>
-        <TableCell sx={{ textAlign: "center" }}>{r.ME_count || 0}</TableCell>
-        <TableCell sx={{ textAlign: "center" }}>{percent(ME)}%</TableCell>
-        <TableCell sx={{ textAlign: "center" }}>{r.DM_count || 0}</TableCell>
-        <TableCell sx={{ textAlign: "center" }}>{percent(DM)}%</TableCell>
-        <TableCell sx={{ textAlign: "center", fontWeight: 600 }}>{total}</TableCell>
-        <TableCell sx={{ textAlign: "center" }}>
-          <Tooltip title="Preview Details" arrow placement="top">
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={<VisibilityIcon sx={{ fontSize: 18 }} />}
-              onClick={() =>
-                fetchDetailsAndShow(
-                  "OPERATIONS SUPPORT",
-                  "department",
-                  "OPERATIONS SUPPORT"
-                )
+          return (
+            <TableRow key={idx} hover>
+              <TableCell sx={{ textAlign: "center" }}>OPERATIONS SUPPORT</TableCell>
+              <TableCell sx={{ textAlign: "center" }}>{r.EE_count || 0}</TableCell>
+              <TableCell sx={{ textAlign: "center" }}>{percent(EE)}%</TableCell>
+              <TableCell sx={{ textAlign: "center" }}>{r.ME_count || 0}</TableCell>
+              <TableCell sx={{ textAlign: "center" }}>{percent(ME)}%</TableCell>
+              <TableCell sx={{ textAlign: "center" }}>{r.DM_count || 0}</TableCell>
+              <TableCell sx={{ textAlign: "center" }}>{percent(DM)}%</TableCell>
+              <TableCell sx={{ textAlign: "center", fontWeight: 600 }}>{total}</TableCell>
+              <TableCell sx={{ textAlign: "center" }}>
+                <Tooltip title="Preview Details" arrow placement="top">
+                  <Button
+                    variant="contained"
+                    size="small"
+                    startIcon={<VisibilityIcon sx={{ fontSize: 18 }} />}
+                    onClick={() =>
+                      fetchDetailsAndShow(
+                        "OPERATIONS SUPPORT",
+                        "department",
+                        "OPERATIONS SUPPORT"
+                      )
               }
               sx={{
                 minWidth: 110,
