@@ -108,11 +108,17 @@ export default function PreviewModal({
 
   const formatValue = (row, col) => {
     const val = row[col];
+  
     if (col === "part_a_overall_weight" || col === "part_b_overall_weight") {
-      return val ? Math.round(val) + "%" : "";
+      if (!val) return "0%";
+  
+      const num = parseFloat(String(val).replace("%", "").trim());
+      return isNaN(num) ? "0%" : `${Math.round(num)}%`;
     }
+  
     return val ?? "";
   };
+  
 
   const exportToCSV = () => {
     if (!filteredRecords.length) return;
