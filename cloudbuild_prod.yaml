@@ -31,6 +31,8 @@ steps:
       - "--platform"
       - "managed"
       - "--allow-unauthenticated"
+      - "--set-env-vars"
+      - "API_URL=${_API_URL}"
 
 # Set a timeout for the build step
 timeout: "1200s" # This is 20 minutes
