@@ -108,11 +108,17 @@ export default function PreviewModal({
 
   const formatValue = (row, col) => {
     const val = row[col];
+  
     if (col === "part_a_overall_weight" || col === "part_b_overall_weight") {
-      return val ? Math.round(val) + "%" : "";
+      if (!val) return "0%";
+  
+      const num = parseFloat(String(val).replace("%", "").trim());
+      return isNaN(num) ? "0%" : `${Math.round(num)}%`;
     }
+  
     return val ?? "";
   };
+  
 
   const exportToCSV = () => {
     if (!filteredRecords.length) return;
@@ -156,78 +162,57 @@ export default function PreviewModal({
       }}
     >
       <DialogTitle>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 2,
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              flexWrap: "wrap",
-            }}
-          >
-            <Box component="span" sx={{ fontWeight: 600 }}>
-              {title}
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                gap: 1,
-                flexWrap: "wrap",
-              }}
-            >
-              <Button
-                size="small"
-                variant={ratingFilter === "ALL" ? "contained" : "outlined"}
-                onClick={() => {
-                  setRatingFilter("ALL");
-                  setPage(1);
-                }}
-              >
-                All
-              </Button>
-              <Button
-                size="small"
-                variant={ratingFilter === "EE" ? "contained" : "outlined"}
-                onClick={() => {
-                  setRatingFilter("EE");
-                  setPage(1);
-                }}
-              >
-                EE
-              </Button>
-              <Button
-                size="small"
-                variant={ratingFilter === "ME" ? "contained" : "outlined"}
-                onClick={() => {
-                  setRatingFilter("ME");
-                  setPage(1);
-                }}
-              >
-                ME
-              </Button>
-              <Button
-                size="small"
-                variant={ratingFilter === "DM" ? "contained" : "outlined"}
-                onClick={() => {
-                  setRatingFilter("DM");
-                  setPage(1);
-                }}
-              >
-                DM
-              </Button>
-            </Box>
-          </Box>
-          <IconButton onClick={onClose} size="small">
-            <CloseIcon />
-          </IconButton>
-        </Box>
+      <Box
+  sx={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 2,
+    flexWrap: "wrap",
+  }}
+>
+  {/* Left: Title */}
+  <Box component="span" sx={{ fontWeight: 600 }}>
+    {title}
+  </Box>
+
+  {/* Right: Filter buttons + Close icon */}
+  <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+    <Button
+      size="small"
+      variant={ratingFilter === "ALL" ? "contained" : "outlined"}
+      onClick={() => { setRatingFilter("ALL"); setPage(1); }}
+    >
+      All
+    </Button>
+    <Button
+      size="small"
+      variant={ratingFilter === "EE" ? "contained" : "outlined"}
+      onClick={() => { setRatingFilter("EE"); setPage(1); }}
+    >
+      EE
+    </Button>
+    <Button
+      size="small"
+      variant={ratingFilter === "ME" ? "contained" : "outlined"}
+      onClick={() => { setRatingFilter("ME"); setPage(1); }}
+    >
+      ME
+    </Button>
+    <Button
+      size="small"
+      variant={ratingFilter === "DM" ? "contained" : "outlined"}
+      onClick={() => { setRatingFilter("DM"); setPage(1); }}
+    >
+      DM
+    </Button>
+
+    {/* <IconButton onClick={onClose} size="small">
+      <CloseIcon />
+    </IconButton> */}
+  </Box>
+</Box>
+
       </DialogTitle>
       <DialogContent dividers>
         <TableContainer component={Paper} sx={{ maxHeight: 500 }}>

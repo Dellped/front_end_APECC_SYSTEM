@@ -419,6 +419,10 @@ export default function CorporatePage() {
                 const ME = parseInt(r.ME_count || 0);
                 const DM = parseInt(r.DM_count || 0);
                 const total = parseInt(r.total_employees || 0);
+
+                const percent = (count, total) =>
+                  total > 0 ? Math.round((count / total) * 100) : 0;
+
                 const name = r[nameField] || "";
 
                 return (
@@ -447,19 +451,19 @@ export default function CorporatePage() {
                       {EE}
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
-                      {Math.round(r.EE_percent || 0)}%
+                    {percent(EE, total)}%
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
                       {ME}
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
-                      {Math.round(r.ME_percent || 0)}%
+                    {percent(ME, total)}%
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
                       {DM}
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
-                      {Math.round(r.DM_percent || 0)}%
+                    {percent(DM, total)}%
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 600 }}>
                       {total}
@@ -503,7 +507,9 @@ export default function CorporatePage() {
                   </TableRow>
                 );
               })}
-              <TableRow sx={{ bgcolor: "grey.200", fontWeight: "bold" }}>
+              <TableRow sx={{ bgcolor: "grey.200", fontWeight: "bold", "& .MuiTableCell-root":
+               {textAlign: "center",fontWeight: "bold", verticalAlign: "middle",color: "red"},
+                 }}>
                 <TableCell sx={{ textAlign: "left", fontWeight: "bold" }}>
                   Subtotal
                 </TableCell>

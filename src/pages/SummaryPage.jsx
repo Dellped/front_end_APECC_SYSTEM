@@ -27,6 +27,8 @@ import MessageBanner from "../components/MessageBanner";
 import Pagination from "../components/Pagination";
 import PreviewModal from "../components/PreviewModal";
 
+
+
 export default function SummaryPage() {
   const [loading, setLoading] = useState(true);
   const [tabLoading, setTabLoading] = useState(false);
@@ -492,6 +494,10 @@ export default function SummaryPage() {
                 const ME = parseInt(r.ME_count || 0);
                 const DM = parseInt(r.DM_count || 0);
                 const total = parseInt(r.total_employees || 0);
+
+                const percent = (count, total) =>
+                  total > 0 ? Math.round((count / total) * 100) : 0;
+
                 const name = r[nameField] || r.branch_no || r.branch || "";
                 const displayKey =
                   type === "branch"
@@ -524,19 +530,19 @@ export default function SummaryPage() {
                       {EE}
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
-                      {Math.round(r.EE_percent || 0)}%
+                      {percent(EE, total)}%
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
                       {ME}
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
-                      {Math.round(r.ME_percent || 0)}%
+                    {percent(ME, total)}%
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
                       {DM}
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
-                      {Math.round(r.DM_percent || 0)}%
+                    {percent(DM, total)}%
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 600 }}>
                       {total}
@@ -581,19 +587,21 @@ export default function SummaryPage() {
                   </TableRow>
                 );
               })}
-              <TableRow sx={{ bgcolor: "grey.200", fontWeight: "bold" }}>
-                <TableCell sx={{ textAlign: "left", fontWeight: "bold" }}>
+              <TableRow sx={{ bgcolor: "grey.200",fontWeight: "bold", "& .MuiTableCell-root":
+               {textAlign: "center",fontWeight: "bold", verticalAlign: "middle",color: "red"},
+                 }}>
+                <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>
                   Subtotal
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>{totals.EE}</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>
+                <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>{totals.EE}</TableCell>
+                <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>
                   {totals.total > 0
                     ? Math.round((totals.EE / totals.total) * 100)
                     : 0}
                   %
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>{totals.ME}</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>
+                <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>{totals.ME}</TableCell>
+                <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>
                   {totals.total > 0
                     ? Math.round((totals.ME / totals.total) * 100)
                     : 0}
@@ -818,67 +826,94 @@ export default function SummaryPage() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {operationSupportSummary.map((r, idx) => (
-                      <TableRow key={idx} hover>
-                        <TableCell sx={{ textAlign: "left" }}>
-                          OPERATIONS SUPPORT
-                        </TableCell>
-                        <TableCell>{r.EE_count || 0}</TableCell>
-                        <TableCell>{Math.round(r.EE_percent || 0)}%</TableCell>
-                        <TableCell>{r.ME_count || 0}</TableCell>
-                        <TableCell>{Math.round(r.ME_percent || 0)}%</TableCell>
-                        <TableCell>{r.DM_count || 0}</TableCell>
-                        <TableCell>{Math.round(r.DM_percent || 0)}%</TableCell>
-                        <TableCell
-                          sx={{ textAlign: "center", fontWeight: 600 }}
-                        >
-                          {r.total_employees || 0}
-                        </TableCell>
-                        <TableCell sx={{ textAlign: "center" }}>
-                          <Tooltip
-                            title="Preview Details"
-                            arrow
-                            placement="top"
-                          >
-                            <Button
-                              variant="contained"
-                              size="small"
-                              startIcon={
-                                <VisibilityIcon sx={{ fontSize: 18 }} />
-                              }
-                              onClick={() =>
-                                fetchDetailsAndShow(
-                                  "OPERATIONS SUPPORT",
-                                  "department",
-                                  "OPERATIONS SUPPORT"
-                                )
-                              }
-                              sx={{
-                                minWidth: 110,
-                                height: 32,
-                                fontSize: "0.8125rem",
-                                fontWeight: 600,
-                                textTransform: "none",
-                                borderRadius: 2,
-                                bgcolor: "primary.main",
-                                color: "white",
-                                boxShadow: "0 2px 8px rgba(255, 107, 53, 0.25)",
-                                "&:hover": {
-                                  bgcolor: "primary.dark",
-                                  boxShadow:
-                                    "0 4px 12px rgba(255, 107, 53, 0.35)",
-                                  transform: "translateY(-1px)",
-                                },
-                                transition: "all 0.2s ease-in-out",
-                              }}
-                            >
-                              Preview
-                            </Button>
-                          </Tooltip>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
+        {operationSupportSummary.map((r, idx) => {
+          const EE = parseInt(r.EE_count || 0);
+          const ME = parseInt(r.ME_count || 0);
+          const DM = parseInt(r.DM_count || 0);
+          const total = parseInt(r.total_employees || 0);
+
+          const percent = (count) => (total > 0 ? Math.round((count / total) * 100) : 0);
+
+          return (
+            <TableRow key={idx} hover>
+              <TableCell sx={{ textAlign: "center" }}>OPERATIONS SUPPORT</TableCell>
+              <TableCell sx={{ textAlign: "center" }}>{r.EE_count || 0}</TableCell>
+              <TableCell sx={{ textAlign: "center" }}>{percent(EE)}%</TableCell>
+              <TableCell sx={{ textAlign: "center" }}>{r.ME_count || 0}</TableCell>
+              <TableCell sx={{ textAlign: "center" }}>{percent(ME)}%</TableCell>
+              <TableCell sx={{ textAlign: "center" }}>{r.DM_count || 0}</TableCell>
+              <TableCell sx={{ textAlign: "center" }}>{percent(DM)}%</TableCell>
+              <TableCell sx={{ textAlign: "center", fontWeight: 600 }}>{total}</TableCell>
+              <TableCell sx={{ textAlign: "center" }}>
+                <Tooltip title="Preview Details" arrow placement="top">
+                  <Button
+                    variant="contained"
+                    size="small"
+                    startIcon={<VisibilityIcon sx={{ fontSize: 18 }} />}
+                    onClick={() =>
+                      fetchDetailsAndShow(
+                        "OPERATIONS SUPPORT",
+                        "department",
+                        "OPERATIONS SUPPORT"
+                      )
+              }
+              sx={{
+                minWidth: 110,
+                height: 32,
+                fontSize: "0.8125rem",
+                fontWeight: 600,
+                textTransform: "none",
+                borderRadius: 2,
+                bgcolor: "primary.main",
+                color: "white",
+                boxShadow: "0 2px 8px rgba(255, 107, 53, 0.25)",
+                "&:hover": {
+                  bgcolor: "primary.dark",
+                  boxShadow: "0 4px 12px rgba(255, 107, 53, 0.35)",
+                  transform: "translateY(-1px)",
+                },
+                transition: "all 0.2s ease-in-out",
+              }}
+            >
+              Preview
+            </Button>
+          </Tooltip>
+        </TableCell>
+      </TableRow>
+    );
+  })}
+
+  {/* Subtotal Row */}
+  {operationSupportSummary.length > 0 && (() => {
+    const totals = operationSupportSummary.reduce(
+      (acc, r) => {
+        acc.EE += parseInt(r.EE_count || 0);
+        acc.ME += parseInt(r.ME_count || 0);
+        acc.DM += parseInt(r.DM_count || 0);
+        acc.total += parseInt(r.total_employees || 0);
+        return acc;
+      },
+      { EE: 0, ME: 0, DM: 0, total: 0 }
+    );
+
+    const percent = (count, total) => (total > 0 ? Math.round((count / total) * 100) : 0);
+
+    return (
+      <TableRow sx={{ bgcolor: "grey.200", fontWeight: "bold" }}>
+        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>Subtotal</TableCell>
+        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{totals.EE}</TableCell>
+        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{percent(totals.EE, totals.total)}%</TableCell>
+        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{totals.ME}</TableCell>
+        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{percent(totals.ME, totals.total)}%</TableCell>
+        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{totals.DM}</TableCell>
+        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{percent(totals.DM, totals.total)}%</TableCell>
+        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{totals.total}</TableCell>
+        <TableCell sx={{ textAlign: "center", color: "red" }}>-</TableCell>
+      </TableRow>
+    );
+  })()}
+</TableBody>
+
                 </Table>
               </TableContainer>
             </Paper>

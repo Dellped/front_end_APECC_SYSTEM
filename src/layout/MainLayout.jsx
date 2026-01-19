@@ -167,7 +167,7 @@ DrawerContent.displayName = "DrawerContent";
 const menuItems = [
   {
     path: "/upload",
-    label: "Upload Forms",
+    label: "Home",
     icon: UploadIcon,
     canAccess: canAccessUpload,
   },

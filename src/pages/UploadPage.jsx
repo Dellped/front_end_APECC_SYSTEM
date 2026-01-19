@@ -740,10 +740,10 @@ export default function UploadPage() {
               flexWrap="wrap"
               sx={{ mb: 2 }}
             >
-              <Chip label={`Role: ${role}`} color="primary" />
+              {/* <Chip label={`Role: ${role}`} color="primary" />
               {role !== 'COO' && role !== 'ADMIN' &&(
               <Chip label={displayName} color="warning" />
-              )}
+              )} */}
               <Box sx={{ flexGrow: 1 }} />
               <Button
                 component="label"
@@ -769,7 +769,7 @@ export default function UploadPage() {
                 onClick={handleSubmit}
                 disabled={selectedFiles.length === 0}
               >
-                Upload
+                Submit
               </Button>
               <Button
                 variant="outlined"
