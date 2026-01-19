@@ -21,6 +21,9 @@ import {
     CircularProgress,
     Container,
     TablePagination,
+    Checkbox,
+    FormControlLabel,
+    FormGroup,
 } from "@mui/material";
 import { Delete as DeleteIcon, Add as AddIcon, Edit as EditIcon } from "@mui/icons-material";
 import { getRole, getToken, getUserId } from "../lib/storage";
@@ -58,6 +61,8 @@ export default function UserManagementPage() {
     const [operations, setOperations] = useState([]);
     const [divisions, setDivisions] = useState([]);
     const [departments, setDepartments] = useState([]);
+    const [imUsers, setImUsers] = useState([]);
+    const [selectedSubordinates, setSelectedSubordinates] = useState([]);
 
     const userRole = getRole();
     const token = getToken();
@@ -80,6 +85,7 @@ export default function UserManagementPage() {
             if (userRole === 'ADMIN') {
                 fetchOperations();
                 fetchDepartments();
+                fetchIMUsers();
             }
         }
     }, [open]);
@@ -128,10 +134,12 @@ export default function UserManagementPage() {
                         fetchAreas(data.data[0].id);
                     }
                 }
+                return data.data;
             }
         } catch (err) {
             console.error(err);
         }
+        return [];
     };
 
     const fetchAreas = async (regionId) => {
@@ -198,6 +206,30 @@ export default function UserManagementPage() {
         }
     };
 
+    const fetchIMUsers = async () => {
+        try {
+            const res = await fetch(`${API_URL}/users/im-users`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (data.success) setImUsers(data.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const fetchSubordinates = async (userId) => {
+        try {
+            const res = await fetch(`${API_URL}/users/subordinates?user_id=${userId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (data.success) setSelectedSubordinates(data.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const [openDelete, setOpenDelete] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
 
@@ -210,6 +242,10 @@ export default function UserManagementPage() {
             region_id: "", area_id: "", branch_id: "",
             operation_id: "", division_id: "", department_id: ""
         });
+        setSelectedSubordinates([]);
+        if (userRole === 'ADMIN') {
+            fetchIMUsers();
+        }
         setOpen(true);
     };
 
@@ -235,25 +271,33 @@ export default function UserManagementPage() {
             areaId = user.area.id;
             assignedId = areaId;
         } else if (user.role === 'BM' && user.branch) {
-            if (user.branch.area) {
-                regionId = user.branch.area.region_id;
-                areaId = user.branch.AreaID;
-            }
             branchId = user.branch.id;
             assignedId = branchId;
+            // Robust extraction
+            if (user.branch.AreaID) {
+                areaId = user.branch.AreaID;
+            }
+            if (user.branch.area) {
+                regionId = user.branch.area.region_id;
+            }
         } else if (user.role === 'SVP' && user.operation) {
             operationId = user.operation.id;
             assignedId = operationId;
         } else if (user.role === 'AVP' && user.division) {
             divisionId = user.division.id;
-            operationId = user.division.operationID; // Assuming backend includes this or we can infer? 
-            // Note: In getAllUsers controller, we only included attributes=['id', 'division']. 
-            // Better to fetchDivisions and match.
-            // For now, let's trust the ID. 
+            operationId = user.division.operationID;
             assignedId = divisionId;
-        } else if (["COO", "CFOO", "IM", "ITR", "CHIEF"].includes(user.role) && user.department) {
+        } else if (["IM", "ITR", "CHIEF"].includes(user.role) && user.department) {
             departmentId = user.department.id;
             assignedId = departmentId;
+        }
+
+        // Fetch regions and capture result
+        const fetchedRegions = await fetchRegions();
+
+        // If RA and regionId missing (extraction failed), use RA's region
+        if (userRole === 'RA' && !regionId && fetchedRegions && fetchedRegions.length === 1) {
+            regionId = fetchedRegions[0].id;
         }
 
         // Set form data
@@ -271,13 +315,15 @@ export default function UserManagementPage() {
         });
 
         // Trigger fetches to populate dropdowns
-        await fetchRegions();
         if (regionId) await fetchAreas(regionId);
         if (areaId) await fetchBranches(areaId);
+
         if (userRole === 'ADMIN') {
             await fetchOperations();
             await fetchDepartments();
+            await fetchIMUsers();
             if (operationId || user.role === 'AVP') await fetchDivisions(operationId);
+            if (user.role === 'ITR') await fetchSubordinates(user.id);
         }
 
         setOpen(true);
@@ -288,6 +334,7 @@ export default function UserManagementPage() {
         setFormData({ name: "", email: "", role: "", assigned_id: "", region_id: "", area_id: "", branch_id: "", operation_id: "", division_id: "", department_id: "" });
         setAreas([]);
         setBranches([]);
+        setSelectedSubordinates([]);
         setError(null);
         setIsEdit(false);
         setEditUserId(null);
@@ -334,32 +381,42 @@ export default function UserManagementPage() {
                 setFormData(prev => ({ ...prev, assigned_id: value }));
             }
         } else if (name === "department_id") {
-            const deptRoles = ['COO', 'CFOO', 'IM', 'ITR', 'CHIEF'];
+            const deptRoles = ['IM', 'ITR', 'CHIEF'];
             if (deptRoles.includes(formData.role)) {
                 setFormData(prev => ({ ...prev, assigned_id: value }));
             }
         } else if (name === "role") {
             // Reset selections on role change 
-            // setFormData(prev => ({ ...prev, region_id: "", area_id: "", branch_id: "", assigned_id: "" }));
+
+            // For RA, we must preserve the Region ID and the Areas list
+            // because the Region field is disabled and cannot be re-selected.
+            let preservedRegionId = "";
+            let shouldClearAreas = true;
+
+            if (userRole === "RA" && regions.length > 0) {
+                preservedRegionId = regions[0].id;
+                shouldClearAreas = false;
+            }
 
             // Clear all ID fields to specific role scope
             setFormData(prev => ({
                 ...prev,
                 assigned_id: "",
-                // Keep loaded lists? Maybe. 
-                // But clear selections
-                region_id: "", area_id: "", branch_id: "",
+                region_id: preservedRegionId, // Keep region for RA
+                area_id: "", branch_id: "",
                 operation_id: "", division_id: "", department_id: ""
             }));
 
-            setAreas([]);
+            if (shouldClearAreas) {
+                setAreas([]);
+            }
             setBranches([]);
             // Operations/Departments are global for ADMIN so we don't need to clear them from state, just selection
         }
     };
 
     const handleSubmit = async () => {
-        if (!formData.name || !formData.email || !formData.role || (!formData.assigned_id && formData.role !== 'ADMIN')) {
+        if (!formData.name || !formData.email || !formData.role || (!formData.assigned_id && formData.role !== 'ADMIN' && formData.role !== 'COO' && formData.role !== 'CFOO')) {
             setError("Please fill all required fields");
             return;
         }
@@ -374,9 +431,11 @@ export default function UserManagementPage() {
             const url = isEdit ? `${API_URL}/users/${editUserId}` : `${API_URL}/users`;
             const method = isEdit ? "PUT" : "POST";
 
-            // For ADMIN, ensure assigned_id is 0 or handled by backend, but let's send 0 explicitly if empty to match backend expectation of integer
+            // For ADMIN/COO/CFOO, ensure assigned_id is set correctly
             const payload = { ...formData };
             if (payload.role === 'ADMIN') payload.assigned_id = 0;
+            if (payload.role === 'COO') payload.assigned_id = 16;
+            if (payload.role === 'CFOO') payload.assigned_id = 15;
 
             const res = await fetch(url, {
                 method: method,
@@ -388,6 +447,21 @@ export default function UserManagementPage() {
             });
             const data = await res.json();
             if (data.success) {
+                // If ITR role, save subordinates
+                if (formData.role === 'ITR') {
+                    const userId = isEdit ? editUserId : data.data.id;
+                    await fetch(`${API_URL}/users/subordinates`, {
+                        method: 'POST',
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({
+                            user_id: userId,
+                            subordinate_ids: selectedSubordinates
+                        }),
+                    });
+                }
                 handleClose();
                 fetchUsers();
             } else {
@@ -450,7 +524,10 @@ export default function UserManagementPage() {
                     size="small"
                     fullWidth
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) => {
+                        setSearch(e.target.value);
+                        setPage(0);
+                    }}
                 />
             </Paper>
 
@@ -583,13 +660,58 @@ export default function UserManagementPage() {
                             </TextField>
                         )}
 
-                        {/* Department Logic (COO, CFOO, etc) */}
-                        {(["COO", "CFOO", "IM", "ITR", "CHIEF"].includes(formData.role)) && (
+                        {/* Department Logic (IM, ITR, CHIEF) */}
+                        {(["IM", "ITR", "CHIEF"].includes(formData.role)) && (
                             <TextField label="Department" name="department_id" value={formData.department_id} onChange={handleChange} select fullWidth>
-                                {departments.map(d => (
+                                {departments.filter(d => {
+                                    const name = d.name.toLowerCase();
+                                    const isOps = name.includes("operation");
+                                    const isChiefs = name === "chiefs";
+                                    if (formData.role === "CHIEF") {
+                                        return !isOps && !isChiefs;
+                                    }
+                                    return true;
+                                }).map(d => (
                                     <MenuItem key={d.id} value={d.id}>{d.name}</MenuItem>
                                 ))}
                             </TextField>
+                        )}
+
+                        {/* ITR Subordinate Selection */}
+                        {(formData.role === "ITR") && (
+                            <Box>
+                                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                                    Select Subordinates (IM Users)
+                                </Typography>
+                                <Paper variant="outlined" sx={{ p: 2, maxHeight: 300, overflow: 'auto' }}>
+                                    {imUsers.length === 0 ? (
+                                        <Typography variant="body2" color="text.secondary">
+                                            No IM users available
+                                        </Typography>
+                                    ) : (
+                                        <FormGroup>
+                                            {imUsers.map(im => (
+                                                <FormControlLabel
+                                                    key={im.id}
+                                                    control={
+                                                        <Checkbox
+                                                            checked={selectedSubordinates.includes(im.id)}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    setSelectedSubordinates([...selectedSubordinates, im.id]);
+                                                                } else {
+                                                                    setSelectedSubordinates(selectedSubordinates.filter(id => id !== im.id));
+                                                                }
+                                                            }}
+                                                        />
+                                                    }
+                                                    label={`${im.name} (${im.email})`}
+                                                />
+                                            ))}
+                                        </FormGroup>
+                                    )}
+                                </Paper>
+                            </Box>
                         )}
 
                     </Box>
