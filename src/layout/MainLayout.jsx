@@ -168,7 +168,7 @@ const menuItems = [
   {
     path: "/upload",
     label: "Home",
-    icon: UploadIcon,
+    icon: HomeIcon,
     canAccess: canAccessUpload,
   },
   {
