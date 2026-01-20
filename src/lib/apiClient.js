@@ -4,53 +4,34 @@ import { getToken } from "./storage";
 
 // Get base URL from runtime config (window.__ENV__) or build-time env var, or use default
 // Runtime config takes precedence (set by server-web.js from Cloud Run env vars)
-// Get base URL from runtime config (window.__ENV__) or build-time env var
 let baseURL =
   (typeof window !== "undefined" && window.__ENV__?.API_URL) ||
-  import.meta.env.VITE_API_URL;
+  import.meta.env.VITE_API_URL ||
+  "http://127.0.0.1:3000";
 
-// Debug: Log the initial source for troubleshooting
-if (import.meta.env.DEV || (typeof window !== "undefined" && window.__ENV__?.API_URL)) {
-  const source =
-    typeof window !== "undefined" && window.__ENV__?.API_URL
-      ? "runtime (window.__ENV__)"
-      : import.meta.env.VITE_API_URL
-        ? "build-time (VITE_API_URL)"
-        : "none (defaulting)";
-  console.log(`[API Client] Source: ${source}, Value: ${baseURL || 'not set'}`);
-}
-
-// Fallback logic and formatting
-if (baseURL && baseURL !== "") {
+// Ensure baseURL is properly formatted
+if (baseURL) {
   baseURL = baseURL.trim();
   // Remove trailing slash if present
   baseURL = baseURL.replace(/\/+$/, "");
   // Ensure baseURL is an absolute URL with protocol
   if (!baseURL.startsWith("http://") && !baseURL.startsWith("https://")) {
-    baseURL = `https://${baseURL}`; // Prefer HTTPS for production
+    baseURL = `http://${baseURL}`;
   }
 } else {
-  // Check if we're in production (cloud) vs local development
-  const isProduction = typeof window !== "undefined" && 
-    (window.location.hostname !== "localhost" && 
-     window.location.hostname !== "127.0.0.1");
-  
-  if (isProduction) {
-    // In production, use same-origin as fallback (assumes backend is on same domain)
-    baseURL = typeof window !== "undefined" ? window.location.origin : "";
-    console.warn(
-      `[API Client] No API_URL found in environment! Using same-origin fallback: ${baseURL}. ` +
-      `Please set API_URL environment variable in Cloud Run to your backend URL.`
-    );
-  } else {
-    // Local development fallback
-    baseURL = "http://127.0.0.1:3000";
-    console.warn("[API Client] No API_URL found in environment! Defaulting to localhost:3000");
-  }
+  baseURL = "http://127.0.0.1:3000";
 }
 
-// Always log the final baseURL for debugging (especially important in production)
-console.log(`[API Client] Final baseURL: ${baseURL}`);
+// Debug: Log the baseURL and its source
+if (import.meta.env.DEV) {
+  const source =
+    typeof window !== "undefined" && window.__ENV__?.API_URL
+      ? "runtime (window.__ENV__)"
+      : import.meta.env.VITE_API_URL
+      ? "build-time (VITE_API_URL)"
+      : "default";
+  console.log("API Base URL:", baseURL, `[from ${source}]`);
+}
 
 const apiClient = axios.create({
   baseURL: baseURL,
