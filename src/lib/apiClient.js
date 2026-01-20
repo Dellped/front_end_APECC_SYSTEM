@@ -30,11 +30,27 @@ if (baseURL && baseURL !== "") {
     baseURL = `https://${baseURL}`; // Prefer HTTPS for production
   }
 } else {
-  // Final fallback to localhost only if absolutely nothing else is set
-  // This is where the ERR_CONNECTION_REFUSED usually comes from in production
-  baseURL = "http://127.0.0.1:3000";
-  console.warn("[API Client] No API_URL found in environment! Defaulting to localhost:3000");
+  // Check if we're in production (cloud) vs local development
+  const isProduction = typeof window !== "undefined" && 
+    (window.location.hostname !== "localhost" && 
+     window.location.hostname !== "127.0.0.1");
+  
+  if (isProduction) {
+    // In production, use same-origin as fallback (assumes backend is on same domain)
+    baseURL = typeof window !== "undefined" ? window.location.origin : "";
+    console.warn(
+      `[API Client] No API_URL found in environment! Using same-origin fallback: ${baseURL}. ` +
+      `Please set API_URL environment variable in Cloud Run to your backend URL.`
+    );
+  } else {
+    // Local development fallback
+    baseURL = "http://127.0.0.1:3000";
+    console.warn("[API Client] No API_URL found in environment! Defaulting to localhost:3000");
+  }
 }
+
+// Always log the final baseURL for debugging (especially important in production)
+console.log(`[API Client] Final baseURL: ${baseURL}`);
 
 const apiClient = axios.create({
   baseURL: baseURL,
@@ -73,9 +89,34 @@ apiClient.interceptors.response.use(
       return Promise.reject(new Error(errorMessage));
     } else if (error.request) {
       // Request made but no response received
-      return Promise.reject(
-        new Error("Network error. Please check your connection.")
-      );
+      const attemptedUrl = error.config?.url 
+        ? `${error.config.baseURL || ''}${error.config.url}`
+        : 'unknown URL';
+      
+      // Check for common error codes
+      let detailedError = `Network error: Unable to reach the API server.`;
+      
+      if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
+        detailedError += `\n\nAttempted URL: ${attemptedUrl}`;
+        detailedError += `\n\nPossible causes:`;
+        detailedError += `\n1. Backend server is not running or unreachable`;
+        detailedError += `\n2. CORS policy is blocking the request`;
+        detailedError += `\n3. API_URL environment variable is not set correctly`;
+        detailedError += `\n\nCheck the browser console for more details.`;
+      } else {
+        detailedError += `\nAttempted URL: ${attemptedUrl}`;
+        detailedError += `\nError: ${error.message || 'Unknown network error'}`;
+      }
+      
+      console.error('[API Client] Network Error:', {
+        url: attemptedUrl,
+        baseURL: error.config?.baseURL,
+        method: error.config?.method,
+        error: error.message,
+        code: error.code
+      });
+      
+      return Promise.reject(new Error(detailedError));
     } else {
       // Something else happened
       return Promise.reject(error);
