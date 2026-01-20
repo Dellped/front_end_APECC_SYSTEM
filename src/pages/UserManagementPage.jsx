@@ -26,9 +26,7 @@ import {
     FormGroup,
 } from "@mui/material";
 import { Delete as DeleteIcon, Add as AddIcon, Edit as EditIcon } from "@mui/icons-material";
-import { getRole, getToken, getUserId } from "../lib/storage";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+import apiClient from "../lib/apiClient";
 
 export default function UserManagementPage() {
     const [users, setUsers] = useState([]);
@@ -65,7 +63,6 @@ export default function UserManagementPage() {
     const [selectedSubordinates, setSelectedSubordinates] = useState([]);
 
     const userRole = getRole();
-    const token = getToken();
 
     // Debounce search
     useEffect(() => {
@@ -94,16 +91,12 @@ export default function UserManagementPage() {
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            let query = `${API_URL}/users?page=${page + 1}&limit=${rowsPerPage}`;
+            let query = `/api/users?page=${page + 1}&limit=${rowsPerPage}`;
             if (search) {
                 query += `&search=${encodeURIComponent(search)}`;
             }
 
-            // Backend is 1-indexed for page, Material UI is 0-indexed
-            const response = await fetch(query, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = await response.json();
+            const { data } = await apiClient.get(query);
             if (data.success) {
                 setUsers(data.data);
                 setTotalCount(data.count || 0);
@@ -111,7 +104,7 @@ export default function UserManagementPage() {
                 setError(data.error);
             }
         } catch (err) {
-            setError("Failed to fetch users");
+            setError(err.message || "Failed to fetch users");
         } finally {
             setLoading(false);
         }
@@ -120,10 +113,7 @@ export default function UserManagementPage() {
     // Fetch Metadata for Dropdowns
     const fetchRegions = async () => {
         try {
-            const res = await fetch(`${API_URL}/users/regions`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = await res.json();
+            const { data } = await apiClient.get(`/api/users/regions`);
             if (data.success) {
                 setRegions(data.data);
                 // If only one region (RA), select it automatically
@@ -145,10 +135,7 @@ export default function UserManagementPage() {
     const fetchAreas = async (regionId) => {
         if (!regionId) return;
         try {
-            const res = await fetch(`${API_URL}/users/areas?region_id=${regionId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = await res.json();
+            const { data } = await apiClient.get(`/api/users/areas?region_id=${regionId}`);
             if (data.success) setAreas(data.data);
         } catch (err) {
             console.error(err);
@@ -158,10 +145,7 @@ export default function UserManagementPage() {
     const fetchBranches = async (areaId) => {
         if (!areaId) return;
         try {
-            const res = await fetch(`${API_URL}/users/branches?area_id=${areaId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = await res.json();
+            const { data } = await apiClient.get(`/api/users/branches?area_id=${areaId}`);
             if (data.success) setBranches(data.data);
         } catch (err) {
             console.error(err);
@@ -170,10 +154,7 @@ export default function UserManagementPage() {
 
     const fetchOperations = async () => {
         try {
-            const res = await fetch(`${API_URL}/users/operations`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = await res.json();
+            const { data } = await apiClient.get(`/api/users/operations`);
             if (data.success) setOperations(data.data);
         } catch (err) {
             console.error(err);
@@ -181,13 +162,9 @@ export default function UserManagementPage() {
     };
 
     const fetchDivisions = async (operationId) => {
-        // Allow fetching all divisions if no operationId provided? Backend supports it.
         const query = operationId ? `?operation_id=${operationId}` : '';
         try {
-            const res = await fetch(`${API_URL}/users/divisions${query}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = await res.json();
+            const { data } = await apiClient.get(`/api/users/divisions${query}`);
             if (data.success) setDivisions(data.data);
         } catch (err) {
             console.error(err);
@@ -196,10 +173,7 @@ export default function UserManagementPage() {
 
     const fetchDepartments = async () => {
         try {
-            const res = await fetch(`${API_URL}/users/departments`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = await res.json();
+            const { data } = await apiClient.get(`/api/users/departments`);
             if (data.success) setDepartments(data.data);
         } catch (err) {
             console.error(err);
@@ -208,10 +182,7 @@ export default function UserManagementPage() {
 
     const fetchIMUsers = async () => {
         try {
-            const res = await fetch(`${API_URL}/users/im-users`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = await res.json();
+            const { data } = await apiClient.get(`/api/users/im-users`);
             if (data.success) setImUsers(data.data);
         } catch (err) {
             console.error(err);
@@ -220,10 +191,7 @@ export default function UserManagementPage() {
 
     const fetchSubordinates = async (userId) => {
         try {
-            const res = await fetch(`${API_URL}/users/subordinates?user_id=${userId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = await res.json();
+            const { data } = await apiClient.get(`/api/users/subordinates?user_id=${userId}`);
             if (data.success) setSelectedSubordinates(data.data);
         } catch (err) {
             console.error(err);
@@ -428,8 +396,7 @@ export default function UserManagementPage() {
         }
 
         try {
-            const url = isEdit ? `${API_URL}/users/${editUserId}` : `${API_URL}/users`;
-            const method = isEdit ? "PUT" : "POST";
+            const url = isEdit ? `/api/users/${editUserId}` : `/api/users`;
 
             // For ADMIN/COO/CFOO, ensure assigned_id is set correctly
             const payload = { ...formData };
@@ -437,29 +404,17 @@ export default function UserManagementPage() {
             if (payload.role === 'COO') payload.assigned_id = 16;
             if (payload.role === 'CFOO') payload.assigned_id = 15;
 
-            const res = await fetch(url, {
-                method: method,
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(payload),
-            });
-            const data = await res.json();
+            const { data } = isEdit
+                ? await apiClient.put(url, payload)
+                : await apiClient.post(url, payload);
+
             if (data.success) {
                 // If ITR role, save subordinates
                 if (formData.role === 'ITR') {
                     const userId = isEdit ? editUserId : data.data.id;
-                    await fetch(`${API_URL}/users/subordinates`, {
-                        method: 'POST',
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                        },
-                        body: JSON.stringify({
-                            user_id: userId,
-                            subordinate_ids: selectedSubordinates
-                        }),
+                    await apiClient.post(`/api/users/subordinates`, {
+                        user_id: userId,
+                        subordinate_ids: selectedSubordinates
                     });
                 }
                 handleClose();
@@ -468,7 +423,7 @@ export default function UserManagementPage() {
                 setError(data.error);
             }
         } catch (err) {
-            setError(isEdit ? "Failed to update user" : "Failed to create user");
+            setError(err.message || (isEdit ? "Failed to update user" : "Failed to create user"));
         }
     };
 
@@ -480,23 +435,17 @@ export default function UserManagementPage() {
     const confirmDelete = async () => {
         if (!deleteId) return;
         try {
-            const res = await fetch(`${API_URL}/users/${deleteId}`, {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            const data = await res.json();
+            const { data } = await apiClient.delete(`/api/users/${deleteId}`);
             if (data.success) {
                 fetchUsers();
                 setOpenDelete(false);
                 setDeleteId(null);
             } else {
-                alert(data.error);
+                setError(data.error);
                 setOpenDelete(false);
             }
         } catch (err) {
-            alert("Failed to delete user");
+            setError(err.message || "Failed to delete user");
             setOpenDelete(false);
         }
     };
