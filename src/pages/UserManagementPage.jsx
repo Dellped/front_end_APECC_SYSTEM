@@ -27,6 +27,8 @@ import {
 } from "@mui/material";
 import { Delete as DeleteIcon, Add as AddIcon, Edit as EditIcon } from "@mui/icons-material";
 import apiClient from "../lib/apiClient";
+import { getRole } from "../lib/storage";
+import Pagination from "../components/Pagination";
 
 export default function UserManagementPage() {
     const [users, setUsers] = useState([]);
@@ -36,7 +38,7 @@ export default function UserManagementPage() {
     const [isEdit, setIsEdit] = useState(false); // Track if editing
     const [editUserId, setEditUserId] = useState(null); // ID of user being edited
 
-    const [page, setPage] = useState(0);
+    const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [totalCount, setTotalCount] = useState(0);
     const [search, setSearch] = useState("");
@@ -91,7 +93,7 @@ export default function UserManagementPage() {
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            let query = `/api/users?page=${page + 1}&limit=${rowsPerPage}`;
+            let query = `/api/users?page=${page}&limit=${rowsPerPage}`;
             if (search) {
                 query += `&search=${encodeURIComponent(search)}`;
             }
@@ -308,13 +310,13 @@ export default function UserManagementPage() {
         setEditUserId(null);
     };
 
-    const handleChangePage = (event, newPage) => {
+    const handleChangePage = (newPage) => {
         setPage(newPage);
     };
 
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
+        setPage(1);
     };
 
     const handleChange = (e) => {
@@ -475,7 +477,7 @@ export default function UserManagementPage() {
                     value={search}
                     onChange={(e) => {
                         setSearch(e.target.value);
-                        setPage(0);
+                        setPage(1);
                     }}
                 />
             </Paper>
@@ -531,15 +533,13 @@ export default function UserManagementPage() {
                         </TableBody>
                     </Table>
                 </TableContainer>
-                <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
-                    component="div"
-                    count={totalCount}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
+                <Box sx={{ p: 2 }}>
+                    <Pagination
+                        currentPage={page}
+                        totalPages={Math.ceil(totalCount / rowsPerPage)}
+                        onPageChange={handleChangePage}
+                    />
+                </Box>
             </Paper>
 
             {/* Add/Edit User Dialog */}
