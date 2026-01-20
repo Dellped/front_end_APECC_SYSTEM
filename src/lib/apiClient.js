@@ -30,19 +30,10 @@ if (baseURL && baseURL !== "") {
     baseURL = `https://${baseURL}`; // Prefer HTTPS for production
   }
 } else {
-  // Fallback to same-origin (works when frontend + backend share a host, e.g. in cloud),
-  // and only fall back to localhost as a last resort (local dev).
-  if (typeof window !== "undefined" && window.location?.origin) {
-    baseURL = window.location.origin;
-    console.warn(
-      `[API Client] No API_URL found in environment! Defaulting to same-origin: ${baseURL}`
-    );
-  } else {
-    baseURL = "http://127.0.0.1:3000";
-    console.warn(
-      "[API Client] No API_URL found in environment! Defaulting to localhost:3000"
-    );
-  }
+  // Final fallback to localhost only if absolutely nothing else is set
+  // This is where the ERR_CONNECTION_REFUSED usually comes from in production
+  baseURL = "http://127.0.0.1:3000";
+  console.warn("[API Client] No API_URL found in environment! Defaulting to localhost:3000");
 }
 
 const apiClient = axios.create({
