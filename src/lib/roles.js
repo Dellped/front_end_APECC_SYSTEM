@@ -35,6 +35,7 @@ export function canAccessSummary(role) {
   return role !== ROLES.BM && role !== ROLES.CHIEF;
 }
 
+
 export function canAccessArchive(role) {
   return role === ROLES.ADMIN;
 }
@@ -45,7 +46,7 @@ export function canAccessCorporate(role) {
 }
 
 export function canAccessValSummary(role) {
-  return true;
+  return role !== ROLES.BM;
 }
 
 
