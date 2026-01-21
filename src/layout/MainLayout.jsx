@@ -174,19 +174,19 @@ const menuItems = [
   },
   {
     path: "/validate",
-    label: "Validate Reports",
+    label: "Validate Forms",
     icon: ValidateIcon,
     canAccess: canAccessValidate,
   },
   {
     path: "/valsummary",
-    label: "Validation Summary",
+    label: "Consolidated Forms",
     icon: ValidateIcon,
     canAccess: canAccessValSummary,
   },
   {
     path: "/generate",
-    label: "Generate Reports",
+    label: "Individual PM Report",
     icon: GenerateIcon,
     canAccess: canAccessGenerate,
   },
