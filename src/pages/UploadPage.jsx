@@ -37,6 +37,7 @@ import { ROLES } from "../lib/roles";
 import LoadingOverlay from "../components/LoadingOverlay";
 import MessageBanner from "../components/MessageBanner";
 import Pagination from "../components/Pagination";
+import registeredASALogo from "../assets/logo2.png";
 
 export default function UploadPage() {
   const [loading, setLoading] = useState(false);
@@ -625,9 +626,9 @@ export default function UploadPage() {
         <CardContent sx={{ p: 4 }}>
           <Box sx={{ textAlign: "center", mb: 3 }}>
             <img
-              src="https://raw.githubusercontent.com/rodelpeligro-oss/image-hosting/main/nav3%20(1).png"
+              src={registeredASALogo}
               alt="Logo"
-              style={{ width: 200, height: 70 }}
+              style={{ width: 200, height: 90 }}
             />
             <Typography variant="h5" sx={{ mt: 2, fontWeight: 600 }}>
               Value-Driven Performance Management Form

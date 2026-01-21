@@ -37,6 +37,7 @@ import {
   People as PeopleIcon,
 } from "@mui/icons-material";
 import { getRole, clearSession, isLoggedIn } from "../lib/storage";
+import registeredASALogo from "../assets/registered_ASA Logo Vertical.png";
 import {
   canAccessUpload,
   canAccessValidate,
@@ -79,7 +80,7 @@ const DrawerContent = memo(({ menuItems, collapsed }) => {
       >
         {collapsed ? (
           <img
-            src="https://raw.githubusercontent.com/rodelpeligro-oss/image-hosting/main/head.png"
+            src={registeredASALogo}
             alt="Logo"
             style={{
               maxWidth: "40px",
@@ -89,7 +90,7 @@ const DrawerContent = memo(({ menuItems, collapsed }) => {
           />
         ) : (
           <img
-            src="https://raw.githubusercontent.com/rodelpeligro-oss/image-hosting/main/head.png"
+            src={registeredASALogo}
             alt="Logo"
             style={{ maxWidth: "90px", maxHeight: "120px" }}
           />

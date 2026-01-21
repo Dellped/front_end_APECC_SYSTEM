@@ -15,6 +15,7 @@ import {
 import apiClient from "../lib/apiClient";
 import { storeLoginData, isLoggedIn, getRole } from "../lib/storage";
 import { getDefaultRouteForRole } from "../lib/roles";
+import registeredASALogo from "../assets/logo2.png";
 
 export default function LoginPage() {
   const [showWelcome, setShowWelcome] = useState(false);
@@ -144,7 +145,7 @@ export default function LoginPage() {
           <CardContent sx={{ textAlign: "center", py: 4 }}>
             <Box sx={{ mb: 3 }}>
               <img
-                src="https://raw.githubusercontent.com/rodelpeligro-oss/image-hosting/main/nav3%20(1).png"
+                src={registeredASALogo}
                 alt="Logo"
                 style={{ width: 260, height: "auto" }}
               />

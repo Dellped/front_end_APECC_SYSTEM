@@ -22,6 +22,7 @@ import { ROLES } from "../lib/roles";
 import LoadingOverlay from "../components/LoadingOverlay";
 import MessageBanner from "../components/MessageBanner";
 import PreviewModal from "../components/PreviewModal";
+import registeredASALogo from "../assets/logo2.png";
 
 const PREVIEW_COLUMNS = [
   "emp_id",
@@ -566,9 +567,9 @@ export default function CorporatePage() {
         <CardContent sx={{ p: 4 }}>
           <Box sx={{ textAlign: "center", mb: 3 }}>
             <img
-              src="https://raw.githubusercontent.com/rodelpeligro-oss/image-hosting/main/nav3%20(1).png"
+              src={registeredASALogo}
               alt="Logo"
-              style={{ width: 200, height: 70 }}
+              style={{ width: 200, height: 90 }}
             />
             <Typography variant="h5" sx={{ mt: 2, fontWeight: 600 }}>
               Value-Driven Performance Management Form
