@@ -44,7 +44,6 @@ export default function UserManagementPage() {
     const [search, setSearch] = useState("");
 
     const [formData, setFormData] = useState({
-        name: "",
         email: "",
         role: "",
         assigned_id: "",
@@ -54,6 +53,12 @@ export default function UserManagementPage() {
         operation_id: "", // Helper for cascading (SVP/AVP)
         division_id: "", // Helper for cascading (AVP)
         department_id: "", // Helper (COO, CFOO, etc)
+        id_number: "",
+        first_name: "",
+        surname: "",
+        suffix: "",
+        Department: "",
+        Division: "",
     });
     const [regions, setRegions] = useState([]);
     const [areas, setAreas] = useState([]);
@@ -210,7 +215,9 @@ export default function UserManagementPage() {
         setFormData({
             name: "", email: "", role: "", assigned_id: "",
             region_id: "", area_id: "", branch_id: "",
-            operation_id: "", division_id: "", department_id: ""
+            operation_id: "", division_id: "", department_id: "",
+            id_number: "", first_name: "", surname: "", suffix: "",
+            Department: "", Division: ""
         });
         setSelectedSubordinates([]);
         if (userRole === 'ADMIN') {
@@ -272,7 +279,7 @@ export default function UserManagementPage() {
 
         // Set form data
         setFormData({
-            name: user.name,
+            // name removed
             email: user.email,
             role: user.role,
             assigned_id: assignedId,
@@ -281,7 +288,13 @@ export default function UserManagementPage() {
             branch_id: branchId,
             operation_id: operationId,
             division_id: divisionId,
-            department_id: departmentId
+            department_id: departmentId,
+            id_number: user.id_number || "",
+            first_name: user.first_name || "",
+            surname: user.surname || "",
+            suffix: user.suffix || "",
+            Department: user.Department || "",
+            Division: user.Division || ""
         });
 
         // Trigger fetches to populate dropdowns
@@ -301,7 +314,13 @@ export default function UserManagementPage() {
 
     const handleClose = () => {
         setOpen(false);
-        setFormData({ name: "", email: "", role: "", assigned_id: "", region_id: "", area_id: "", branch_id: "", operation_id: "", division_id: "", department_id: "" });
+        setFormData({
+            email: "", role: "", assigned_id: "",
+            region_id: "", area_id: "", branch_id: "",
+            operation_id: "", division_id: "", department_id: "",
+            id_number: "", first_name: "", surname: "", suffix: "",
+            Department: "", Division: ""
+        });
         setAreas([]);
         setBranches([]);
         setSelectedSubordinates([]);
@@ -356,7 +375,7 @@ export default function UserManagementPage() {
                 setFormData(prev => ({ ...prev, assigned_id: value }));
             }
         } else if (name === "role") {
-            // Reset selections on role change 
+            // Reset selections on role change
 
             // For RA, we must preserve the Region ID and the Areas list
             // because the Region field is disabled and cannot be re-selected.
@@ -386,7 +405,7 @@ export default function UserManagementPage() {
     };
 
     const handleSubmit = async () => {
-        if (!formData.name || !formData.email || !formData.role || (!formData.assigned_id && formData.role !== 'ADMIN' && formData.role !== 'COO' && formData.role !== 'CFOO')) {
+        if (!formData.email || !formData.role || !formData.first_name || !formData.surname || (!formData.assigned_id && formData.role !== 'ADMIN' && formData.role !== 'COO' && formData.role !== 'CFOO')) {
             setError("Please fill all required fields");
             return;
         }
@@ -488,9 +507,14 @@ export default function UserManagementPage() {
                     <Table>
                         <TableHead sx={{ bgcolor: "#f5f5f5" }}>
                             <TableRow>
-                                <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>Role</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>ID Number</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>First Name</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>Last Name</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>Suffix</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>Department</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>Division</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>Position</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>Email Address</TableCell>
                                 <TableCell sx={{ fontWeight: 600 }}>Assigned To</TableCell>
                                 <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
                             </TableRow>
@@ -507,8 +531,12 @@ export default function UserManagementPage() {
                             ) : (
                                 users.map((user) => (
                                     <TableRow key={user.id} hover>
-                                        <TableCell>{user.name}</TableCell>
-                                        <TableCell>{user.email}</TableCell>
+                                        <TableCell>{user.id_number}</TableCell>
+                                        <TableCell>{user.first_name}</TableCell>
+                                        <TableCell>{user.surname}</TableCell>
+                                        <TableCell>{user.suffix}</TableCell>
+                                        <TableCell>{user.Department}</TableCell>
+                                        <TableCell>{user.Division}</TableCell>
                                         <TableCell>
                                             <Box component="span" sx={{
                                                 bgcolor: user.role === 'ADMIN' ? '#e3f2fd' : user.role === 'RA' ? '#fff3e0' : '#f5f5f5',
@@ -518,6 +546,7 @@ export default function UserManagementPage() {
                                                 {user.role}
                                             </Box>
                                         </TableCell>
+                                        <TableCell>{user.email}</TableCell>
                                         <TableCell>{user.assigned_name || user.assigned_id}</TableCell>
                                         <TableCell>
                                             <IconButton onClick={() => handleEdit(user)} color="primary" size="small" sx={{ mr: 1 }}>
@@ -549,7 +578,22 @@ export default function UserManagementPage() {
                     <Box display="flex" flexDirection="column" gap={2} sx={{ mt: 1 }}>
                         {error && <Alert severity="error">{error}</Alert>}
 
-                        <TextField label="Name" name="name" value={formData.name} onChange={handleChange} fullWidth required />
+                        <Box display="flex" gap={2}>
+                            <TextField label="ID Number" name="id_number" value={formData.id_number} onChange={handleChange} fullWidth />
+                            <TextField label="Suffix" name="suffix" value={formData.suffix} onChange={handleChange} fullWidth />
+                        </Box>
+                        <Box display="flex" gap={2}>
+                            <TextField label="First Name" name="first_name" value={formData.first_name} onChange={handleChange} fullWidth required />
+                            <TextField label="Last Name" name="surname" value={formData.surname} onChange={handleChange} fullWidth required />
+                        </Box>
+                        {/* Display Name removed as it is now replaced by First/Last Name */}
+
+
+                        <Box display="flex" gap={2}>
+                            <TextField label="User's Department" name="Department" value={formData.Department} onChange={handleChange} fullWidth />
+                            <TextField label="User's Division" name="Division" value={formData.Division} onChange={handleChange} fullWidth />
+                        </Box>
+
                         <TextField
                             label="Email"
                             name="email"
@@ -654,7 +698,7 @@ export default function UserManagementPage() {
                                                             }}
                                                         />
                                                     }
-                                                    label={`${im.name} (${im.email})`}
+                                                    label={`${im.first_name} ${im.surname} (${im.email})`}
                                                 />
                                             ))}
                                         </FormGroup>
