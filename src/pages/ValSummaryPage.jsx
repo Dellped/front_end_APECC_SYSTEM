@@ -42,7 +42,24 @@ const formatPercent = (value) => {
   return Number.isFinite(num) ? `${Math.round(num)}%` : "";
 };
 
+const excelSerialToDate = (serial) => {
 
+  if (serial === "0") return "0";
+  
+  if (!serial) return "";
+
+  // Excel starts at 1900-01-01
+  const excelEpoch = new Date(1899, 11, 30);
+  const date = new Date(excelEpoch.getTime() + serial * 86400000);
+
+  const mm = date.getMonth() + 1;
+  const dd = date.getDate();
+  const yyyy = date.getFullYear();
+
+  return `${mm}/${dd}/${yyyy}`;
+};
+
+  
 export default function ValidatePage() {
   const adminLikeRoles = [ROLES.ADMIN, ROLES.COO];
 
@@ -293,7 +310,7 @@ export default function ValidatePage() {
           {r.position_title || ""}
         </TableCell>
         <TableCell sx={getCellStyle(r.date_hired)}>
-          {r.date_hired || ""}
+        {excelSerialToDate(r.date_hired)}
         </TableCell>
         <TableCell sx={getCellStyle(r.immediate_superior)}>
           {r.immediate_superior || ""}
