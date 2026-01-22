@@ -29,7 +29,6 @@ import PreviewModal from "../components/PreviewModal";
 import registeredASALogo from "../assets/logo2.png";
 
 
-
 export default function SummaryPage() {
   const [loading, setLoading] = useState(true);
   const [tabLoading, setTabLoading] = useState(false);
