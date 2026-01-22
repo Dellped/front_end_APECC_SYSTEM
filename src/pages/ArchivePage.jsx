@@ -201,7 +201,7 @@ export default function ArchivePage() {
                         const date = new Date(file.archived_at);
                         if (!isNaN(date)) {
                           const localDate = new Date(
-                            date.getTime() + 8 * 60 * 60 * 1000
+                            date.getTime() - 0 * 60 * 60 * 1000
                           );
                           localDateStr = localDate.toLocaleString("en-US", {
                             hour12: true,
