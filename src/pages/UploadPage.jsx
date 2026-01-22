@@ -827,7 +827,7 @@ export default function UploadPage() {
                     paginatedUploaded.map((file) => {
                       const utcDate = new Date(file.uploaded_at);
                       const localDate = new Date(
-                        utcDate.getTime() - 0 * 60 * 60 * 1000
+                        utcDate.getTime() - 8 * 60 * 60 * 1000
                       );
                       return (
                         <TableRow key={file.id} hover>
