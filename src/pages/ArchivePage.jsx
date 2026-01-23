@@ -56,6 +56,10 @@ export default function ArchivePage() {
       return { entityName: "ADMIN", branchParam: "" };
     }
 
+    if (role === ROLES.SUPER_ADMIN) {
+      return { entityName: "Super Admin", branchParam: "" };
+    }
+
     const entityName = getSession(SESSION_KEYS.BRANCH) || "Unknown Branch";
     const branchParam = getSession(SESSION_KEYS.BRANCH_NO) || "";
     return { entityName, branchParam };
@@ -69,7 +73,7 @@ export default function ArchivePage() {
 
       try {
         let url;
-        if (role === ROLES.ADMIN || !branchParam) {
+        if (role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN || !branchParam) {
           url = `/api/archive?all=true`;
         } else {
           url = `/api/archive?branch=${encodeURIComponent(branchParam)}`;

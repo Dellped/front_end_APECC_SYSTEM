@@ -119,6 +119,7 @@ export default function SummaryPage() {
         entity = getSession(SESSION_KEYS.USER_ID) || "";
         displayName = getSession(SESSION_KEYS.DEP_NAME) || "";
         break;
+      case ROLES.SUPER_ADMIN:
       case ROLES.ADMIN:
         entity = "ADMIN";
         displayName = "ADMIN";
@@ -159,7 +160,7 @@ export default function SummaryPage() {
         url = `/api/summary/details?operation_name=${encodeURIComponent(
           filterKey
         )}`;
-       else if (type === "im")
+      else if (type === "im")
         url = `/api/summary/preview?role=IM&userId=${encodeURIComponent(
           userId
         )}&department=${encodeURIComponent(filterKey)}`;
@@ -216,9 +217,9 @@ export default function SummaryPage() {
         // Build tabs based on role and available data
         const availableTabs = [];
 
-        if (role === ROLES.ADMIN || role === ROLES.COO) {
+        if (role === ROLES.ADMIN || role === ROLES.COO || role === ROLES.SUPER_ADMIN) {
           if (data.departmentSummary?.length)
-            availableTabs.push({ id: "department", label: "Department Summary",  });
+            availableTabs.push({ id: "department", label: "Department Summary", });
           if (data.operationSummary?.length)
             availableTabs.push({ id: "operation", label: "Operation Summary" });
         }
@@ -261,7 +262,7 @@ export default function SummaryPage() {
           if (data.branchSummary?.length)
             availableTabs.push({ id: "branch", label: "Branch Summary" });
         }
-          {
+        {
           if (data.divisionSummary?.length)
             availableTabs.push({ id: "division", label: "Division Summary" });
           if (data.regionSummary?.length)
@@ -502,9 +503,8 @@ export default function SummaryPage() {
                 const name = r[nameField] || r.branch_no || r.branch || "";
                 const displayKey =
                   type === "branch"
-                    ? `${r.branch_no || r.Branch || r.branch || ""} - ${
-                        r.full_branch_name || r.branch || ""
-                      }`
+                    ? `${r.branch_no || r.Branch || r.branch || ""} - ${r.full_branch_name || r.branch || ""
+                    }`
                     : name;
 
                 return (
@@ -537,13 +537,13 @@ export default function SummaryPage() {
                       {ME}
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
-                    {percent(ME, total)}%
+                      {percent(ME, total)}%
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
                       {DM}
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
-                    {percent(DM, total)}%
+                      {percent(DM, total)}%
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 600 }}>
                       {total}
@@ -588,9 +588,10 @@ export default function SummaryPage() {
                   </TableRow>
                 );
               })}
-              <TableRow sx={{ bgcolor: "grey.200",fontWeight: "bold", "& .MuiTableCell-root":
-               {textAlign: "center",fontWeight: "bold", verticalAlign: "middle",color: "red"},
-                 }}>
+              <TableRow sx={{
+                bgcolor: "grey.200", fontWeight: "bold", "& .MuiTableCell-root":
+                  { textAlign: "center", fontWeight: "bold", verticalAlign: "middle", color: "red" },
+              }}>
                 <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>
                   Subtotal
                 </TableCell>
@@ -730,12 +731,12 @@ export default function SummaryPage() {
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 500 }}>
               Summary Reports
             </Typography>
-            {role !== 'COO' && role !== 'ADMIN' && (
-            <Chip
-              label={displayName || ""}
-              color="primary"
-              sx={{ mt: 2 }}
-            />
+            {role !== 'COO' && role !== 'ADMIN' && role !== 'SUPER_ADMIN' && (
+              <Chip
+                label={displayName || ""}
+                color="primary"
+                sx={{ mt: 2 }}
+              />
             )}
           </Box>
 
@@ -827,93 +828,93 @@ export default function SummaryPage() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-        {operationSupportSummary.map((r, idx) => {
-          const EE = parseInt(r.EE_count || 0);
-          const ME = parseInt(r.ME_count || 0);
-          const DM = parseInt(r.DM_count || 0);
-          const total = parseInt(r.total_employees || 0);
+                    {operationSupportSummary.map((r, idx) => {
+                      const EE = parseInt(r.EE_count || 0);
+                      const ME = parseInt(r.ME_count || 0);
+                      const DM = parseInt(r.DM_count || 0);
+                      const total = parseInt(r.total_employees || 0);
 
-          const percent = (count) => (total > 0 ? Math.round((count / total) * 100) : 0);
+                      const percent = (count) => (total > 0 ? Math.round((count / total) * 100) : 0);
 
-          return (
-            <TableRow key={idx} hover>
-              <TableCell sx={{ textAlign: "center" }}>OPERATIONS SUPPORT</TableCell>
-              <TableCell sx={{ textAlign: "center" }}>{r.EE_count || 0}</TableCell>
-              <TableCell sx={{ textAlign: "center" }}>{percent(EE)}%</TableCell>
-              <TableCell sx={{ textAlign: "center" }}>{r.ME_count || 0}</TableCell>
-              <TableCell sx={{ textAlign: "center" }}>{percent(ME)}%</TableCell>
-              <TableCell sx={{ textAlign: "center" }}>{r.DM_count || 0}</TableCell>
-              <TableCell sx={{ textAlign: "center" }}>{percent(DM)}%</TableCell>
-              <TableCell sx={{ textAlign: "center", fontWeight: 600 }}>{total}</TableCell>
-              <TableCell sx={{ textAlign: "center" }}>
-                <Tooltip title="Preview Details" arrow placement="top">
-                  <Button
-                    variant="contained"
-                    size="small"
-                    startIcon={<VisibilityIcon sx={{ fontSize: 18 }} />}
-                    onClick={() =>
-                      fetchDetailsAndShow(
-                        "OPERATIONS SUPPORT",
-                        "department",
-                        "OPERATIONS SUPPORT"
-                      )
-              }
-              sx={{
-                minWidth: 110,
-                height: 32,
-                fontSize: "0.8125rem",
-                fontWeight: 600,
-                textTransform: "none",
-                borderRadius: 2,
-                bgcolor: "primary.main",
-                color: "white",
-                boxShadow: "0 2px 8px rgba(255, 107, 53, 0.25)",
-                "&:hover": {
-                  bgcolor: "primary.dark",
-                  boxShadow: "0 4px 12px rgba(255, 107, 53, 0.35)",
-                  transform: "translateY(-1px)",
-                },
-                transition: "all 0.2s ease-in-out",
-              }}
-            >
-              Preview
-            </Button>
-          </Tooltip>
-        </TableCell>
-      </TableRow>
-    );
-  })}
+                      return (
+                        <TableRow key={idx} hover>
+                          <TableCell sx={{ textAlign: "center" }}>OPERATIONS SUPPORT</TableCell>
+                          <TableCell sx={{ textAlign: "center" }}>{r.EE_count || 0}</TableCell>
+                          <TableCell sx={{ textAlign: "center" }}>{percent(EE)}%</TableCell>
+                          <TableCell sx={{ textAlign: "center" }}>{r.ME_count || 0}</TableCell>
+                          <TableCell sx={{ textAlign: "center" }}>{percent(ME)}%</TableCell>
+                          <TableCell sx={{ textAlign: "center" }}>{r.DM_count || 0}</TableCell>
+                          <TableCell sx={{ textAlign: "center" }}>{percent(DM)}%</TableCell>
+                          <TableCell sx={{ textAlign: "center", fontWeight: 600 }}>{total}</TableCell>
+                          <TableCell sx={{ textAlign: "center" }}>
+                            <Tooltip title="Preview Details" arrow placement="top">
+                              <Button
+                                variant="contained"
+                                size="small"
+                                startIcon={<VisibilityIcon sx={{ fontSize: 18 }} />}
+                                onClick={() =>
+                                  fetchDetailsAndShow(
+                                    "OPERATIONS SUPPORT",
+                                    "department",
+                                    "OPERATIONS SUPPORT"
+                                  )
+                                }
+                                sx={{
+                                  minWidth: 110,
+                                  height: 32,
+                                  fontSize: "0.8125rem",
+                                  fontWeight: 600,
+                                  textTransform: "none",
+                                  borderRadius: 2,
+                                  bgcolor: "primary.main",
+                                  color: "white",
+                                  boxShadow: "0 2px 8px rgba(255, 107, 53, 0.25)",
+                                  "&:hover": {
+                                    bgcolor: "primary.dark",
+                                    boxShadow: "0 4px 12px rgba(255, 107, 53, 0.35)",
+                                    transform: "translateY(-1px)",
+                                  },
+                                  transition: "all 0.2s ease-in-out",
+                                }}
+                              >
+                                Preview
+                              </Button>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
 
-  {/* Subtotal Row */}
-  {operationSupportSummary.length > 0 && (() => {
-    const totals = operationSupportSummary.reduce(
-      (acc, r) => {
-        acc.EE += parseInt(r.EE_count || 0);
-        acc.ME += parseInt(r.ME_count || 0);
-        acc.DM += parseInt(r.DM_count || 0);
-        acc.total += parseInt(r.total_employees || 0);
-        return acc;
-      },
-      { EE: 0, ME: 0, DM: 0, total: 0 }
-    );
+                    {/* Subtotal Row */}
+                    {operationSupportSummary.length > 0 && (() => {
+                      const totals = operationSupportSummary.reduce(
+                        (acc, r) => {
+                          acc.EE += parseInt(r.EE_count || 0);
+                          acc.ME += parseInt(r.ME_count || 0);
+                          acc.DM += parseInt(r.DM_count || 0);
+                          acc.total += parseInt(r.total_employees || 0);
+                          return acc;
+                        },
+                        { EE: 0, ME: 0, DM: 0, total: 0 }
+                      );
 
-    const percent = (count, total) => (total > 0 ? Math.round((count / total) * 100) : 0);
+                      const percent = (count, total) => (total > 0 ? Math.round((count / total) * 100) : 0);
 
-    return (
-      <TableRow sx={{ bgcolor: "grey.200", fontWeight: "bold" }}>
-        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>Subtotal</TableCell>
-        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{totals.EE}</TableCell>
-        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{percent(totals.EE, totals.total)}%</TableCell>
-        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{totals.ME}</TableCell>
-        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{percent(totals.ME, totals.total)}%</TableCell>
-        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{totals.DM}</TableCell>
-        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{percent(totals.DM, totals.total)}%</TableCell>
-        <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{totals.total}</TableCell>
-        <TableCell sx={{ textAlign: "center", color: "red" }}>-</TableCell>
-      </TableRow>
-    );
-  })()}
-</TableBody>
+                      return (
+                        <TableRow sx={{ bgcolor: "grey.200", fontWeight: "bold" }}>
+                          <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>Subtotal</TableCell>
+                          <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{totals.EE}</TableCell>
+                          <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{percent(totals.EE, totals.total)}%</TableCell>
+                          <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{totals.ME}</TableCell>
+                          <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{percent(totals.ME, totals.total)}%</TableCell>
+                          <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{totals.DM}</TableCell>
+                          <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{percent(totals.DM, totals.total)}%</TableCell>
+                          <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "red" }}>{totals.total}</TableCell>
+                          <TableCell sx={{ textAlign: "center", color: "red" }}>-</TableCell>
+                        </TableRow>
+                      );
+                    })()}
+                  </TableBody>
 
                 </Table>
               </TableContainer>

@@ -120,7 +120,7 @@ export default function UploadPage() {
         entityCode = getSession(SESSION_KEYS.CFO_ID) || "";
         break;
       case ROLES.COO:
-        entityName =  "";
+        entityName = "";
         entityCode = getSession(SESSION_KEYS.COO_ID) || "";
         break;
       case ROLES.IM:
@@ -129,8 +129,12 @@ export default function UploadPage() {
         entityCode = getSession(SESSION_KEYS.USER_ID) || "";
         break;
       case ROLES.ADMIN:
-        entityName = "";
+        entityName = "Admin";
         entityCode = "ADMIN";
+        break;
+      case ROLES.SUPER_ADMIN:
+        entityName = "Super Admin";
+        entityCode = "";
         break;
       default:
         entityName = "Unknown";
@@ -141,6 +145,7 @@ export default function UploadPage() {
 
   const getRoleValue = useCallback(() => {
     if (role === ROLES.ADMIN) return "ADMIN";
+    if (role === ROLES.SUPER_ADMIN) return getSession(SESSION_KEYS.USER_ID);
 
     switch (role) {
       case ROLES.BM:
@@ -333,7 +338,13 @@ export default function UploadPage() {
       );
     }
     if (role === ROLES.ADMIN) {
-      formData.append("uploaded_by", "ADMIN"); 
+      formData.append("uploaded_by", "ADMIN");
+    }
+    if (role === ROLES.SUPER_ADMIN) {
+      formData.append(
+        "uploaded_by",
+        safeValue(getSession(SESSION_KEYS.USER_ID))
+      );
     }
 
     try {
@@ -561,15 +572,15 @@ export default function UploadPage() {
     }
   };
 
-    // Select all selectedFiles (File List Modal)
-    const toggleSelectAllSelectedFiles = (checked) => {
-     if (checked) {
-    const allIndices = selectedFiles.map((_, idx) => idx);
-    setCheckedSelectedFiles(new Set(allIndices));
-     } else {
-    setCheckedSelectedFiles(new Set());
-      }
-      };
+  // Select all selectedFiles (File List Modal)
+  const toggleSelectAllSelectedFiles = (checked) => {
+    if (checked) {
+      const allIndices = selectedFiles.map((_, idx) => idx);
+      setCheckedSelectedFiles(new Set(allIndices));
+    } else {
+      setCheckedSelectedFiles(new Set());
+    }
+  };
 
   // Toggle file checkbox
   const toggleFileCheck = (fileId) => {
@@ -637,93 +648,93 @@ export default function UploadPage() {
 
           {/* Summary Cards */}
           <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
-          <Grid  container spacing={2} sx={{  maxWidth: 1200  }}>
-            <Grid item xs={12} sm={4}>
-              <Paper
-                elevation={2}
-                sx={{
-                  p: 2,
-                  textAlign: "center",
-                  bgcolor: "#e0efff",
-                  borderRadius: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  height: "100%", // ensure full height
-                }}
-              >
-                <Box
+            <Grid container spacing={2} sx={{ maxWidth: 1200 }}>
+              <Grid item xs={12} sm={4}>
+                <Paper
+                  elevation={2}
                   sx={{
+                    p: 2,
+                    textAlign: "center",
+                    bgcolor: "#e0efff",
+                    borderRadius: 2,
                     display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: 1,
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    height: "100%", // ensure full height
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: 1,
+                    }}
+                  >
+                    <Typography variant="body2" fontWeight="bold">
+                      Total Expected
+                    </Typography>
+                    {(
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          setEditCountInput(expectedCount.toString());
+                          setShowEditCountModal(true);
+                        }}
+                        sx={{ p: 0.5 }}
+                      ><EditIcon fontSize="small" /></IconButton>
+                    )}
+                  </Box>
+                  <Typography variant="h6" fontWeight="bold">
+                    {expectedCount}
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 2,
+                    textAlign: "center",
+                    bgcolor: "#eaffea",
+                    borderRadius: 2,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    height: "100%",
                   }}
                 >
                   <Typography variant="body2" fontWeight="bold">
-                    Total Expected
+                    Total Uploaded Forms
                   </Typography>
-                  {(
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setEditCountInput(expectedCount.toString());
-                        setShowEditCountModal(true);
-                      }}
-                      sx={{ p: 0.5 }}
-                    ><EditIcon fontSize="small" /></IconButton>
-                  )}
-                </Box>
-                <Typography variant="h6" fontWeight="bold">
-                  {expectedCount}
-                </Typography>
-              </Paper>
+                  <Typography variant="h6" fontWeight="bold">
+                    {formsCount}
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 2,
+                    textAlign: "center",
+                    bgcolor: "#fff3cd",
+                    borderRadius: 2,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    height: "100%",
+                  }}
+                >
+                  <Typography variant="body2" fontWeight="bold">
+                    Pending
+                  </Typography>
+                  <Typography variant="h6" fontWeight="bold">
+                    {pendingCount}
+                  </Typography>
+                </Paper>
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={4}>
-              <Paper
-                elevation={2}
-                sx={{
-                  p: 2,
-                  textAlign: "center",
-                  bgcolor: "#eaffea",
-                  borderRadius: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  height: "100%",
-                }}
-              >
-                <Typography variant="body2" fontWeight="bold">
-                  Total Uploaded Forms
-                </Typography>
-                <Typography variant="h6" fontWeight="bold">
-                  {formsCount}
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Paper
-                elevation={2}
-                sx={{
-                  p: 2,
-                  textAlign: "center",
-                  bgcolor: "#fff3cd",
-                  borderRadius: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  height: "100%",
-                }}
-              >
-                <Typography variant="body2" fontWeight="bold">
-                  Pending
-                </Typography>
-                <Typography variant="h6" fontWeight="bold">
-                  {pendingCount}
-                </Typography>
-              </Paper>
-            </Grid>
-          </Grid>
           </Box>
 
           {/* Reminder Alert */}
@@ -983,17 +994,17 @@ export default function UploadPage() {
         fullWidth
       >
         <DialogTitle>File List</DialogTitle>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 1,  justifyContent: "flex-end",}}>
-        <Typography sx={{ mr: 3 }}>Select All</Typography>
-        <Checkbox
-        checked={
-          selectedFiles.length > 0 &&
-          checkedSelectedFiles.size === selectedFiles.length
-           }
-          onChange={(e) => toggleSelectAllSelectedFiles(e.target.checked)}
-          disabled={selectedFiles.length === 0}
-          sx={{ transform: "translateX(-23px)" }}
-        />
+        <Box sx={{ display: "flex", alignItems: "center", mb: 1, justifyContent: "flex-end", }}>
+          <Typography sx={{ mr: 3 }}>Select All</Typography>
+          <Checkbox
+            checked={
+              selectedFiles.length > 0 &&
+              checkedSelectedFiles.size === selectedFiles.length
+            }
+            onChange={(e) => toggleSelectAllSelectedFiles(e.target.checked)}
+            disabled={selectedFiles.length === 0}
+            sx={{ transform: "translateX(-23px)" }}
+          />
         </Box>
         <DialogContent>
           {selectedFiles.length === 0 ? (
@@ -1014,16 +1025,16 @@ export default function UploadPage() {
                     }}
                   >
                     <Typography variant="body2">{file.name}</Typography>
-                  <Checkbox
-                  checked={checkedSelectedFiles.has(actualIdx)}
-                   onChange={() => {
-                  setCheckedSelectedFiles((prev) => {
-                 const next = new Set(prev);
-                  next.has(actualIdx) ? next.delete(actualIdx) : next.add(actualIdx);
-                  return next;
-                  });
-                    }}
-                  />
+                    <Checkbox
+                      checked={checkedSelectedFiles.has(actualIdx)}
+                      onChange={() => {
+                        setCheckedSelectedFiles((prev) => {
+                          const next = new Set(prev);
+                          next.has(actualIdx) ? next.delete(actualIdx) : next.add(actualIdx);
+                          return next;
+                        });
+                      }}
+                    />
                   </Box>
                 );
               })}
@@ -1037,26 +1048,26 @@ export default function UploadPage() {
         </DialogContent>
         <DialogActions>
           <Button
-             color="warning"
-              disabled={checkedSelectedFiles.size === 0}
-              onClick={() => {
+            color="warning"
+            disabled={checkedSelectedFiles.size === 0}
+            onClick={() => {
               setLocalDeleteMode("multiple");
-             setShowConfirmLocalDelete(true);
-              }}
+              setShowConfirmLocalDelete(true);
+            }}
             sx={{ mr: 1 }}
-           >
-           Delete Selected ({checkedSelectedFiles.size})
-         </Button>
+          >
+            Delete Selected ({checkedSelectedFiles.size})
+          </Button>
           <Button
-           color="warning"
-                disabled={selectedFiles.length === 0}
-                onClick={() => {
-                 setLocalDeleteMode("all");
-                 setShowConfirmLocalDelete(true);
-                 }}
-              >
-             Delete All
-            </Button>
+            color="warning"
+            disabled={selectedFiles.length === 0}
+            onClick={() => {
+              setLocalDeleteMode("all");
+              setShowConfirmLocalDelete(true);
+            }}
+          >
+            Delete All
+          </Button>
           <Button
             variant="contained"
             onClick={() => setShowFileListModal(false)}
@@ -1092,14 +1103,14 @@ export default function UploadPage() {
             Cancel
           </Button>
           <Button
-           variant="contained"
-          color="warning"
-          onClick={() => {
-          deleteResolve?.(true);
-           setShowConfirmDelete(false); 
-           }}
+            variant="contained"
+            color="warning"
+            onClick={() => {
+              deleteResolve?.(true);
+              setShowConfirmDelete(false);
+            }}
           >
-           Delete
+            Delete
           </Button>
 
         </DialogActions>
@@ -1107,50 +1118,50 @@ export default function UploadPage() {
       {/* Confirm Local Delete (Selected Files Only) */}
       <Dialog
         open={showConfirmLocalDelete}
-       onClose={() => setShowConfirmLocalDelete(false)}
-       maxWidth="xs"
-       fullWidth
+        onClose={() => setShowConfirmLocalDelete(false)}
+        maxWidth="xs"
+        fullWidth
       >
-       <DialogTitle>Confirm Delete</DialogTitle>
-     <DialogContent>
-     <Typography>
-      {localDeleteMode === "all" &&
-        "Are you sure you want to delete all selected files?"}
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography>
+            {localDeleteMode === "all" &&
+              "Are you sure you want to delete all selected files?"}
 
-      {localDeleteMode === "multiple" &&
-        `Are you sure you want to delete ${checkedSelectedFiles.size} selected file(s)?`}
-    </Typography>
-      </DialogContent>
-     <DialogActions>
-    <Button onClick={() => setShowConfirmLocalDelete(false)}>
-      Cancel
-    </Button>
+            {localDeleteMode === "multiple" &&
+              `Are you sure you want to delete ${checkedSelectedFiles.size} selected file(s)?`}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowConfirmLocalDelete(false)}>
+            Cancel
+          </Button>
 
-    {/* ✅ FIXED DELETE */}
-    <Button
-      variant="contained"
-      color="warning"
-      onClick={() => {
-        if (localDeleteMode === "all") {
-          setSelectedFiles([]);
-          setCheckedSelectedFiles(new Set());
-        }
+          {/* ✅ FIXED DELETE */}
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={() => {
+              if (localDeleteMode === "all") {
+                setSelectedFiles([]);
+                setCheckedSelectedFiles(new Set());
+              }
 
-        if (localDeleteMode === "multiple") {
-          setSelectedFiles((prev) =>
-            prev.filter((_, index) => !checkedSelectedFiles.has(index))
-          );
-          setCheckedSelectedFiles(new Set());
-        }
+              if (localDeleteMode === "multiple") {
+                setSelectedFiles((prev) =>
+                  prev.filter((_, index) => !checkedSelectedFiles.has(index))
+                );
+                setCheckedSelectedFiles(new Set());
+              }
 
-        setShowConfirmLocalDelete(false);
-        setLocalDeleteMode(null);
-      }}
-    >
-      Delete
-    </Button>
-  </DialogActions>
-</Dialog>
+              setShowConfirmLocalDelete(false);
+              setLocalDeleteMode(null);
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

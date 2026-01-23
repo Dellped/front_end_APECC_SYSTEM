@@ -46,7 +46,7 @@ const formatPercent = (value) => {
 const excelSerialToDate = (serial) => {
 
   if (serial === "0") return "0";
-  
+
   if (!serial) return "";
 
   // Excel starts at 1900-01-01
@@ -96,6 +96,11 @@ export default function ValidatePage() {
 
     if (role === ROLES.ADMIN) {
       return { entityName: "ADMIN", entityCode: "", branchParam: "ADMIN" };
+    }
+
+    if (role === ROLES.SUPER_ADMIN) {
+      const userId = getSession(SESSION_KEYS.USER_ID);
+      return { entityName: "Super Admin", entityCode: "", branchParam: userId };
     }
 
     switch (role) {
@@ -149,9 +154,9 @@ export default function ValidatePage() {
       const { branchParam } = getEntityInfo();
 
       try {
-       const url = `/api/validate-reports?entity=${encodeURIComponent(
-           branchParam
-          )}&role=${encodeURIComponent(role)}`;
+        const url = `/api/validate-reports?entity=${encodeURIComponent(
+          branchParam
+        )}&role=${encodeURIComponent(role)}`;
 
         const { data } = await apiClient.get(url);
 
@@ -242,13 +247,13 @@ export default function ValidatePage() {
     const status = isComplete
       ? "Complete"
       : empIdDup || nameDup
-      ? "Duplicate"
-      : "Incomplete";
+        ? "Duplicate"
+        : "Incomplete";
     const statusClass = isComplete
       ? "complete"
       : empIdDup || nameDup
-      ? "duplicate"
-      : "incomplete";
+        ? "duplicate"
+        : "incomplete";
 
     const fileId = r.drive_file_id?.trim() || "";
     const openLink = fileId
@@ -259,8 +264,8 @@ export default function ValidatePage() {
     const statusColor = isComplete
       ? "success"
       : empIdDup || nameDup
-      ? "info"
-      : "warning";
+        ? "info"
+        : "warning";
 
     const isIncompleteStatus = status === "Incomplete";
     const getCellStyle = (value, extra = {}) => {
@@ -299,7 +304,7 @@ export default function ValidatePage() {
           {r.position_title || ""}
         </TableCell>
         <TableCell sx={getCellStyle(r.date_hired)}>
-        {excelSerialToDate(r.date_hired)}
+          {excelSerialToDate(r.date_hired)}
         </TableCell>
         <TableCell sx={getCellStyle(r.immediate_superior)}>
           {r.immediate_superior || ""}
@@ -328,7 +333,7 @@ export default function ValidatePage() {
           {r.part_a_total_rating || ""}
         </TableCell>
         <TableCell sx={getCellStyle(r.part_a_overall_weight)}>
-        {formatPercent(r.part_a_overall_weight)}
+          {formatPercent(r.part_a_overall_weight)}
         </TableCell>
         <TableCell sx={getCellStyle(r.part_a_subtotal)}>
           {r.part_a_subtotal || ""}
@@ -337,7 +342,7 @@ export default function ValidatePage() {
           {r.part_b_total_rating || ""}
         </TableCell>
         <TableCell sx={getCellStyle(r.part_b_overall_weight)}>
-        {formatPercent(r.part_b_overall_weight)}
+          {formatPercent(r.part_b_overall_weight)}
         </TableCell>
         <TableCell sx={getCellStyle(r.part_b_subtotal)}>
           {r.part_b_subtotal || ""}
@@ -417,9 +422,9 @@ export default function ValidatePage() {
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 500 }}>
               Validate Reports
             </Typography>
-             {role !== 'COO' && role !== 'ADMIN' &&(
-            <Chip label={displayName} color="primary" sx={{ mt: 2 }} />
-             )}
+            {role !== 'COO' && role !== 'ADMIN' && role !== 'SUPER_ADMIN' && (
+              <Chip label={displayName} color="primary" sx={{ mt: 2 }} />
+            )}
           </Box>
 
           {/* Legend */}
@@ -450,10 +455,12 @@ export default function ValidatePage() {
               </Typography>
             </Box>
             <TableContainer sx={{ maxHeight: 600, overflowX: "auto" }}>
-              <Table stickyHeader size="small"sx={{"& th, & td": {textAlign: "center",
-         verticalAlign: "middle",
-    },
-  }}>
+              <Table stickyHeader size="small" sx={{
+                "& th, & td": {
+                  textAlign: "center",
+                  verticalAlign: "middle",
+                },
+              }}>
                 <TableHead>
                   <TableRow>
                     <TableCell>Status</TableCell>
@@ -526,10 +533,12 @@ export default function ValidatePage() {
                 </Typography>
               </Box>
               <TableContainer sx={{ maxHeight: 600, overflowX: "auto" }}>
-                <Table stickyHeader size="small"sx={{"& th, & td": {textAlign: "center",
-                verticalAlign: "middle",
-                },
-                 }}>
+                <Table stickyHeader size="small" sx={{
+                  "& th, & td": {
+                    textAlign: "center",
+                    verticalAlign: "middle",
+                  },
+                }}>
                   <TableHead>
                     <TableRow>
                       <TableCell>Status</TableCell>

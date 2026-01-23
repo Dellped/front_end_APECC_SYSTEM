@@ -134,5 +134,25 @@ export async function apiDelete(url) {
   return data;
 }
 
+export async function downloadFile(url, filename) {
+  const response = await apiClient.get(url, {
+    responseType: 'blob'
+  });
+  
+  // Create a blob URL
+  const blobUrl = window.URL.createObjectURL(response.data);
+  
+  // Create a temporary anchor element and trigger download
+  const link = document.createElement('a');
+  link.href = blobUrl;
+  link.download = filename || 'download.csv';
+  document.body.appendChild(link);
+  link.click();
+  
+  // Clean up
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(blobUrl);
+}
+
 // Export the axios instance for direct use if needed
 export default apiClient;

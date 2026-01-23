@@ -1,6 +1,7 @@
 // Role constants and permission helpers
 
 export const ROLES = {
+  SUPER_ADMIN: "SUPER_ADMIN",
   ADMIN: "ADMIN",
   BM: "BM",
   AA: "AA",
@@ -16,7 +17,7 @@ export const ROLES = {
 
 // Sidebar visibility rules (matching main.html logic)
 export const canAccessUserManagement = (role) => {
-  return [ROLES.ADMIN, ROLES.RA].includes(role);
+  return [ROLES.SUPER_ADMIN, ROLES.RA].includes(role);
 };
 
 export function canAccessUpload(role) {
@@ -37,12 +38,12 @@ export function canAccessSummary(role) {
 
 
 export function canAccessArchive(role) {
-  return role === ROLES.ADMIN;
+  return role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN;
 }
 
 export function canAccessCorporate(role) {
-  // COO, ADMIN, CHIEF can access corporate
-  return role === ROLES.COO || role === ROLES.ADMIN || role === ROLES.CHIEF;
+  // COO, ADMIN, CHIEF, SUPER_ADMIN can access corporate
+  return role === ROLES.COO || role === ROLES.ADMIN || role === ROLES.CHIEF || role === ROLES.SUPER_ADMIN;
 }
 
 export function canAccessValSummary(role) {
@@ -60,6 +61,7 @@ export function getDefaultRouteForRole(role) {
 
 // Role header mapping for summary tables
 export const ROLE_HEADER_MAP = {
+  SUPER_ADMIN: "Department",
   ADMIN: "Department",
   ITR: "Department",
   IM: "Department",

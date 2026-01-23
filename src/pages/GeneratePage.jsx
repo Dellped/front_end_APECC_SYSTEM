@@ -59,6 +59,10 @@ export default function GeneratePage() {
       return { entityName: "ADMIN", entityCode: "", branchParam: "ADMIN" };
     }
 
+    if (role === ROLES.SUPER_ADMIN) {
+      return { entityName: "Super Admin", entityCode: "", branchParam: "ADMIN" };
+    }
+
     switch (role) {
       case ROLES.BM:
         entityName = getSession(SESSION_KEYS.BRANCH) || "Unknown Branch";
@@ -105,6 +109,7 @@ export default function GeneratePage() {
   // Get group key for summary based on role
   const getGroupKey = (r) => {
     switch (role) {
+      case ROLES.SUPER_ADMIN:
       case ROLES.ADMIN:
       case ROLES.ITR:
       case ROLES.IM:
@@ -197,9 +202,9 @@ export default function GeneratePage() {
       const { branchParam } = getEntityInfo();
 
       try {
-           const url = `/api/validate-reports?entity=${encodeURIComponent(
-           branchParam
-          )}&role=${encodeURIComponent(role)}`;
+        const url = `/api/validate-reports?entity=${encodeURIComponent(
+          branchParam
+        )}&role=${encodeURIComponent(role)}`;
 
 
         const { data } = await apiClient.get(url);
@@ -270,8 +275,8 @@ export default function GeneratePage() {
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 500 }}>
               Generate Reports
             </Typography>
-             {role !== 'COO' && role !== 'ADMIN' &&(
-            <Chip label={displayName} color="primary" sx={{ mt: 2 }} />
+            {role !== 'COO' && role !== 'ADMIN' && (
+              <Chip label={displayName} color="primary" sx={{ mt: 2 }} />
             )}
           </Box>
 
@@ -290,10 +295,12 @@ export default function GeneratePage() {
               </Typography>
             </Box>
             <TableContainer sx={{ maxHeight: 600, overflowX: "auto" }}>
-              <Table stickyHeader size="small"sx={{"& th, & td": {textAlign: "center",
-               verticalAlign: "middle",
-               },
-               }}>
+              <Table stickyHeader size="small" sx={{
+                "& th, & td": {
+                  textAlign: "center",
+                  verticalAlign: "middle",
+                },
+              }}>
                 <TableHead>
                   <TableRow>
                     <TableCell>EMP ID</TableCell>
@@ -350,12 +357,12 @@ export default function GeneratePage() {
                         <TableCell>{r.year || ""}</TableCell>
                         <TableCell>{r.part_a_total_rating || ""}</TableCell>
                         <TableCell>
-                        {formatPercent(r.part_a_overall_weight)}
+                          {formatPercent(r.part_a_overall_weight)}
                         </TableCell>
                         <TableCell>{r.part_a_subtotal || ""}</TableCell>
                         <TableCell>{r.part_b_total_rating || ""}</TableCell>
                         <TableCell>
-                        {formatPercent(r.part_b_overall_weight)}
+                          {formatPercent(r.part_b_overall_weight)}
                         </TableCell>
                         <TableCell>{r.part_b_subtotal || ""}</TableCell>
                         <TableCell>{r.overall_numeric_rating || ""}</TableCell>
@@ -393,12 +400,12 @@ export default function GeneratePage() {
             </Box>
             <TableContainer sx={{ maxHeight: 400, overflowX: "auto" }}>
               <Table stickyHeader size="small"
-              sx={{
-                "& th, & td": {
-                  textAlign: "center",
-                  verticalAlign: "middle",
-                },
-              }}
+                sx={{
+                  "& th, & td": {
+                    textAlign: "center",
+                    verticalAlign: "middle",
+                  },
+                }}
               >
                 <TableHead>
                   <TableRow>

@@ -25,8 +25,9 @@ import {
     FormControlLabel,
     FormGroup,
 } from "@mui/material";
-import { Delete as DeleteIcon, Add as AddIcon, Edit as EditIcon } from "@mui/icons-material";
+import { Delete as DeleteIcon, Add as AddIcon, Edit as EditIcon, Download as DownloadIcon } from "@mui/icons-material";
 import apiClient from "../lib/apiClient";
+import { downloadFile } from "../lib/apiClient";
 import { getRole } from "../lib/storage";
 import Pagination from "../components/Pagination";
 
@@ -37,6 +38,8 @@ export default function UserManagementPage() {
     const [open, setOpen] = useState(false);
     const [isEdit, setIsEdit] = useState(false); // Track if editing
     const [editUserId, setEditUserId] = useState(null); // ID of user being edited
+    const [selectedUsers, setSelectedUsers] = useState([]); // Track selected user IDs
+    const [downloading, setDownloading] = useState(false);
 
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -85,8 +88,8 @@ export default function UserManagementPage() {
     useEffect(() => {
         if (open) {
             fetchRegions();
-            // Fetch these for ADMIN
-            if (userRole === 'ADMIN') {
+            // Fetch these for SUPER_ADMIN
+            if (userRole === 'SUPER_ADMIN') {
                 fetchOperations();
                 fetchDepartments();
                 fetchIMUsers();
@@ -207,6 +210,7 @@ export default function UserManagementPage() {
 
     const [openDelete, setOpenDelete] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
+    const [openBulkDelete, setOpenBulkDelete] = useState(false);
 
     // Handlers
     const handleOpen = () => {
@@ -220,7 +224,7 @@ export default function UserManagementPage() {
             Department: "", Division: ""
         });
         setSelectedSubordinates([]);
-        if (userRole === 'ADMIN') {
+        if (userRole === 'SUPER_ADMIN') {
             fetchIMUsers();
         }
         setOpen(true);
@@ -301,7 +305,7 @@ export default function UserManagementPage() {
         if (regionId) await fetchAreas(regionId);
         if (areaId) await fetchBranches(areaId);
 
-        if (userRole === 'ADMIN') {
+        if (userRole === 'SUPER_ADMIN') {
             await fetchOperations();
             await fetchDepartments();
             await fetchIMUsers();
@@ -400,12 +404,12 @@ export default function UserManagementPage() {
                 setAreas([]);
             }
             setBranches([]);
-            // Operations/Departments are global for ADMIN so we don't need to clear them from state, just selection
+            // Operations/Departments are global for SUPER_ADMIN so we don't need to clear them from state, just selection
         }
     };
 
     const handleSubmit = async () => {
-        if (!formData.email || !formData.role || !formData.first_name || !formData.surname || (!formData.assigned_id && formData.role !== 'ADMIN' && formData.role !== 'COO' && formData.role !== 'CFOO')) {
+        if (!formData.email || !formData.role || !formData.first_name || !formData.surname || (!formData.assigned_id && formData.role !== 'SUPER_ADMIN' && formData.role !== 'ADMIN' && formData.role !== 'COO' && formData.role !== 'CFOO')) {
             setError("Please fill all required fields");
             return;
         }
@@ -419,9 +423,9 @@ export default function UserManagementPage() {
         try {
             const url = isEdit ? `/api/users/${editUserId}` : `/api/users`;
 
-            // For ADMIN/COO/CFOO, ensure assigned_id is set correctly
+            // For SUPER_ADMIN/COO/CFOO, ensure assigned_id is set correctly
             const payload = { ...formData };
-            if (payload.role === 'ADMIN') payload.assigned_id = 0;
+            if (payload.role === 'SUPER_ADMIN') payload.assigned_id = 0;
             if (payload.role === 'COO') payload.assigned_id = 16;
             if (payload.role === 'CFOO') payload.assigned_id = 15;
 
@@ -453,6 +457,55 @@ export default function UserManagementPage() {
         setOpenDelete(true);
     };
 
+    const handleSelectUser = (userId) => {
+        setSelectedUsers(prev =>
+            prev.includes(userId)
+                ? prev.filter(id => id !== userId)
+                : [...prev, userId]
+        );
+    };
+
+    const handleSelectAll = () => {
+        if (selectedUsers.length === users.length && users.length > 0) {
+            setSelectedUsers([]);
+        } else {
+            setSelectedUsers(users.map(u => u.id));
+        }
+    };
+
+    const handleDownloadAll = async () => {
+        setDownloading(true);
+        try {
+            const filename = `users_${new Date().toISOString().split('T')[0]}.csv`;
+            await downloadFile('/api/users/download', filename);
+            setError(null);
+        } catch (err) {
+            setError(err.message || "Failed to download users");
+        } finally {
+            setDownloading(false);
+        }
+    };
+
+    const handleDeleteSelected = () => {
+        if (selectedUsers.length === 0) return;
+        setOpenBulkDelete(true);
+    };
+
+    const confirmBulkDelete = async () => {
+        try {
+            for (const userId of selectedUsers) {
+                await apiClient.delete(`/api/users/${userId}`);
+            }
+            setSelectedUsers([]);
+            setOpenBulkDelete(false);
+            fetchUsers();
+            setError(null);
+        } catch (err) {
+            setError(err.message || "Failed to delete selected users");
+            setOpenBulkDelete(false);
+        }
+    };
+
     const confirmDelete = async () => {
         if (!deleteId) return;
         try {
@@ -472,8 +525,8 @@ export default function UserManagementPage() {
     };
 
     // Filter roles based on current user role
-    const availableRoles = userRole === "ADMIN"
-        ? ["ADMIN", "RA", "AA", "BM", "AVP", "SVP", "CFOO", "COO", "CHIEF", "IM", "ITR"]
+    const availableRoles = userRole === "SUPER_ADMIN"
+        ? ["SUPER_ADMIN", "ADMIN", "RA", "AA", "BM", "AVP", "SVP", "CFOO", "COO", "CHIEF", "IM", "ITR"]
         : ["AA", "BM"]; // RA can only add AA or BM
 
     return (
@@ -482,9 +535,31 @@ export default function UserManagementPage() {
                 <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600, color: "#1a237e" }}>
                     User Management
                 </Typography>
-                <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpen} sx={{ bgcolor: "#FF6B35", '&:hover': { bgcolor: "#E55A2B" } }}>
-                    Add User
-                </Button>
+                <Box display="flex" gap={2}>
+                    {userRole === 'SUPER_ADMIN' && (
+                        <Button
+                            variant="contained"
+                            startIcon={<DownloadIcon />}
+                            onClick={handleDownloadAll}
+                            disabled={downloading}
+                            sx={{ bgcolor: "#4CAF50", '&:hover': { bgcolor: "#45a049" } }}
+                        >
+                            {downloading ? "Downloading..." : "Export Users"}
+                        </Button>
+                    )}
+                    <Button
+                        variant="contained"
+                        startIcon={<DeleteIcon />}
+                        onClick={handleDeleteSelected}
+                        disabled={selectedUsers.length === 0}
+                        sx={{ bgcolor: "#f44336", '&:hover': { bgcolor: "#da190b" } }}
+                    >
+                        Delete Selected ({selectedUsers.length})
+                    </Button>
+                    <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpen} sx={{ bgcolor: "#FF6B35", '&:hover': { bgcolor: "#E55A2B" } }}>
+                        Add User
+                    </Button>
+                </Box>
             </Box>
 
             <Paper sx={{ p: 2, mb: 2, borderRadius: 2, display: 'flex', alignItems: 'center' }}>
@@ -522,15 +597,15 @@ export default function UserManagementPage() {
                         <TableBody>
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} align="center"><CircularProgress /></TableCell>
+                                    <TableCell colSpan={10} align="center"><CircularProgress /></TableCell>
                                 </TableRow>
                             ) : users.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} align="center">No users found</TableCell>
+                                    <TableCell colSpan={10} align="center">No users found</TableCell>
                                 </TableRow>
                             ) : (
                                 users.map((user) => (
-                                    <TableRow key={user.id} hover>
+                                    <TableRow key={user.id} hover selected={selectedUsers.includes(user.id)}>
                                         <TableCell>{user.id_number}</TableCell>
                                         <TableCell>{user.first_name}</TableCell>
                                         <TableCell>{user.surname}</TableCell>
@@ -539,22 +614,28 @@ export default function UserManagementPage() {
                                         <TableCell>{user.Division}</TableCell>
                                         <TableCell>
                                             <Box component="span" sx={{
-                                                bgcolor: user.role === 'ADMIN' ? '#e3f2fd' : user.role === 'RA' ? '#fff3e0' : '#f5f5f5',
-                                                color: user.role === 'ADMIN' ? '#1565c0' : user.role === 'RA' ? '#ef6c00' : '#616161',
+                                                bgcolor: user.role === 'SUPER_ADMIN' ? '#1565c0' : user.role === 'ADMIN' ? '#e3f2fd' : user.role === 'RA' ? '#fff3e0' : '#f5f5f5',
+                                                color: user.role === 'SUPER_ADMIN' ? '#ffffff' : user.role === 'ADMIN' ? '#1565c0' : user.role === 'RA' ? '#ef6c00' : '#616161',
                                                 px: 1.5, py: 0.5, borderRadius: 6, fontSize: '0.875rem', fontWeight: 500
                                             }}>
                                                 {user.role}
                                             </Box>
                                         </TableCell>
                                         <TableCell>{user.email}</TableCell>
-                                        <TableCell>{user.assigned_name || user.assigned_id}</TableCell>
                                         <TableCell>
-                                            <IconButton onClick={() => handleEdit(user)} color="primary" size="small" sx={{ mr: 1 }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <span>{user.assigned_name || user.assigned_id}</span>
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell>
+                                            <IconButton onClick={() => handleEdit(user)} color="primary" size="small">
                                                 <EditIcon />
                                             </IconButton>
-                                            <IconButton onClick={() => handleDelete(user.id)} color="error" size="small">
-                                                <DeleteIcon />
-                                            </IconButton>
+                                            <Checkbox
+                                                checked={selectedUsers.includes(user.id)}
+                                                onChange={() => handleSelectUser(user.id)}
+                                                size="small"
+                                            />
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -715,8 +796,8 @@ export default function UserManagementPage() {
                 </DialogActions>
             </Dialog>
 
-            {/* Delete Confirmation Dialog */}
-            <Dialog open={openDelete} onClose={() => setOpenDelete(false)}>
+            {/* Delete Single User Confirmation Dialog */}
+            {/* <Dialog open={openDelete} onClose={() => setOpenDelete(false)}>
                 <DialogTitle>Confirm Delete</DialogTitle>
                 <DialogContent>
                     Are you sure you want to delete this user? This action cannot be undone.
@@ -724,6 +805,20 @@ export default function UserManagementPage() {
                 <DialogActions>
                     <Button onClick={() => setOpenDelete(false)}>Cancel</Button>
                     <Button onClick={confirmDelete} variant="contained" color="error">Delete</Button>
+                </DialogActions>
+            </Dialog> */}
+
+            {/* Delete Multiple Users Confirmation Dialog */}
+            <Dialog open={openBulkDelete} onClose={() => setOpenBulkDelete(false)}>
+                <DialogTitle>Confirm Delete</DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Are you sure you want to delete {selectedUsers.length} selected user(s)? This action cannot be undone.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenBulkDelete(false)}>Cancel</Button>
+                    <Button onClick={confirmBulkDelete} variant="contained" color="error">Delete All</Button>
                 </DialogActions>
             </Dialog>
         </Container>
