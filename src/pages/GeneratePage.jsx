@@ -355,7 +355,6 @@ export default function GeneratePage() {
                         <TableCell>
                           {excelSerialToDate(r.date_hired)}
                         </TableCell>
-                        <TableCell>{r.date_hired || ""}</TableCell>
                         <TableCell>{r.immediate_superior || ""}</TableCell>
                         <TableCell>{r.department || ""}</TableCell>
                         <TableCell>{r.group || ""}</TableCell>
