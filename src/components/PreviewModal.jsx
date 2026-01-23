@@ -74,6 +74,22 @@ const COLUMN_HEADERS = [
   "Overall Adjectival Rating",
 ];
 
+const excelSerialToDate = (serial) => {
+  if (serial === "0") return "0";
+  if (!serial) return "";
+
+  // Excel starts at 1900-01-01
+  const excelEpoch = new Date(1899, 11, 30);
+  const date = new Date(excelEpoch.getTime() + Number(serial) * 86400000);
+
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const yyyy = date.getFullYear();
+
+  return `${mm}/${dd}/${yyyy}`;
+};
+
+
 export default function PreviewModal({
   isOpen,
   onClose,
@@ -108,6 +124,10 @@ export default function PreviewModal({
 
   const formatValue = (row, col) => {
     const val = row[col];
+
+    if (col === "date_hired") {
+      return excelSerialToDate(val);
+    }
   
     if (col === "part_a_overall_weight" || col === "part_b_overall_weight") {
       if (!val) return "0%";

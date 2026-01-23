@@ -836,10 +836,7 @@ export default function UploadPage() {
                     </TableRow>
                   ) : (
                     paginatedUploaded.map((file) => {
-                      const utcDate = new Date(file.uploaded_at);
-                      const localDate = new Date(
-                        utcDate.getTime() - 0 * 60 * 60 * 1000
-                      );
+                      const localDate = new Date(file.uploaded_at);                   
                       return (
                         <TableRow key={file.id} hover>
                           <TableCell>
@@ -850,9 +847,16 @@ export default function UploadPage() {
                           </TableCell>
                           <TableCell>{file.filename}</TableCell>
                           <TableCell>
-                            {localDate.toLocaleString("en-US", {
-                              hour12: true,
-                            })}
+                              {new Date(file.uploaded_at).toLocaleString("en-US", {
+                                timeZone: "UTC",
+                                year: "numeric",
+                                month: "numeric",
+                                day: "numeric",
+                                hour: "numeric",
+                                minute: "2-digit",
+                                second: "2-digit",
+                                hour12: true,
+                              })}
                           </TableCell>
                         </TableRow>
                       );
