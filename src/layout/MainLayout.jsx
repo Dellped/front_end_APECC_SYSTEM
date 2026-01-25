@@ -21,6 +21,7 @@ import {
   Breadcrumbs,
   Typography,
   Paper,
+  Chip,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -35,6 +36,7 @@ import {
   ChevronRight as ChevronRightIcon,
   Home as HomeIcon,
   People as PeopleIcon,
+  AdminPanelSettings as AdminPanelSettingsIcon,
 } from "@mui/icons-material";
 import { getRole, clearSession, isLoggedIn } from "../lib/storage";
 import registeredASALogo from "../assets/registered_ASA Logo Vertical.png";
@@ -231,9 +233,6 @@ export default function MainLayout() {
     // }
 
     // CHIEF role should start at corporate
-    if (role === ROLES.CHIEF) {
-      navigate("/corporate", { replace: true });
-    }
   }, [navigate, role]);
 
   const handleLogout = useCallback(() => {
@@ -457,6 +456,22 @@ export default function MainLayout() {
             </Breadcrumbs>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {role === ROLES.SUPER_ADMIN && (
+              <Chip
+                icon={<AdminPanelSettingsIcon sx={{ fontSize: '1.2rem !important' }} />}
+                label="Super Admin"
+                size="small"
+                color="error"
+                variant="outlined"
+                sx={{ 
+                  fontWeight: "bold",
+                  borderColor: "error.main",
+                  backgroundColor: "rgba(211, 47, 47, 0.05)",
+                  letterSpacing: "0.5px",
+                  mr: 1
+                }}
+              />
+            )}
             <Button
               variant="contained"
               startIcon={<LogoutIcon />}
