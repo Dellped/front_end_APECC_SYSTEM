@@ -461,11 +461,11 @@ export default function MainLayout() {
                 icon={<AdminPanelSettingsIcon sx={{ fontSize: '1.2rem !important' }} />}
                 label="Super Admin"
                 size="small"
-                color="error"
+                color="warning"
                 variant="outlined"
                 sx={{ 
                   fontWeight: "bold",
-                  borderColor: "error.main",
+                  borderColor: "warning.main",
                   backgroundColor: "rgba(211, 47, 47, 0.05)",
                   letterSpacing: "0.5px",
                   mr: 1
