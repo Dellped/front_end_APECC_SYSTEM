@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Checkbox,
 } from "@mui/material";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import apiClient from "../lib/apiClient";
@@ -85,6 +86,8 @@ export default function ValidatePage() {
   // Delete confirmation
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
 
   const role = getRole();
 
@@ -204,37 +207,49 @@ export default function ValidatePage() {
   );
 
   // Handle delete record
-  const handleDeleteClick = (record) => {
-    setRecordToDelete(record);
+  const handleDeleteClick = (record = null) => {
+    if (record) {
+      setRecordToDelete(record);
+      setIsBulkDelete(false);
+    } else {
+      setIsBulkDelete(true);
+    }
     setShowDeleteConfirm(true);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!recordToDelete || !recordToDelete.id) {
+  const idsToDelete = isBulkDelete ? Array.from(selectedIds) : [recordToDelete.id];
+
+    if (idsToDelete.length === 0) {
       setShowDeleteConfirm(false);
       return;
+
     }
 
     setLoading(true);
     setLoadingMessage("Deleting record...");
     try {
       const { data } = await apiClient.post("/api/delete-files", {
-        ids: [recordToDelete.id],
+       ids: idsToDelete,
       });
 
       if (data.success) {
         // Remove from incomplete records
         setIncompleteRecords((prev) =>
-          prev.filter((r) => r.id !== recordToDelete.id)
+          prev.filter((r) => !idsToDelete.includes(r.id))
         );
         // Update counts
-        setWarningCount((prev) => Math.max(prev - 1, 0));
-        showMsg("Record deleted successfully!", "success");
+        setWarningCount((prev) => Math.max(prev - idsToDelete.length, 0));
+        setSelectedIds(new Set());
+        showMsg(
+          `${idsToDelete.length} record(s) deleted successfully!`,
+          "success"
+        );
       } else {
-        showMsg("Failed to delete record.");
+        showMsg("Failed to delete records.");
       }
     } catch (err) {
-      showMsg(err.message || "Error deleting record.");
+      showMsg(err.message || "Error deleting records.");
     } finally {
       setLoading(false);
       setShowDeleteConfirm(false);
@@ -380,24 +395,18 @@ export default function ValidatePage() {
               )}
             </TableCell>
             <TableCell>
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<DeleteIcon />}
-                onClick={() => handleDeleteClick(r)}
-                sx={{
-                  minWidth: "auto",
-                  px: 1,
-                  borderColor: "#ffe5b4",
-                  color: "#ff9800",
-                  "&:hover": {
-                    borderColor: "#ffc98b",
-                    backgroundColor: "#fff3e0",
-                  },
-                }}
-              >
-                Delete
-              </Button>
+            <Checkbox
+            size="small"
+            checked={selectedIds.has(r.id)}
+            onChange={() => {
+              setSelectedIds((prev) => {
+                const next = new Set(prev);
+                if (next.has(r.id)) next.delete(r.id);
+                else next.add(r.id);
+                return next;
+              });   
+              }}
+              />
             </TableCell>
           </>
         )}
@@ -428,9 +437,9 @@ export default function ValidatePage() {
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 500 }}>
               Validation Summary
             </Typography>
-            {role !== 'COO' && role !== 'ADMIN' && role !== 'SUPER_ADMIN' && (
+            {/* {role !== 'COO' && role !== 'ADMIN' && role !== 'SUPER_ADMIN' && (
               <Chip label={displayName} color="primary" sx={{ mt: 2 }} />
-            )}
+            )} */}
           </Box>
 
           {/* Legend */}
@@ -573,13 +582,60 @@ export default function ValidatePage() {
                       <TableCell>Overall Adjectival Rating</TableCell>
                       <TableCell>Preview</TableCell>
                       <TableCell>Download</TableCell>
-                      <TableCell>Action</TableCell>
+                      <TableCell>
+                        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+                          <Typography variant="caption" sx={{ fontWeight: "bold", lineHeight: 1 }}>Select ALL</Typography>
+                          <Checkbox
+                            size="small"
+                            sx={{ p: 0.5 }}
+                            checked={
+                              paginatedIncomplete.length > 0 &&
+                              paginatedIncomplete.every((r) => selectedIds.has(r.id))
+                            }
+                            indeterminate={
+                              paginatedIncomplete.some((r) => selectedIds.has(r.id)) &&
+                              !paginatedIncomplete.every((r) => selectedIds.has(r.id))
+                            }
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setSelectedIds((prev) => {
+                                const next = new Set(prev);
+                                paginatedIncomplete.forEach((r) => {
+                                  if (checked) next.add(r.id);
+                                  else next.delete(r.id);
+                                });
+                                return next;
+                              });
+                            }}
+                          />
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        {selectedIds.size > 0 && (
+                          <Button
+                            variant="contained"
+                            color="warning"
+                            size="small"
+                            startIcon={<DeleteIcon sx={{ fontSize: 16 }} />}
+                            onClick={() => handleDeleteClick()}
+                            sx={{ 
+                              whiteSpace: "nowrap",
+                              minWidth: 'auto',
+                              py: 0.5,
+                              px: 1.5,
+                              fontSize: '0.75rem'
+                            }}
+                          >
+                            Delete ({selectedIds.size})
+                          </Button>
+                        )}
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {paginatedIncomplete.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={27} align="center" sx={{ py: 4 }}>
+                        <TableCell colSpan={28} align="center" sx={{ py: 4 }}>
                           <Typography color="text.secondary">
                             No incomplete records found
                           </Typography>
@@ -616,10 +672,12 @@ export default function ValidatePage() {
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete this record? This action cannot be
-            undone.
+          {isBulkDelete
+              ? `Are you sure you want to delete ${selectedIds.size} selected record(s)?`
+              : "Are you sure you want to delete this record?"}{" "}
+            This action cannot be undone.
           </Typography>
-          {recordToDelete && (
+          {!isBulkDelete && recordToDelete && (
             <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
               Employee: {recordToDelete.employee_name || recordToDelete.emp_id}
             </Typography>
