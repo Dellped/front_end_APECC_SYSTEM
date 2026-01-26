@@ -134,7 +134,7 @@ export default function UploadPage() {
         break;
       case ROLES.ADMIN:
         entityName = "Admin";
-        entityCode = "ADMIN";
+        entityCode = getSession(SESSION_KEYS.DEP_ID) || "";
         break;
       case ROLES.SUPER_ADMIN:
         entityName = "Super Admin";
@@ -148,7 +148,7 @@ export default function UploadPage() {
   }, [role]);
 
   const getRoleValue = useCallback(() => {
-    if (role === ROLES.ADMIN) return "ADMIN";
+    if (role === ROLES.ADMIN) return getSession(SESSION_KEYS.DEP_ID);
     if (role === ROLES.SUPER_ADMIN) return getSession(SESSION_KEYS.USER_ID);
 
     switch (role) {
@@ -348,7 +348,7 @@ export default function UploadPage() {
       );
     }
     if (role === ROLES.ADMIN) {
-      formData.append("uploaded_by", "ADMIN");
+      formData.append("uploaded_by", getSession(SESSION_KEYS.DEP_ID));
     }
     if (role === ROLES.SUPER_ADMIN) {
       formData.append(
