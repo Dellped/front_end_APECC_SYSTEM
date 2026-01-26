@@ -110,6 +110,10 @@ export default function GeneratePage() {
         entityName = "";
         branchParam = getSession(SESSION_KEYS.COO_ID) || "";
         break;
+      case ROLES.CHIEF:
+        entityName = "";
+        branchParam = getSession(SESSION_KEYS.CHIEF_ID) || "";
+        break;
       case ROLES.IM:
       case ROLES.ITR:
         entityName = getSession(SESSION_KEYS.DEP_NAME) || "Unknown Department";
@@ -129,6 +133,7 @@ export default function GeneratePage() {
       case ROLES.ADMIN:
       case ROLES.ITR:
       case ROLES.IM:
+      case ROLES.CHIEF:
       case ROLES.COO:
       case ROLES.CFOO:
         return r.department || "UNKNOWN DEPARTMENT";
@@ -291,9 +296,9 @@ export default function GeneratePage() {
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 500 }}>
               Generate Reports
             </Typography>
-            {role !== 'COO' && role !== 'ADMIN' && (
+            {/* {role !== 'COO' && role !== 'ADMIN' && (
               <Chip label={displayName} color="primary" sx={{ mt: 2 }} />
-            )}
+            )} */}
           </Box>
 
           {/* Individual PM Summary Table */}
