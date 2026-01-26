@@ -627,7 +627,7 @@ export default function UserManagementPage() {
                                     ) : (
                                         users.map((user) => (
                                             <TableRow key={user.id} hover selected={selectedUsers.includes(user.id)}>
-                                                <TableCell>{user.id_number}</TableCell>
+                                                <TableCell>{user.id_number == 0 ? '' : user.id_number}</TableCell>
                                                 <TableCell>{user.first_name}</TableCell>
                                                 <TableCell>{user.surname}</TableCell>
                                                 <TableCell>{user.suffix}</TableCell>
