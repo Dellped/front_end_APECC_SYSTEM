@@ -130,6 +130,10 @@ export default function ValidatePage() {
         entityName = getSession(SESSION_KEYS.CFO_NAME) || "Unknown CFO";
         branchParam = getSession(SESSION_KEYS.CFO_ID) || "";
         break;
+      case ROLES.CHIEF:
+        entityName = getSession(SESSION_KEYS.CHIEF_NAME) || "Unknown Chief";
+        branchParam = getSession(SESSION_KEYS.CHIEF_ID) || "";
+        break;
       case ROLES.IM:
       case ROLES.ITR:
         entityName = getSession(SESSION_KEYS.DEP_NAME) || "Unknown Department";
