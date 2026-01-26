@@ -538,14 +538,42 @@ export default function ValidatePage() {
                   color: "white",
                   p: 1.5,
                   textAlign: "center",
+                  position: "relative",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
                 }}
               >
-                <Typography variant="h6" fontWeight="bold">
-                  Invalid Records
-                </Typography>
-                <Typography variant="caption">
-                  Please reupload the file.
-                </Typography>
+                <Box>
+                  <Typography variant="h6" fontWeight="bold">
+                    Invalid Records
+                  </Typography>
+                  <Typography variant="caption">
+                    Please reupload the file.
+                  </Typography>
+                </Box>
+                {selectedIds.size > 0 && (
+                  <Button
+                    variant="contained"
+                    color="warning"
+                    size="small"
+                    startIcon={<DeleteIcon sx={{ fontSize: 16 }} />}
+                    onClick={() => handleDeleteClick()}
+                    sx={{
+                      position: "absolute",
+                      right: 16,
+                      whiteSpace: "nowrap",
+                      minWidth: "auto",
+                      py: 0.5,
+                      px: 1.5,
+                      fontSize: "0.75rem",
+                      boxShadow: 2,
+                      border: "1px solid rgba(255,255,255,0.3)",
+                    }}
+                  >
+                    Delete ({selectedIds.size})
+                  </Button>
+                )}
               </Box>
               <TableContainer sx={{ maxHeight: 600, overflowX: "auto" }}>
                 <Table stickyHeader size="small" sx={{
@@ -610,26 +638,7 @@ export default function ValidatePage() {
                           />
                         </Box>
                       </TableCell>
-                      <TableCell>
-                        {selectedIds.size > 0 && (
-                          <Button
-                            variant="contained"
-                            color="warning"
-                            size="small"
-                            startIcon={<DeleteIcon sx={{ fontSize: 16 }} />}
-                            onClick={() => handleDeleteClick()}
-                            sx={{ 
-                              whiteSpace: "nowrap",
-                              minWidth: 'auto',
-                              py: 0.5,
-                              px: 1.5,
-                              fontSize: '0.75rem'
-                            }}
-                          >
-                            Delete ({selectedIds.size})
-                          </Button>
-                        )}
-                      </TableCell>
+
                     </TableRow>
                   </TableHead>
                   <TableBody>
