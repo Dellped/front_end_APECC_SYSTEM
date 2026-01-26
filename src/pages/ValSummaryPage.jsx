@@ -62,7 +62,7 @@ const excelSerialToDate = (serial) => {
 
 
 export default function ValidatePage() {
-  const adminLikeRoles = [ROLES.ADMIN, ROLES.COO, ROLES.SUPER_ADMIN];
+  const adminLikeRoles = [ROLES.COO, ROLES.SUPER_ADMIN];
 
   const [loading, setLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState("Validating report...");
@@ -134,6 +134,10 @@ export default function ValidatePage() {
         entityName = getSession(SESSION_KEYS.CHIEF_NAME) || "Unknown Chief";
         branchParam = getSession(SESSION_KEYS.CHIEF_ID) || "";
         break;
+      case ROLES.ADMIN:
+        entityName = "ADMIN";
+        branchParam = getSession(SESSION_KEYS.DEP_ID) || "";
+        break;
       case ROLES.IM:
       case ROLES.ITR:
         entityName = getSession(SESSION_KEYS.DEP_NAME) || "Unknown Department";
@@ -158,7 +162,7 @@ export default function ValidatePage() {
           if (role === ROLES.CFOO) {
             return `/api/validate-all?role=${role}`;
           }
-          if (role === ROLES.ADMIN || role === ROLES.COO || role === ROLES.SUPER_ADMIN) {
+          if (role === ROLES.COO || role === ROLES.SUPER_ADMIN) {
             return `/api/validate-all?role=${role}&all=true`;
           }
           return `/api/validate-all?entity=${encodeURIComponent(branchParam)}&role=${encodeURIComponent(role)}`;
