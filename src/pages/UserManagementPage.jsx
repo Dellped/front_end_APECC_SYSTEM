@@ -33,6 +33,7 @@ import { downloadFile } from "../lib/apiClient";
 import { getRole } from "../lib/storage";
 import Pagination from "../components/Pagination";
 import registeredASALogo from "../assets/logo2.png";
+import { ROLE_DISPLAY_MAP } from "../lib/roles";
 
 export default function UserManagementPage() {
     const [users, setUsers] = useState([]);
@@ -271,7 +272,7 @@ export default function UserManagementPage() {
             divisionId = user.division.id;
             operationId = user.division.operationID;
             assignedId = divisionId;
-        } else if (["IM", "ITR", "CHIEF"].includes(user.role) && user.department) {
+        } else if (["IM", "ITR", "CHIEF", "ADMIN"].includes(user.role) && user.department) {
             departmentId = user.department.id;
             assignedId = departmentId;
         }
@@ -420,6 +421,12 @@ export default function UserManagementPage() {
         // Frontend validation for email
         if (!formData.email.endsWith("@asaphil.org")) {
             setError("Email must be an @asaphil.org address");
+            return;
+        }
+
+        // Frontend validation for id_number
+        if (!formData.id_number || !/^[0-9]{5}$/.test(formData.id_number)) {
+            setError("ID number is required and must be exactly 5 digits (e.g., 00001)");
             return;
         }
 
@@ -627,7 +634,7 @@ export default function UserManagementPage() {
                                     ) : (
                                         users.map((user) => (
                                             <TableRow key={user.id} hover selected={selectedUsers.includes(user.id)}>
-                                                <TableCell>{user.id_number == 0 ? '' : user.id_number}</TableCell>
+                                                <TableCell>{(!user.id_number || user.id_number === '0' || user.id_number === '00000') ? '' : user.id_number}</TableCell>
                                                 <TableCell>{user.first_name}</TableCell>
                                                 <TableCell>{user.surname}</TableCell>
                                                 <TableCell>{user.suffix}</TableCell>
@@ -639,7 +646,7 @@ export default function UserManagementPage() {
                                                         color: user.role === 'SUPER_ADMIN' ? '#ffffff' : user.role === 'ADMIN' ? '#1565c0' : user.role === 'RA' ? '#ef6c00' : '#616161',
                                                         px: 1.5, py: 0.5, borderRadius: 6, fontSize: '0.875rem', fontWeight: 500
                                                     }}>
-                                                        {user.role}
+                                                        {ROLE_DISPLAY_MAP[user.role] || user.role}
                                                     </Box>
                                                 </TableCell>
                                                 <TableCell>{user.email}</TableCell>
@@ -683,7 +690,16 @@ export default function UserManagementPage() {
                         {error && <Alert severity="error">{error}</Alert>}
 
                         <Box display="flex" gap={2}>
-                            <TextField label="ID Number" name="id_number" value={formData.id_number} onChange={handleChange} fullWidth />
+                            <TextField
+                                label="ID Number"
+                                name="id_number"
+                                value={formData.id_number}
+                                onChange={handleChange}
+                                fullWidth
+                                required
+                                helperText="Exactly 5 digits (e.g., 00001)"
+                                inputProps={{ maxLength: 5 }}
+                            />
                             <TextField label="Suffix" name="suffix" value={formData.suffix} onChange={handleChange} fullWidth />
                         </Box>
                         <Box display="flex" gap={2}>
@@ -710,7 +726,7 @@ export default function UserManagementPage() {
                         />
                         <TextField label="Role" name="role" value={formData.role} onChange={handleChange} select fullWidth required>
                             {availableRoles.map((role) => (
-                                <MenuItem key={role} value={role}>{role}</MenuItem>
+                                <MenuItem key={role} value={role}>{ROLE_DISPLAY_MAP[role] || role}</MenuItem>
                             ))}
                         </TextField>
 
@@ -758,7 +774,7 @@ export default function UserManagementPage() {
                         )}
 
                         {/* Department Logic (IM, ITR, CHIEF) */}
-                        {(["IM", "ITR", "CHIEF"].includes(formData.role)) && (
+                        {(["IM", "ITR", "CHIEF", "ADMIN"].includes(formData.role)) && (
                             <TextField label="Department" name="department_id" value={formData.department_id} onChange={handleChange} select fullWidth>
                                 {departments.filter(d => {
                                     const name = d.name.toLowerCase();
