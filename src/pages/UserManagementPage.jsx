@@ -24,12 +24,15 @@ import {
     Checkbox,
     FormControlLabel,
     FormGroup,
+    Card,
+    CardContent,
 } from "@mui/material";
 import { Delete as DeleteIcon, Add as AddIcon, Edit as EditIcon, Download as DownloadIcon } from "@mui/icons-material";
 import apiClient from "../lib/apiClient";
 import { downloadFile } from "../lib/apiClient";
 import { getRole } from "../lib/storage";
 import Pagination from "../components/Pagination";
+import registeredASALogo from "../assets/logo2.png";
 
 export default function UserManagementPage() {
     const [users, setUsers] = useState([]);
@@ -530,127 +533,147 @@ export default function UserManagementPage() {
         : ["AA", "BM"]; // RA can only add AA or BM
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600, color: "#1a237e" }}>
-                    User Management
-                </Typography>
-                <Box display="flex" gap={2}>
-                    {userRole === 'SUPER_ADMIN' && (
+        <Box
+            sx={{
+                p: 3,
+                bgcolor: "background.default",
+                minHeight: "100vh",
+                position: "relative",
+            }}
+        >
+            <Card sx={{ maxWidth: "100%", mx: "auto", borderRadius: 3 }}>
+                <CardContent sx={{ p: 4 }}>
+                    <Box sx={{ textAlign: "center", mb: 3 }}>
+                        <img
+                            src={registeredASALogo}
+                            alt="Logo"
+                            style={{ width: 200, height: 90 }}
+                        />
+                        <Typography variant="h5" sx={{ mt: 2, fontWeight: 600 }}>
+                            Value-Driven Performance Management Form
+                        </Typography>
+                        <Typography variant="h6" sx={{ mt: 1, fontWeight: 500 }}>
+                            User Management
+                        </Typography>
+                    </Box>
+
+                    <Box display="flex" justifyContent="flex-end" alignItems="center" mb={3} gap={2}>
+                        {userRole === 'SUPER_ADMIN' && (
+                            <Button
+                                variant="contained"
+                                startIcon={<DownloadIcon />}
+                                onClick={handleDownloadAll}
+                                disabled={downloading}
+                                sx={{ bgcolor: "#4CAF50", '&:hover': { bgcolor: "#45a049" } }}
+                            >
+                                {downloading ? "Downloading..." : "Export Users"}
+                            </Button>
+                        )}
                         <Button
                             variant="contained"
-                            startIcon={<DownloadIcon />}
-                            onClick={handleDownloadAll}
-                            disabled={downloading}
-                            sx={{ bgcolor: "#4CAF50", '&:hover': { bgcolor: "#45a049" } }}
+                            startIcon={<DeleteIcon />}
+                            onClick={handleDeleteSelected}
+                            disabled={selectedUsers.length === 0}
+                            sx={{ bgcolor: "#f44336", '&:hover': { bgcolor: "#da190b" } }}
                         >
-                            {downloading ? "Downloading..." : "Export Users"}
+                            Delete Selected ({selectedUsers.length})
                         </Button>
-                    )}
-                    <Button
-                        variant="contained"
-                        startIcon={<DeleteIcon />}
-                        onClick={handleDeleteSelected}
-                        disabled={selectedUsers.length === 0}
-                        sx={{ bgcolor: "#f44336", '&:hover': { bgcolor: "#da190b" } }}
-                    >
-                        Delete Selected ({selectedUsers.length})
-                    </Button>
-                    <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpen} sx={{ bgcolor: "#FF6B35", '&:hover': { bgcolor: "#E55A2B" } }}>
-                        Add User
-                    </Button>
-                </Box>
-            </Box>
+                        <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpen} sx={{ bgcolor: "#FF6B35", '&:hover': { bgcolor: "#E55A2B" } }}>
+                            Add User
+                        </Button>
+                    </Box>
 
-            <Paper sx={{ p: 2, mb: 2, borderRadius: 2, display: 'flex', alignItems: 'center' }}>
-                <TextField
-                    label="Filter by Email, Branch, or Area"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    value={search}
-                    onChange={(e) => {
-                        setSearch(e.target.value);
-                        setPage(1);
-                    }}
-                />
-            </Paper>
+                    <Paper sx={{ p: 2, mb: 2, borderRadius: 2, display: 'flex', alignItems: 'center' }}>
+                        <TextField
+                            label="Filter by Email, Branch, or Area"
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            value={search}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                                setPage(1);
+                            }}
+                        />
+                    </Paper>
 
 
-            <Paper sx={{ width: "100%", mb: 2, borderRadius: 2, overflow: 'hidden', boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
-                <TableContainer>
-                    <Table>
-                        <TableHead sx={{ bgcolor: "#f5f5f5" }}>
-                            <TableRow>
-                                <TableCell sx={{ fontWeight: 600 }}>ID Number</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>First Name</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>Last Name</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>Suffix</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>Department</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>Division</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>Position</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>Email Address</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>Assigned To</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={10} align="center"><CircularProgress /></TableCell>
-                                </TableRow>
-                            ) : users.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={10} align="center">No users found</TableCell>
-                                </TableRow>
-                            ) : (
-                                users.map((user) => (
-                                    <TableRow key={user.id} hover selected={selectedUsers.includes(user.id)}>
-                                        <TableCell>{user.id_number}</TableCell>
-                                        <TableCell>{user.first_name}</TableCell>
-                                        <TableCell>{user.surname}</TableCell>
-                                        <TableCell>{user.suffix}</TableCell>
-                                        <TableCell>{user.Department}</TableCell>
-                                        <TableCell>{user.Division}</TableCell>
-                                        <TableCell>
-                                            <Box component="span" sx={{
-                                                bgcolor: user.role === 'SUPER_ADMIN' ? '#1565c0' : user.role === 'ADMIN' ? '#e3f2fd' : user.role === 'RA' ? '#fff3e0' : '#f5f5f5',
-                                                color: user.role === 'SUPER_ADMIN' ? '#ffffff' : user.role === 'ADMIN' ? '#1565c0' : user.role === 'RA' ? '#ef6c00' : '#616161',
-                                                px: 1.5, py: 0.5, borderRadius: 6, fontSize: '0.875rem', fontWeight: 500
-                                            }}>
-                                                {user.role}
-                                            </Box>
-                                        </TableCell>
-                                        <TableCell>{user.email}</TableCell>
-                                        <TableCell>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <span>{user.assigned_name || user.assigned_id}</span>
-                                            </Box>
-                                        </TableCell>
-                                        <TableCell>
-                                            <IconButton onClick={() => handleEdit(user)} color="primary" size="small">
-                                                <EditIcon />
-                                            </IconButton>
-                                            <Checkbox
-                                                checked={selectedUsers.includes(user.id)}
-                                                onChange={() => handleSelectUser(user.id)}
-                                                size="small"
-                                            />
-                                        </TableCell>
+                    <Paper sx={{ width: "100%", mb: 2, borderRadius: 2, overflow: 'hidden', boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
+                        <TableContainer>
+                            <Table sx={{ '& .MuiTableCell-root': { borderBottom: '1px solid #e0e0e0', borderLeft: 'none', borderRight: 'none', py: 1, px: 2 } }}>
+                                <TableHead sx={{ bgcolor: "#f5f5f5" }}>
+                                    <TableRow>
+                                        <TableCell sx={{ fontWeight: 600 }}>ID Number</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>First Name</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>Last Name</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>Suffix</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>Department</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>Division</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>Position</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>Email Address</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>Assigned To</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                <Box sx={{ p: 2 }}>
-                    <Pagination
-                        currentPage={page}
-                        totalPages={Math.ceil(totalCount / rowsPerPage)}
-                        onPageChange={handleChangePage}
-                    />
-                </Box>
-            </Paper>
+                                </TableHead>
+                                <TableBody>
+                                    {loading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={10} align="center"><CircularProgress /></TableCell>
+                                        </TableRow>
+                                    ) : users.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={10} align="center">No users found</TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        users.map((user) => (
+                                            <TableRow key={user.id} hover selected={selectedUsers.includes(user.id)}>
+                                                <TableCell>{user.id_number}</TableCell>
+                                                <TableCell>{user.first_name}</TableCell>
+                                                <TableCell>{user.surname}</TableCell>
+                                                <TableCell>{user.suffix}</TableCell>
+                                                <TableCell>{user.Department}</TableCell>
+                                                <TableCell>{user.Division}</TableCell>
+                                                <TableCell>
+                                                    <Box component="span" sx={{
+                                                        bgcolor: user.role === 'SUPER_ADMIN' ? '#1565c0' : user.role === 'ADMIN' ? '#e3f2fd' : user.role === 'RA' ? '#fff3e0' : '#f5f5f5',
+                                                        color: user.role === 'SUPER_ADMIN' ? '#ffffff' : user.role === 'ADMIN' ? '#1565c0' : user.role === 'RA' ? '#ef6c00' : '#616161',
+                                                        px: 1.5, py: 0.5, borderRadius: 6, fontSize: '0.875rem', fontWeight: 500
+                                                    }}>
+                                                        {user.role}
+                                                    </Box>
+                                                </TableCell>
+                                                <TableCell>{user.email}</TableCell>
+                                                <TableCell>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <span>{user.assigned_name || user.assigned_id}</span>
+                                                    </Box>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <IconButton onClick={() => handleEdit(user)} color="primary" size="small">
+                                                        <EditIcon />
+                                                    </IconButton>
+                                                    <Checkbox
+                                                        checked={selectedUsers.includes(user.id)}
+                                                        onChange={() => handleSelectUser(user.id)}
+                                                        size="small"
+                                                    />
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                        <Box sx={{ p: 2 }}>
+                            <Pagination
+                                currentPage={page}
+                                totalPages={Math.ceil(totalCount / rowsPerPage)}
+                                onPageChange={handleChangePage}
+                            />
+                        </Box>
+                    </Paper>
+                </CardContent>
+            </Card>
 
             {/* Add/Edit User Dialog */}
             <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
@@ -821,6 +844,6 @@ export default function UserManagementPage() {
                     <Button onClick={confirmBulkDelete} variant="contained" color="error">Delete All</Button>
                 </DialogActions>
             </Dialog>
-        </Container>
+        </Box>
     );
 }
