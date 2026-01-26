@@ -12,6 +12,20 @@ export const ROLES = {
   COO: "COO",
   CHIEF: "CHIEF",
   IM: "IM",
+};
+
+export const ROLE_DISPLAY_MAP = {
+  SUPER_ADMIN: "SUPER ADMIN",
+  ADMIN: "ADMIN",
+  BM: "BM",
+  AA: "AA",
+  RA: "RA",
+  AVP: "AVP",
+  SVP: "SVP/VP",
+  CFOO: "CFOO",
+  COO: "COO",
+  CHIEF: "CHIEF",
+  IM: "IM",
   ITR: "ITR",
 };
 
