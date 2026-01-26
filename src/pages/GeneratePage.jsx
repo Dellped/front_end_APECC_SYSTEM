@@ -72,7 +72,7 @@ export default function GeneratePage() {
     let branchParam = "";
 
     if (role === ROLES.ADMIN) {
-      return { entityName: "ADMIN", entityCode: "", branchParam: "ADMIN" };
+      return { entityName: "ADMIN", entityCode: "", branchParam: getSession(SESSION_KEYS.DEP_ID) || "" };
     }
 
     if (role === ROLES.SUPER_ADMIN) {

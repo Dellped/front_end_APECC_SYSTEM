@@ -53,7 +53,7 @@ export default function ArchivePage() {
   // Get entity info
   const getEntityInfo = useCallback(() => {
     if (role === ROLES.ADMIN) {
-      return { entityName: "ADMIN", branchParam: "" };
+      return { entityName: "ADMIN", branchParam: getSession(SESSION_KEYS.DEP_ID) || "" };
     }
 
     if (role === ROLES.SUPER_ADMIN) {
@@ -161,7 +161,7 @@ export default function ArchivePage() {
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 500 }}>
               Archived Forms
             </Typography>
-            <Chip label={entityName} color="primary" sx={{ mt: 2 }} />
+            {/* <Chip label={entityName} color="primary" sx={{ mt: 2 }} /> */}
           </Box>
 
           {/* Archive Table */}
