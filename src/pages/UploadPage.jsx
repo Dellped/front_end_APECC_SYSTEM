@@ -123,6 +123,10 @@ export default function UploadPage() {
         entityName = "";
         entityCode = getSession(SESSION_KEYS.COO_ID) || "";
         break;
+      case ROLES.CHIEF:
+        entityName = "";
+        entityCode = getSession(SESSION_KEYS.CHIEF_ID) || "";
+        break;
       case ROLES.IM:
       case ROLES.ITR:
         entityName = getSession(SESSION_KEYS.DEP_NAME) || "Unknown Department";
@@ -162,6 +166,8 @@ export default function UploadPage() {
         return getSession(SESSION_KEYS.CFO_ID) || "Unknown";
       case ROLES.COO:
         return getSession(SESSION_KEYS.COO_ID) || "Unknown";
+      case ROLES.CHIEF:
+        return getSession(SESSION_KEYS.CHIEF_ID) || "Unknown";
       case ROLES.IM:
       case ROLES.ITR:
         return getSession(SESSION_KEYS.USER_ID) || "Unknown";
@@ -328,6 +334,10 @@ export default function UploadPage() {
     if (role === ROLES.COO) {
       formData.append("coo_id", safeValue(getSession(SESSION_KEYS.COO_ID)));
       formData.append("coo_name", safeValue(getSession(SESSION_KEYS.COO_NAME)));
+    }
+     if (role === ROLES.CHIEF) {
+      formData.append("chief_id", safeValue(getSession(SESSION_KEYS.CHIEF_ID)));
+      formData.append("chief_name", safeValue(getSession(SESSION_KEYS.CHIEF_NAME)));
     }
     if (role === ROLES.IM || role === ROLES.ITR) {
       formData.append("dep_id", safeValue(getSession(SESSION_KEYS.DEP_ID)));
