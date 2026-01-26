@@ -21,15 +21,15 @@ export const canAccessUserManagement = (role) => {
 };
 
 export function canAccessUpload(role) {
-  return role !== ROLES.CHIEF;
+  return true;
 }
 
 export function canAccessValidate(role) {
-  return role !== ROLES.CHIEF;
+  return true;
 }
 
 export function canAccessGenerate(role) {
-  return role !== ROLES.CHIEF;
+  return true;
 }
 
 export function canAccessSummary(role) {
@@ -53,9 +53,6 @@ export function canAccessValSummary(role) {
 
 // Get default route for a role
 export function getDefaultRouteForRole(role) {
-  if (role === ROLES.CHIEF) {
-    return "/corporate";
-  }
   return "/upload";
 }
 
