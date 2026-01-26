@@ -66,7 +66,7 @@ export default function CorporatePage() {
   const [modalDisplayName, setModalDisplayName] = useState("");
 
   const role = getRole();
-  const canDownloadAll = role === ROLES.COO || role === ROLES.ADMIN;
+  const canDownloadAll = role === ROLES.COO || role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN;
 
   // Fetch preview details
   const fetchDetailsAndShow = async (
@@ -76,7 +76,7 @@ export default function CorporatePage() {
     displayKey = ""
   ) => {
 
-     const title = type === "department" ? displayKey : name || filterKey;
+    const title = type === "department" ? displayKey : name || filterKey;
 
     setModalTitle(`INDIVIDUAL PM SUMMARY:  ${title}`);
     setModalDisplayName(title);
@@ -93,9 +93,9 @@ export default function CorporatePage() {
 
       const { data } = await apiClient.get(
         type === "department"
-    ? `${endpoint}?department=${encodeURIComponent(displayKey)}`
-    : `${endpoint}?operation_name=${encodeURIComponent(filterKey)}`
-);
+          ? `${endpoint}?department=${encodeURIComponent(displayKey)}`
+          : `${endpoint}?operation_name=${encodeURIComponent(filterKey)}`
+      );
 
       if (data.error) {
         setMessage(data.error);
@@ -104,7 +104,7 @@ export default function CorporatePage() {
 
       const filteredRecords = data.records.filter((r) => {
         if (type === "department") {
-           return r.department === displayKey;
+          return r.department === displayKey;
         } else if (type === "operation") {
           return r.group === displayKey;
         }
@@ -452,19 +452,19 @@ export default function CorporatePage() {
                       {EE}
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
-                    {percent(EE, total)}%
+                      {percent(EE, total)}%
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
                       {ME}
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
-                    {percent(ME, total)}%
+                      {percent(ME, total)}%
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
                       {DM}
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
-                    {percent(DM, total)}%
+                      {percent(DM, total)}%
                     </TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 600 }}>
                       {total}
@@ -508,9 +508,10 @@ export default function CorporatePage() {
                   </TableRow>
                 );
               })}
-              <TableRow sx={{ bgcolor: "grey.200", fontWeight: "bold", "& .MuiTableCell-root":
-               {textAlign: "center",fontWeight: "bold", verticalAlign: "middle",color: "red"},
-                 }}>
+              <TableRow sx={{
+                bgcolor: "grey.200", fontWeight: "bold", "& .MuiTableCell-root":
+                  { textAlign: "center", fontWeight: "bold", verticalAlign: "middle", color: "red" },
+              }}>
                 <TableCell sx={{ textAlign: "left", fontWeight: "bold" }}>
                   Subtotal
                 </TableCell>
