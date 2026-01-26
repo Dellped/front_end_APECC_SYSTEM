@@ -33,7 +33,7 @@ export function canAccessGenerate(role) {
 }
 
 export function canAccessSummary(role) {
-  return role !== ROLES.BM && role !== ROLES.CHIEF;
+  return role !== ROLES.BM && role !== ROLES.CHIEF && role !== ROLES.ADMIN;
 }
 
 
