@@ -285,6 +285,12 @@ export default function UploadPage() {
 
     formData.append("role", role);
     formData.append("employeeCount", mfoInput || 0);
+    
+    // Add uploaded_by_user_id from session
+    const userId = getSession(SESSION_KEYS.USER_ID);
+    if (userId) {
+      formData.append("uploaded_by_user_id", userId);
+    }
 
     // Append role-specific data
     if (role === ROLES.BM) {
