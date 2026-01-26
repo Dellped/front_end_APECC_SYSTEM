@@ -378,7 +378,7 @@ export default function UserManagementPage() {
                 setFormData(prev => ({ ...prev, assigned_id: value }));
             }
         } else if (name === "department_id") {
-            const deptRoles = ['IM', 'ITR', 'CHIEF'];
+            const deptRoles = ['IM', 'ITR', 'CHIEF', 'ADMIN'];
             if (deptRoles.includes(formData.role)) {
                 setFormData(prev => ({ ...prev, assigned_id: value }));
             }
@@ -413,7 +413,7 @@ export default function UserManagementPage() {
     };
 
     const handleSubmit = async () => {
-        if (!formData.email || !formData.role || !formData.first_name || !formData.surname || (!formData.assigned_id && formData.role !== 'SUPER_ADMIN' && formData.role !== 'ADMIN' && formData.role !== 'COO' && formData.role !== 'CFOO')) {
+        if (!formData.email || !formData.role || !formData.first_name || !formData.surname || (!formData.assigned_id && formData.role !== 'SUPER_ADMIN' && formData.role !== 'COO' && formData.role !== 'CFOO')) {
             setError("Please fill all required fields");
             return;
         }
