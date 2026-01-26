@@ -66,7 +66,7 @@ export default function CorporatePage() {
   const [modalDisplayName, setModalDisplayName] = useState("");
 
   const role = getRole();
-  const canDownloadAll = role === ROLES.COO || role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN;
+  const canDownloadAll = role === ROLES.COO || role === ROLES.SUPER_ADMIN;
 
   // Fetch preview details
   const fetchDetailsAndShow = async (
@@ -129,6 +129,15 @@ export default function CorporatePage() {
           const chiefId = getSession(SESSION_KEYS.CHIEF_ID);
           const response = await apiClient.get(
             `/api/corporate-summary/chief/departments?chief_id=${chiefId}`
+          );
+          data = response.data;
+        } else if (role === ROLES.ADMIN) {
+          const depId = getSession(SESSION_KEYS.DEP_ID);
+          if (!depId) {
+             throw new Error("Department ID not found for Admin user");
+          }
+          const response = await apiClient.get(
+            `/api/corporate-summary/admin/departments?dep_id=${depId}`
           );
           data = response.data;
         } else {
