@@ -610,16 +610,16 @@ export default function UserManagementPage() {
                             <Table sx={{ '& .MuiTableCell-root': { borderBottom: '1px solid #e0e0e0', borderLeft: 'none', borderRight: 'none', py: 1, px: 2 } }}>
                                 <TableHead sx={{ bgcolor: "#f5f5f5" }}>
                                     <TableRow>
-                                        <TableCell sx={{ fontWeight: 600 }}>ID Number</TableCell>
-                                        <TableCell sx={{ fontWeight: 600 }}>First Name</TableCell>
-                                        <TableCell sx={{ fontWeight: 600 }}>Last Name</TableCell>
-                                        <TableCell sx={{ fontWeight: 600 }}>Suffix</TableCell>
-                                        <TableCell sx={{ fontWeight: 600 }}>Department</TableCell>
-                                        <TableCell sx={{ fontWeight: 600 }}>Division</TableCell>
-                                        <TableCell sx={{ fontWeight: 600 }}>Position</TableCell>
-                                        <TableCell sx={{ fontWeight: 600 }}>Email Address</TableCell>
-                                        <TableCell sx={{ fontWeight: 600 }}>Assigned To</TableCell>
-                                        <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 600 }}>ID Number</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 600 }}>First Name</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Last Name</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Suffix</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Department</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Division</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Position</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Email Address</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Assigned To</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Actions</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -634,13 +634,13 @@ export default function UserManagementPage() {
                                     ) : (
                                         users.map((user) => (
                                             <TableRow key={user.id} hover selected={selectedUsers.includes(user.id)}>
-                                                <TableCell>{(!user.id_number || user.id_number === '0' || user.id_number === '00000') ? '' : user.id_number}</TableCell>
-                                                <TableCell>{user.first_name}</TableCell>
-                                                <TableCell>{user.surname}</TableCell>
-                                                <TableCell>{user.suffix}</TableCell>
-                                                <TableCell>{user.Department}</TableCell>
-                                                <TableCell>{user.Division}</TableCell>
-                                                <TableCell>
+                                                <TableCell align="center">{(!user.id_number || user.id_number === '0' || user.id_number === '00000') ? '' : user.id_number}</TableCell>
+                                                <TableCell align="center">{user.first_name}</TableCell>
+                                                <TableCell align="center">{user.surname}</TableCell>
+                                                <TableCell align="center">{user.suffix}</TableCell>
+                                                <TableCell align="center">{user.Department}</TableCell>
+                                                <TableCell align="center">{user.Division}</TableCell>
+                                                <TableCell align="center">
                                                     <Box component="span" sx={{
                                                         bgcolor: user.role === 'SUPER_ADMIN' ? '#1565c0' : user.role === 'ADMIN' ? '#e3f2fd' : user.role === 'RA' ? '#fff3e0' : '#f5f5f5',
                                                         color: user.role === 'SUPER_ADMIN' ? '#ffffff' : user.role === 'ADMIN' ? '#1565c0' : user.role === 'RA' ? '#ef6c00' : '#616161',
@@ -649,13 +649,13 @@ export default function UserManagementPage() {
                                                         {ROLE_DISPLAY_MAP[user.role] || user.role}
                                                     </Box>
                                                 </TableCell>
-                                                <TableCell>{user.email}</TableCell>
-                                                <TableCell>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <TableCell align="center">{user.email}</TableCell>
+                                                <TableCell align="center">
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                                                         <span>{user.assigned_name || user.assigned_id}</span>
                                                     </Box>
                                                 </TableCell>
-                                                <TableCell>
+                                                <TableCell align="center">
                                                     <IconButton onClick={() => handleEdit(user)} color="primary" size="small">
                                                         <EditIcon />
                                                     </IconButton>
