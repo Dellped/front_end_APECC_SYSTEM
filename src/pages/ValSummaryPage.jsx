@@ -304,10 +304,18 @@ export default function ValidatePage() {
         : "warning";
 
     const isIncompleteStatus = status === "Incomplete";
+    const isDuplicateStatus = status === "Duplicate";
+    
     const getCellStyle = (value, extra = {}) => {
       const str = value != null ? String(value).trim() : "";
+      // Highlight missing values in incomplete records with stronger color
       if (isIncompleteStatus && !str) {
-        return { ...extra, bgcolor: "warning.light" };
+        return { 
+          ...extra, 
+          bgcolor: "#fff3cd", // Stronger warning yellow
+          border: "1px solid #ffc107",
+          fontWeight: "500"
+        };
       }
       return extra;
     };
@@ -317,21 +325,30 @@ export default function ValidatePage() {
     // This ensures uniqueness even when multiple records have the same emp_id
     const uniqueKey = `${isComplete ? 'complete' : 'incomplete'}-${r.id || `emp-${r.emp_id || 'unknown'}-idx-${index !== null ? index : 0}`}-${r.drive_file_id || 'no-file'}`;
 
+    // Add row-level styling for incomplete/duplicate records
+    const rowStyle = !isComplete ? {
+      bgcolor: isIncompleteStatus ? "rgba(255, 152, 0, 0.05)" : isDuplicateStatus ? "rgba(33, 150, 243, 0.05)" : "transparent"
+    } : {};
+
     return (
-      <TableRow key={uniqueKey} hover>
+      <TableRow key={uniqueKey} hover sx={rowStyle}>
         <TableCell>
           <Chip label={status} color={statusColor} size="small" />
         </TableCell>
         <TableCell
           sx={getCellStyle(r.emp_id, {
-            bgcolor: empIdDup ? "info.light" : "transparent",
+            bgcolor: empIdDup ? "#d1ecf1" : "transparent",
+            border: empIdDup ? "1px solid #0dcaf0" : "none",
+            fontWeight: empIdDup ? "600" : "normal"
           })}
         >
           {r.emp_id || ""}
         </TableCell>
         <TableCell
           sx={getCellStyle(r.employee_name, {
-            bgcolor: nameDup ? "info.light" : "transparent",
+            bgcolor: nameDup ? "#d1ecf1" : "transparent",
+            border: nameDup ? "1px solid #0dcaf0" : "none",
+            fontWeight: nameDup ? "600" : "normal"
           })}
         >
           {r.employee_name || ""}
