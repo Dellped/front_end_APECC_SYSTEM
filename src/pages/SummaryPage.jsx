@@ -730,13 +730,13 @@ export default function SummaryPage() {
             <Typography variant="h6" sx={{ mt: 1, fontWeight: 500 }}>
               Summary Reports
             </Typography>
-            {role !== 'COO' && role !== 'ADMIN' && role !== 'SUPER_ADMIN' && (
+            {/* {role !== 'COO' && role !== 'ADMIN' && role !== 'SUPER_ADMIN' && (
               <Chip
                 label={displayName || ""}
                 color="primary"
                 sx={{ mt: 2 }}
               />
-            )}
+            )} */}
           </Box>
 
           {/* Tabs */}
