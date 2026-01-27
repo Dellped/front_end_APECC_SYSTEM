@@ -891,9 +891,16 @@ export default function UploadPage() {
                 <Button
                   variant="contained"
                   color="warning"
-                  startIcon={<DeleteIcon />}
+                  size="small"
+                  startIcon={<DeleteIcon sx={{ fontSize: 18 }} />}
                   onClick={handleDeleteFiles}
                   disabled={checkedFiles.size === 0}
+                  sx={{
+                    py: 0.5,
+                    px: 1.5,
+                    fontSize: "0.8rem",
+                    textTransform: "none"
+                  }}
                 >
                   Delete Selected ({checkedFiles.size})
                 </Button>
