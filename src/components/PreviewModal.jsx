@@ -75,15 +75,24 @@ const COLUMN_HEADERS = [
 ];
 
 const excelSerialToDate = (serial) => {
-  if (serial === "0") return "0";
   if (!serial) return "";
+  
+  if (serial === "0") return "0";
+
+  // Check if the value is a number
+  const numValue = Number(serial);
+  
+  // If it's not a valid number, just return the original value
+  if (isNaN(numValue)) {
+    return serial;
+  }
 
   // Excel starts at 1900-01-01
   const excelEpoch = new Date(1899, 11, 30);
-  const date = new Date(excelEpoch.getTime() + Number(serial) * 86400000);
+  const date = new Date(excelEpoch.getTime() + numValue * 86400000);
 
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
   const yyyy = date.getFullYear();
 
   return `${mm}/${dd}/${yyyy}`;
