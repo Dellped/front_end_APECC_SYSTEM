@@ -26,8 +26,8 @@ export const ROLE_DISPLAY_MAP = {
   CFOO: "OIC-CFOO",
   COO: "COO",
   CHIEF: "CHIEF",
-  IM: "IM",
-  ITR: "ITR",
+  IM: "IMMEDIATE",
+  ITR: "INTERMEDIATE",
 };
 
 // Sidebar visibility rules (matching main.html logic)
@@ -62,7 +62,7 @@ export function canAccessCorporate(role) {
 }
 
 export function canAccessValSummary(role) {
-  return role !== ROLES.BM;
+  return role !== ROLES.BM && role !== ROLES.IM;
 }
 
 

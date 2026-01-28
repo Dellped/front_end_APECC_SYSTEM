@@ -75,6 +75,7 @@ export default function UserManagementPage() {
     const [departments, setDepartments] = useState([]);
     const [imUsers, setImUsers] = useState([]);
     const [selectedSubordinates, setSelectedSubordinates] = useState([]);
+    const [subordinateSearch, setSubordinateSearch] = useState("");
 
     const userRole = getRole();
 
@@ -194,9 +195,10 @@ export default function UserManagementPage() {
         }
     };
 
-    const fetchIMUsers = async () => {
+    const fetchIMUsers = async (excludeId = null) => {
         try {
-            const { data } = await apiClient.get(`/api/users/im-users`);
+            const query = excludeId ? `?exclude_id=${excludeId}` : '';
+            const { data } = await apiClient.get(`/api/users/im-users${query}`);
             if (data.success) setImUsers(data.data);
         } catch (err) {
             console.error(err);
@@ -312,7 +314,7 @@ export default function UserManagementPage() {
         if (userRole === 'SUPER_ADMIN') {
             await fetchOperations();
             await fetchDepartments();
-            await fetchIMUsers();
+            await fetchIMUsers(user.id);
             if (operationId || user.role === 'AVP') await fetchDivisions(operationId);
             if (user.role === 'ITR') await fetchSubordinates(user.id);
         }
@@ -332,6 +334,7 @@ export default function UserManagementPage() {
         setAreas([]);
         setBranches([]);
         setSelectedSubordinates([]);
+        setSubordinateSearch("");
         setError(null);
         setIsEdit(false);
         setEditUserId(null);
@@ -605,20 +608,21 @@ export default function UserManagementPage() {
                     </Paper>
 
 
-                    <Paper sx={{ width: "100%", mb: 2, borderRadius: 2, overflow: 'hidden', boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
+                    <Paper sx={{ width: "100%", mb: 2, borderRadius: 1, overflow: 'hidden', boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
                         <TableContainer>
                             <Table sx={{ '& .MuiTableCell-root': { borderBottom: '1px solid #e0e0e0', borderLeft: 'none', borderRight: 'none', py: 1, px: 2 } }}>
                                 <TableHead sx={{ bgcolor: "#f5f5f5" }}>
                                     <TableRow>
+                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Delete</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>ID Number</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>First Name</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Last Name</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Suffix</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Department</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Division</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Assigned To</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Position</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Email Address</TableCell>
-                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Assigned To</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Actions</TableCell>
                                     </TableRow>
                                 </TableHead>
@@ -634,12 +638,24 @@ export default function UserManagementPage() {
                                     ) : (
                                         users.map((user) => (
                                             <TableRow key={user.id} hover selected={selectedUsers.includes(user.id)}>
+                                                <TableCell align="center">
+                                                    <Checkbox
+                                                        checked={selectedUsers.includes(user.id)}
+                                                        onChange={() => handleSelectUser(user.id)}
+                                                        size="small"
+                                                    />
+                                                </TableCell>
                                                 <TableCell align="center">{(!user.id_number || user.id_number === '0' || user.id_number === '00000') ? '' : user.id_number}</TableCell>
                                                 <TableCell align="center">{user.first_name}</TableCell>
                                                 <TableCell align="center">{user.surname}</TableCell>
                                                 <TableCell align="center">{user.suffix}</TableCell>
                                                 <TableCell align="center">{user.Department}</TableCell>
                                                 <TableCell align="center">{user.Division}</TableCell>
+                                                <TableCell align="center">
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                                                        <span>{user.assigned_name || user.assigned_id}</span>
+                                                    </Box>
+                                                </TableCell>
                                                 <TableCell align="center">
                                                     <Box component="span" sx={{
                                                         bgcolor: user.role === 'SUPER_ADMIN' ? '#1565c0' : user.role === 'ADMIN' ? '#e3f2fd' : user.role === 'RA' ? '#fff3e0' : '#f5f5f5',
@@ -651,19 +667,9 @@ export default function UserManagementPage() {
                                                 </TableCell>
                                                 <TableCell align="center">{user.email}</TableCell>
                                                 <TableCell align="center">
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                                        <span>{user.assigned_name || user.assigned_id}</span>
-                                                    </Box>
-                                                </TableCell>
-                                                <TableCell align="center">
                                                     <IconButton onClick={() => handleEdit(user)} color="primary" size="small">
                                                         <EditIcon />
                                                     </IconButton>
-                                                    <Checkbox
-                                                        checked={selectedUsers.includes(user.id)}
-                                                        onChange={() => handleSelectUser(user.id)}
-                                                        size="small"
-                                                    />
                                                 </TableCell>
                                             </TableRow>
                                         ))
@@ -780,8 +786,15 @@ export default function UserManagementPage() {
                                     const name = d.name.toLowerCase();
                                     const isOps = name.includes("operation");
                                     const isChiefs = name === "chiefs";
+
+                                    // Remove CHIEFS for ADMIN, IM, ITR, CHIEF
+                                    if (["ADMIN", "IM", "ITR", "CHIEF"].includes(formData.role)) {
+                                        if (isChiefs) return false;
+                                    }
+
+                                    // Additionally remove OPS for CHIEF
                                     if (formData.role === "CHIEF") {
-                                        return !isOps && !isChiefs;
+                                        return !isOps;
                                     }
                                     return true;
                                 }).map(d => (
@@ -794,16 +807,41 @@ export default function UserManagementPage() {
                         {(formData.role === "ITR") && (
                             <Box>
                                 <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                                    Select Subordinates (IM Users)
+                                    Select Subordinates (IM/ITR Users)
                                 </Typography>
+                                <TextField
+                                    label="Search Subordinates"
+                                    size="small"
+                                    fullWidth
+                                    variant="outlined"
+                                    sx={{ mb: 1 }}
+                                    value={subordinateSearch}
+                                    onChange={(e) => setSubordinateSearch(e.target.value)}
+                                />
                                 <Paper variant="outlined" sx={{ p: 2, maxHeight: 300, overflow: 'auto' }}>
-                                    {imUsers.length === 0 ? (
+                                    {imUsers.filter(im => {
+                                        if (!subordinateSearch) return true;
+                                        const search = subordinateSearch.toLowerCase();
+                                        return (
+                                            im.first_name.toLowerCase().includes(search) ||
+                                            im.surname.toLowerCase().includes(search) ||
+                                            im.email.toLowerCase().includes(search)
+                                        );
+                                    }).length === 0 ? (
                                         <Typography variant="body2" color="text.secondary">
-                                            No IM users available
+                                            No users found
                                         </Typography>
                                     ) : (
                                         <FormGroup>
-                                            {imUsers.map(im => (
+                                            {imUsers.filter(im => {
+                                                if (!subordinateSearch) return true;
+                                                const search = subordinateSearch.toLowerCase();
+                                                return (
+                                                    im.first_name.toLowerCase().includes(search) ||
+                                                    im.surname.toLowerCase().includes(search) ||
+                                                    im.email.toLowerCase().includes(search)
+                                                );
+                                            }).map(im => (
                                                 <FormControlLabel
                                                     key={im.id}
                                                     control={
