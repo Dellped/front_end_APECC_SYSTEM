@@ -118,32 +118,32 @@ export default function ValidatePage() {
         break;
       case ROLES.AA:
         entityName = getSession(SESSION_KEYS.AREA_NAME) || "Unknown Area";
-        branchParam = getSession(SESSION_KEYS.AREA_ID) || "";
+        branchParam = getSession(SESSION_KEYS.AREA_NAME) || "";
         break;
       case ROLES.RA:
         entityName = getSession(SESSION_KEYS.REGION_NAME) || "Unknown Region";
-        branchParam = getSession(SESSION_KEYS.REGION_ID) || "";
+        branchParam = getSession(SESSION_KEYS.REGION_NAME) || "";
         break;
       case ROLES.AVP:
         entityName = getSession(SESSION_KEYS.DIVISION) || "Unknown Division";
-        branchParam = getSession(SESSION_KEYS.DIVISION_ID) || "";
+        branchParam = getSession(SESSION_KEYS.DIVISION) || "";
         break;
       case ROLES.SVP:
         entityName =
           getSession(SESSION_KEYS.OPERATION_NAME) || "Unknown Operation";
-        branchParam = getSession(SESSION_KEYS.OPERATION_ID) || "";
+        branchParam = getSession(SESSION_KEYS.OPERATION_NAME) || "";
         break;
       case ROLES.CFOO:
         entityName = getSession(SESSION_KEYS.CFO_NAME) || "Unknown CFO";
-        branchParam = getSession(SESSION_KEYS.CFO_ID) || "";
+        branchParam = getSession(SESSION_KEYS.CFO_NAME) || "";
         break;
       case ROLES.CHIEF:
         entityName = getSession(SESSION_KEYS.CHIEF_NAME) || "Unknown Chief";
-        branchParam = getSession(SESSION_KEYS.CHIEF_ID) || "";
+        branchParam = getSession(SESSION_KEYS.CHIEF_NAME) || "";
         break;
       case ROLES.ADMIN:
         entityName = "ADMIN";
-        branchParam = getSession(SESSION_KEYS.DEP_ID) || "";
+        branchParam = getSession(SESSION_KEYS.DEP_NAME) || "";
         break;
       case ROLES.IM:
       case ROLES.ITR:
