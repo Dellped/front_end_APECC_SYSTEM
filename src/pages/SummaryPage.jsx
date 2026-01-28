@@ -261,7 +261,8 @@ export default function SummaryPage() {
           if (data.branchSummary?.length)
             availableTabs.push({ id: "branch", label: "Branch Summary" });
         }
-        {
+        else {
+          // For any other roles not explicitly handled above
           if (data.divisionSummary?.length)
             availableTabs.push({ id: "division", label: "Division Summary" });
           if (data.regionSummary?.length)
