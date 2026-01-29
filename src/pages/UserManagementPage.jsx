@@ -384,6 +384,11 @@ export default function UserManagementPage() {
             const deptRoles = ['IM', 'ITR', 'CHIEF', 'ADMIN'];
             if (deptRoles.includes(formData.role)) {
                 setFormData(prev => ({ ...prev, assigned_id: value }));
+                // Auto-fill Department name from selection
+                const selectedDept = departments.find(d => d.id === value);
+                if (selectedDept) {
+                    setFormData(prev => ({ ...prev, Department: selectedDept.name }));
+                }
             }
         } else if (name === "role") {
             // Reset selections on role change
@@ -404,7 +409,11 @@ export default function UserManagementPage() {
                 assigned_id: "",
                 region_id: preservedRegionId, // Keep region for RA
                 area_id: "", branch_id: "",
-                operation_id: "", division_id: "", department_id: ""
+                operation_id: "", division_id: "", department_id: "",
+                // Auto-fill Central Office ONLY for SUPER_ADMIN, COO. Operations for field roles.
+                Department: ["SUPER_ADMIN", "COO"].includes(value) ? "CENTRAL OFFICE" : (["RA", "AA", "BM", "AVP", "SVP", "CFOO"].includes(value) ? "Operations" : ""),
+                // Division Central Office for HQ roles + SVP (as per request)
+                Division: ["SUPER_ADMIN", "ADMIN", "COO", "CFOO", "CHIEF", "IM", "ITR", "SVP"].includes(value) ? "CENTRAL OFFICE" : ""
             }));
 
             if (shouldClearAreas) {
@@ -412,6 +421,36 @@ export default function UserManagementPage() {
             }
             setBranches([]);
             // Operations/Departments are global for SUPER_ADMIN so we don't need to clear them from state, just selection
+        }
+
+        // Auto-fill logic for assignments
+        const autoFillDivision = (divName) => {
+            if (divName) setFormData(prev => ({ ...prev, Division: divName }));
+        };
+
+        if (name === "region_id") {
+            const selectedRegion = regions.find(r => r.id === value);
+            if (selectedRegion?.division?.division) {
+                autoFillDivision(selectedRegion.division.division);
+            }
+        }
+        if (name === "area_id") {
+            const selectedArea = areas.find(a => a.id === value);
+            if (selectedArea?.division?.division) {
+                autoFillDivision(selectedArea.division.division);
+            }
+        }
+        if (name === "branch_id") {
+            const selectedBranch = branches.find(b => b.id === value || b.BranchNo === value);
+            if (selectedBranch?.area?.division?.division) {
+                autoFillDivision(selectedBranch.area.division.division);
+            }
+        }
+        if (name === "division_id") {
+            const selectedDivision = divisions.find(d => d.id === value);
+            if (selectedDivision?.division) {
+                autoFillDivision(selectedDivision.division);
+            }
         }
     };
 
@@ -643,6 +682,7 @@ export default function UserManagementPage() {
                                                         checked={selectedUsers.includes(user.id)}
                                                         onChange={() => handleSelectUser(user.id)}
                                                         size="small"
+                                                        disabled={user.role === 'SUPER_ADMIN'}
                                                     />
                                                 </TableCell>
                                                 <TableCell align="center">{(!user.id_number || user.id_number === '0' || user.id_number === '00000') ? '' : user.id_number}</TableCell>
@@ -716,8 +756,8 @@ export default function UserManagementPage() {
 
 
                         <Box display="flex" gap={2}>
-                            <TextField label="User's Department" name="Department" value={formData.Department} onChange={handleChange} fullWidth />
-                            <TextField label="User's Division" name="Division" value={formData.Division} onChange={handleChange} fullWidth />
+                            <TextField label="User's Department" name="Department" value={formData.Department} onChange={handleChange} fullWidth disabled />
+                            <TextField label="User's Division" name="Division" value={formData.Division} onChange={handleChange} fullWidth disabled />
                         </Box>
 
                         <TextField
