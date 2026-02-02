@@ -467,8 +467,8 @@ export default function UserManagementPage() {
         }
 
         // Frontend validation for id_number
-        if (!formData.id_number || !/^[0-9]{5}$/.test(formData.id_number)) {
-            setError("ID number is required and must be exactly 5 digits (e.g., 00001)");
+        if (!formData.id_number || !/^(?![A-Za-z]{5}$)[A-Za-z0-9]{5}$/.test(formData.id_number)) {
+            setError("ID number must be 5 alphanumeric characters (numeric or mixed), not letters only.");
             return;
         }
 
@@ -634,7 +634,7 @@ export default function UserManagementPage() {
 
                     <Paper sx={{ p: 2, mb: 2, borderRadius: 2, display: 'flex', alignItems: 'center' }}>
                         <TextField
-                            label="Filter by Email, Branch, or Area"
+                            label="Filter by Email, ID Number, Branch, or Area"
                             variant="outlined"
                             size="small"
                             fullWidth
@@ -659,8 +659,8 @@ export default function UserManagementPage() {
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Suffix</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Department</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Division</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Role</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Assigned To</TableCell>
-                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Position</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Email Address</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Actions</TableCell>
                                     </TableRow>
@@ -692,17 +692,17 @@ export default function UserManagementPage() {
                                                 <TableCell align="center">{user.Department}</TableCell>
                                                 <TableCell align="center">{user.Division}</TableCell>
                                                 <TableCell align="center">
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                                        <span>{user.assigned_name || user.assigned_id}</span>
-                                                    </Box>
-                                                </TableCell>
-                                                <TableCell align="center">
                                                     <Box component="span" sx={{
                                                         bgcolor: user.role === 'SUPER_ADMIN' ? '#1565c0' : user.role === 'ADMIN' ? '#e3f2fd' : user.role === 'RA' ? '#fff3e0' : '#f5f5f5',
                                                         color: user.role === 'SUPER_ADMIN' ? '#ffffff' : user.role === 'ADMIN' ? '#1565c0' : user.role === 'RA' ? '#ef6c00' : '#616161',
                                                         px: 1.5, py: 0.5, borderRadius: 6, fontSize: '0.875rem', fontWeight: 500
                                                     }}>
                                                         {ROLE_DISPLAY_MAP[user.role] || user.role}
+                                                    </Box>
+                                                </TableCell>
+                                                <TableCell align="center">
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                                                        <span>{user.assigned_name || user.assigned_id}</span>
                                                     </Box>
                                                 </TableCell>
                                                 <TableCell align="center">{user.email}</TableCell>
@@ -717,7 +717,10 @@ export default function UserManagementPage() {
                                 </TableBody>
                             </Table>
                         </TableContainer>
-                        <Box sx={{ p: 2 }}>
+                        <Box display="flex" justifyContent="space-between" alignItems="center" px={5}>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                                Total Users: {totalCount}
+                            </Typography>
                             <Pagination
                                 currentPage={page}
                                 totalPages={Math.ceil(totalCount / rowsPerPage)}
@@ -743,7 +746,7 @@ export default function UserManagementPage() {
                                 onChange={handleChange}
                                 fullWidth
                                 required
-                                helperText="Exactly 5 digits (e.g., 00001)"
+                                helperText="5 alphanumeric chars (e.g. 00001 or C0006). Letters only not allowed."
                                 inputProps={{ maxLength: 5 }}
                             />
                             <TextField label="Suffix" name="suffix" value={formData.suffix} onChange={handleChange} fullWidth />
@@ -864,8 +867,10 @@ export default function UserManagementPage() {
                                         const search = subordinateSearch.toLowerCase();
                                         return (
                                             im.first_name.toLowerCase().includes(search) ||
+                                            im.first_name.toLowerCase().includes(search) ||
                                             im.surname.toLowerCase().includes(search) ||
-                                            im.email.toLowerCase().includes(search)
+                                            im.email.toLowerCase().includes(search) ||
+                                            (im.id_number && im.id_number.toLowerCase().includes(search))
                                         );
                                     }).length === 0 ? (
                                         <Typography variant="body2" color="text.secondary">
@@ -878,8 +883,10 @@ export default function UserManagementPage() {
                                                 const search = subordinateSearch.toLowerCase();
                                                 return (
                                                     im.first_name.toLowerCase().includes(search) ||
+                                                    im.first_name.toLowerCase().includes(search) ||
                                                     im.surname.toLowerCase().includes(search) ||
-                                                    im.email.toLowerCase().includes(search)
+                                                    im.email.toLowerCase().includes(search) ||
+                                                    (im.id_number && im.id_number.toLowerCase().includes(search))
                                                 );
                                             }).map(im => (
                                                 <FormControlLabel
@@ -896,7 +903,7 @@ export default function UserManagementPage() {
                                                             }}
                                                         />
                                                     }
-                                                    label={`${im.first_name} ${im.surname} (${im.email})`}
+                                                    label={`${(!im.id_number || im.id_number === '0' || im.id_number === '00000') ? '' : im.id_number} ${im.first_name} ${im.surname} (${im.email})`}
                                                 />
                                             ))}
                                         </FormGroup>
@@ -938,6 +945,6 @@ export default function UserManagementPage() {
                     <Button onClick={confirmBulkDelete} variant="contained" color="error">Delete All</Button>
                 </DialogActions>
             </Dialog>
-        </Box>
+        </Box >
     );
 }
