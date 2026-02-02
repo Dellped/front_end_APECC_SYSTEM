@@ -243,13 +243,32 @@ export default function CorporatePage() {
       csvRows.push(values.join(","));
     });
 
-    const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "Corporate_Preview_All.csv";
-    a.click();
-    URL.revokeObjectURL(url);
+    // Add BOM for proper UTF-8 encoding in Excel
+    const BOM = "\uFEFF";
+    const csvContent = BOM + csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const fileName = "Corporate_Preview_All.csv";
+
+    // Cross-browser download handling (Safari, Opera, Edge, Firefox, Chrome, Brave)
+    if (navigator.msSaveBlob) {
+      // Legacy IE/Edge support
+      navigator.msSaveBlob(blob, fileName);
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      a.style.display = "none";
+      a.setAttribute("target", "_blank");
+      document.body.appendChild(a);
+
+      // Use setTimeout for Safari compatibility
+      setTimeout(() => {
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 250);
+      }, 100);
+    }
   };
 
   const downloadAllExcel = async () => {
@@ -266,7 +285,33 @@ export default function CorporatePage() {
     const ws = XLSX.utils.json_to_sheet(wsData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Corporate Preview");
-    XLSX.writeFile(wb, "Corporate_Preview_All.xlsx");
+    const fileName = "Corporate_Preview_All.xlsx";
+
+    // Cross-browser download handling (Safari, Opera, Edge, Firefox, Chrome, Brave)
+    if (navigator.msSaveBlob) {
+      // Legacy IE/Edge support
+      const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      navigator.msSaveBlob(blob, fileName);
+    } else {
+      // Modern browsers including Safari and Opera
+      const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      a.style.display = "none";
+      a.setAttribute("target", "_blank");
+      document.body.appendChild(a);
+
+      // Use setTimeout for Safari compatibility
+      setTimeout(() => {
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 250);
+      }, 100);
+    }
   };
 
   // Render summary table
