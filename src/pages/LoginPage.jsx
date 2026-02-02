@@ -164,6 +164,64 @@ export default function LoginPage() {
                     mt: 2,
                   }}
                 />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    mt: 3,
+                    display: "block",
+                    color: "text.secondary",
+                    fontSize: "0.65rem",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  By proceeding, you agree to our{" "}
+                  <a
+                    href="#"
+                    onClick={(e) => e.preventDefault()}
+                    style={{ color: "#1976d2", textDecoration: "underline" }}
+                  >
+                    Terms of Use
+                  </a>{" "}
+                  and confirm you have read our{" "}
+                  <a
+                    href="#"
+                    onClick={(e) => e.preventDefault()}
+                    style={{ color: "#1976d2", textDecoration: "underline" }}
+                  >
+                    Privacy and Cookie Statement
+                  </a>
+                  .
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    mt: 1.5,
+                    display: "block",
+                    color: "text.secondary",
+                    fontSize: "0.6rem",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  This site is protected by reCAPTCHA and the Google{" "}
+                  <a
+                    href="https://policies.google.com/privacy?hl=en-US"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#1976d2", textDecoration: "underline" }}
+                  >
+                    Privacy Policy
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="https://policies.google.com/terms?hl=en-US"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#1976d2", textDecoration: "underline" }}
+                  >
+                    Terms of Service
+                  </a>{" "}
+                  apply.
+                </Typography>
               </Box>
             ) : (
               <Box sx={{ py: 2 }}>
