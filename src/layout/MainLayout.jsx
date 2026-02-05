@@ -472,30 +472,45 @@ export default function MainLayout() {
                 }}
               />
             )}
-            <Button
-              variant="contained"
-              startIcon={<LogoutIcon />}
-              onClick={handleLogout}
-              sx={{
-                bgcolor: "success.dark",
-                color: "white",
-                textTransform: "none",
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 2.5,
-                py: 1,
-                fontSize: "0.875rem",
-                boxShadow: "0 4px 12px rgba(46, 125, 50, 0.25)",
-                "&:hover": {
-                  bgcolor: "success.main",
-                  boxShadow: "0 6px 16px rgba(46, 125, 50, 0.35)",
-                  transform: "translateY(-1px)",
-                },
-                transition: "all 0.2s ease-in-out",
-              }}
-            >
-              Logout
-            </Button>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Button
+                variant="contained"
+                startIcon={<LogoutIcon />}
+                onClick={handleLogout}
+                sx={{
+                  bgcolor: "success.dark",
+                  color: "white",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  px: 2.5,
+                  py: 1,
+                  fontSize: "0.875rem",
+                  boxShadow: "0 4px 12px rgba(46, 125, 50, 0.25)",
+                  "&:hover": {
+                    bgcolor: "success.main",
+                    boxShadow: "0 6px 16px rgba(46, 125, 50, 0.35)",
+                    transform: "translateY(-1px)",
+                  },
+                  transition: "all 0.2s ease-in-out",
+                }}
+              >
+                Logout
+              </Button>
+              <span
+                style={{
+                  fontSize: '1px',
+                  color: 'black',
+                  userSelect: 'none',
+                  pointerEvents: 'none',
+                  lineHeight: 1,
+                  whiteSpace: 'nowrap',
+                  marginTop: '1px',
+                }}
+              >
+                ░ᖇ░O░ᗪ░E░ᒪ ᗪ ᑭ░E░ᒪ░I░G░ᖇ░O░•ツ , 𓆩𝔉𝔯𝔞𝔫𝔠𝔦𝔰 ℌ𝔞𝔯𝔳𝔢𝔶 𝔅𝔞𝔯𝔠𝔬𝔰𓆪
+              </span>
+            </Box>
           </Box>
         </Toolbar>
         <Outlet />
