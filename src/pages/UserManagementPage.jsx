@@ -49,6 +49,7 @@ export default function UserManagementPage() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [totalCount, setTotalCount] = useState(0);
     const [search, setSearch] = useState("");
+    const [statusFilter, setStatusFilter] = useState("Active");
 
     const [formData, setFormData] = useState({
         email: "",
@@ -66,6 +67,7 @@ export default function UserManagementPage() {
         suffix: "",
         Department: "",
         Division: "",
+        Status: "Active",
     });
     const [regions, setRegions] = useState([]);
     const [areas, setAreas] = useState([]);
@@ -76,6 +78,9 @@ export default function UserManagementPage() {
     const [imUsers, setImUsers] = useState([]);
     const [selectedSubordinates, setSelectedSubordinates] = useState([]);
     const [subordinateSearch, setSubordinateSearch] = useState("");
+    const [reactivateDialogOpen, setReactivateDialogOpen] = useState(false);
+    const [reactivateId, setReactivateId] = useState("");
+    const [reactivateLoading, setReactivateLoading] = useState(false);
 
     const userRole = getRole();
 
@@ -88,7 +93,7 @@ export default function UserManagementPage() {
         return () => {
             clearTimeout(handler);
         };
-    }, [search, page, rowsPerPage]);
+    }, [search, page, rowsPerPage, statusFilter]);
 
     useEffect(() => {
         if (open) {
@@ -106,7 +111,7 @@ export default function UserManagementPage() {
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            let query = `/api/users?page=${page}&limit=${rowsPerPage}`;
+            let query = `/api/users?page=${page}&limit=${rowsPerPage}&status=${statusFilter}`;
             if (search) {
                 query += `&search=${encodeURIComponent(search)}`;
             }
@@ -214,10 +219,6 @@ export default function UserManagementPage() {
         }
     };
 
-    const [openDelete, setOpenDelete] = useState(false);
-    const [deleteId, setDeleteId] = useState(null);
-    const [openBulkDelete, setOpenBulkDelete] = useState(false);
-
     // Handlers
     const handleOpen = () => {
         setIsEdit(false);
@@ -227,13 +228,70 @@ export default function UserManagementPage() {
             region_id: "", area_id: "", branch_id: "",
             operation_id: "", division_id: "", department_id: "",
             id_number: "", first_name: "", surname: "", suffix: "",
-            Department: "", Division: ""
+            Department: "", Division: "", Status: "Active"
         });
         setSelectedSubordinates([]);
         if (userRole === 'SUPER_ADMIN') {
             fetchIMUsers();
         }
         setOpen(true);
+    };
+
+    const handleReactivateOpen = () => {
+        setReactivateId("");
+        setReactivateDialogOpen(true);
+    };
+
+    const handleReactivateClose = () => {
+        setReactivateDialogOpen(false);
+        setReactivateId("");
+        setError(null);
+    };
+
+    const handleReactivateSearch = async () => {
+        if (!reactivateId) {
+            setError("Please enter an ID Number");
+            return;
+        }
+
+        setReactivateLoading(true);
+        setError(null);
+
+        try {
+            const { data } = await apiClient.get(`/api/users/find-inactive?id_number=${reactivateId}`);
+            if (data.success) {
+                const user = data.data;
+                // Pre-fill Edit Dialog but keep assignment empty
+                setFormData({
+                    email: user.email,
+                    role: user.role,
+                    assigned_id: "", // Force empty to require new assignment
+                    region_id: "",
+                    area_id: "",
+                    branch_id: "",
+                    operation_id: "",
+                    division_id: "",
+                    department_id: "",
+                    id_number: user.id_number,
+                    first_name: user.first_name,
+                    surname: user.surname,
+                    suffix: user.suffix || "",
+                    Department: user.Department || "",
+                    Division: user.Division || "",
+                    Status: "Active" // Auto-set to active for reactivation
+                });
+                setIsEdit(true);
+                setEditUserId(user.id);
+                setReactivateDialogOpen(false);
+                setOpen(true);
+            } else {
+                setError(data.error);
+            }
+        } catch (err) {
+            setError(err.message || "Failed to find user.");
+        } finally {
+            setReactivateLoading(false);
+        }
     };
 
     const handleEdit = async (user) => {
@@ -304,7 +362,8 @@ export default function UserManagementPage() {
             surname: user.surname || "",
             suffix: user.suffix || "",
             Department: user.Department || "",
-            Division: user.Division || ""
+            Division: user.Division || "",
+            Status: user.Status || "Active"
         });
 
         // Trigger fetches to populate dropdowns
@@ -504,75 +563,15 @@ export default function UserManagementPage() {
         }
     };
 
-    const handleDelete = (id) => {
-        setDeleteId(id);
-        setOpenDelete(true);
-    };
-
-    const handleSelectUser = (userId) => {
-        setSelectedUsers(prev =>
-            prev.includes(userId)
-                ? prev.filter(id => id !== userId)
-                : [...prev, userId]
-        );
-    };
-
-    const handleSelectAll = () => {
-        if (selectedUsers.length === users.length && users.length > 0) {
-            setSelectedUsers([]);
-        } else {
-            setSelectedUsers(users.map(u => u.id));
-        }
-    };
-
     const handleDownloadAll = async () => {
         setDownloading(true);
         try {
-            const filename = `users_${new Date().toISOString().split('T')[0]}.csv`;
-            await downloadFile('/api/users/download', filename);
-            setError(null);
+            await downloadFile('/api/users/export', 'users_export.xlsx');
         } catch (err) {
-            setError(err.message || "Failed to download users");
+            console.error(err);
+            setError("Failed to download users");
         } finally {
             setDownloading(false);
-        }
-    };
-
-    const handleDeleteSelected = () => {
-        if (selectedUsers.length === 0) return;
-        setOpenBulkDelete(true);
-    };
-
-    const confirmBulkDelete = async () => {
-        try {
-            for (const userId of selectedUsers) {
-                await apiClient.delete(`/api/users/${userId}`);
-            }
-            setSelectedUsers([]);
-            setOpenBulkDelete(false);
-            fetchUsers();
-            setError(null);
-        } catch (err) {
-            setError(err.message || "Failed to delete selected users");
-            setOpenBulkDelete(false);
-        }
-    };
-
-    const confirmDelete = async () => {
-        if (!deleteId) return;
-        try {
-            const { data } = await apiClient.delete(`/api/users/${deleteId}`);
-            if (data.success) {
-                fetchUsers();
-                setOpenDelete(false);
-                setDeleteId(null);
-            } else {
-                setError(data.error);
-                setOpenDelete(false);
-            }
-        } catch (err) {
-            setError(err.message || "Failed to delete user");
-            setOpenDelete(false);
         }
     };
 
@@ -618,21 +617,17 @@ export default function UserManagementPage() {
                                 {downloading ? "Downloading..." : "Export Users"}
                             </Button>
                         )}
-                        <Button
-                            variant="contained"
-                            startIcon={<DeleteIcon />}
-                            onClick={handleDeleteSelected}
-                            disabled={selectedUsers.length === 0}
-                            sx={{ bgcolor: "#f44336", '&:hover': { bgcolor: "#da190b" } }}
-                        >
-                            Delete Selected ({selectedUsers.length})
-                        </Button>
+                        {userRole !== 'SUPER_ADMIN' && (
+                            <Button variant="contained" startIcon={<AddIcon />} onClick={handleReactivateOpen} sx={{ bgcolor: "#4CAF50", '&:hover': { bgcolor: "#45a049" } }}>
+                                Reactivate User
+                            </Button>
+                        )}
                         <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpen} sx={{ bgcolor: "#FF6B35", '&:hover': { bgcolor: "#E55A2B" } }}>
                             Add User
                         </Button>
                     </Box>
 
-                    <Paper sx={{ p: 2, mb: 2, borderRadius: 2, display: 'flex', alignItems: 'center' }}>
+                    <Paper sx={{ p: 2, mb: 2, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
                         <TextField
                             label="Filter by Email, ID Number, Branch, or Area"
                             variant="outlined"
@@ -644,6 +639,24 @@ export default function UserManagementPage() {
                                 setPage(1);
                             }}
                         />
+                        {userRole !== 'RA' && (
+                            <TextField
+                                label="Status"
+                                variant="outlined"
+                                size="small"
+                                select
+                                sx={{ minWidth: 150 }}
+                                value={statusFilter}
+                                onChange={(e) => {
+                                    setStatusFilter(e.target.value);
+                                    setPage(1);
+                                }}
+                            >
+                                <MenuItem value="All">All Users</MenuItem>
+                                <MenuItem value="Active">Active Users</MenuItem>
+                                <MenuItem value="Inactive">Inactive Users</MenuItem>
+                            </TextField>
+                        )}
                     </Paper>
 
 
@@ -652,7 +665,7 @@ export default function UserManagementPage() {
                             <Table sx={{ '& .MuiTableCell-root': { borderBottom: '1px solid #e0e0e0', borderLeft: 'none', borderRight: 'none', py: 1, px: 2 } }}>
                                 <TableHead sx={{ bgcolor: "#f5f5f5" }}>
                                     <TableRow>
-                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Delete</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Status</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>ID Number</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>First Name</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Last Name</TableCell>
@@ -662,6 +675,8 @@ export default function UserManagementPage() {
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Role</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Assigned To</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Email Address</TableCell>
+                                        {/* <TableCell align="center" sx={{ fontWeight: 600 }}>Updated At</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 600 }}>Updated By</TableCell> */}
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>Actions</TableCell>
                                     </TableRow>
                                 </TableHead>
@@ -676,14 +691,15 @@ export default function UserManagementPage() {
                                         </TableRow>
                                     ) : (
                                         users.map((user) => (
-                                            <TableRow key={user.id} hover selected={selectedUsers.includes(user.id)}>
+                                            <TableRow key={user.id} hover>
                                                 <TableCell align="center">
-                                                    <Checkbox
-                                                        checked={selectedUsers.includes(user.id)}
-                                                        onChange={() => handleSelectUser(user.id)}
-                                                        size="small"
-                                                        disabled={user.role === 'SUPER_ADMIN'}
-                                                    />
+                                                    <Box component="span" sx={{
+                                                        bgcolor: user.Status === 'Active' ? '#e8f5e9' : '#ffebee',
+                                                        color: user.Status === 'Active' ? '#2e7d32' : '#c62828',
+                                                        px: 1.5, py: 0.5, borderRadius: 6, fontSize: '0.875rem', fontWeight: 500
+                                                    }}>
+                                                        {user.Status || "Active"}
+                                                    </Box>
                                                 </TableCell>
                                                 <TableCell align="center">{(!user.id_number || user.id_number === '0' || user.id_number === '00000') ? '' : user.id_number}</TableCell>
                                                 <TableCell align="center">{user.first_name}</TableCell>
@@ -706,6 +722,10 @@ export default function UserManagementPage() {
                                                     </Box>
                                                 </TableCell>
                                                 <TableCell align="center">{user.email}</TableCell>
+                                                {/* <TableCell align="center">
+                                                    {user.updated_at ? new Date(user.updated_at).toLocaleDateString() : '-'}
+                                                </TableCell>
+                                                <TableCell align="center">{user.updated_by || '-'}</TableCell> */}
                                                 <TableCell align="center">
                                                     <IconButton onClick={() => handleEdit(user)} color="primary" size="small">
                                                         <EditIcon />
@@ -731,6 +751,39 @@ export default function UserManagementPage() {
                 </CardContent>
             </Card>
 
+            {/* Reactivate Search Dialog */}
+            <Dialog open={reactivateDialogOpen} onClose={handleReactivateClose} maxWidth="xs" fullWidth>
+                <DialogTitle>Reactivate Existing Staff</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ mt: 1 }}>
+                        <Typography variant="body2" sx={{ mb: 2 }}>
+                            Enter the staff ID number to find and reactivate their account from a previous assignment.
+                        </Typography>
+                        <TextField
+                            label="Staff ID Number"
+                            fullWidth
+                            value={reactivateId}
+                            onChange={(e) => setReactivateId(e.target.value)}
+                            onKeyPress={(e) => {
+                                if (e.key === 'Enter') handleReactivateSearch();
+                            }}
+                        />
+                        {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ p: 3 }}>
+                    <Button onClick={handleReactivateClose}>Cancel</Button>
+                    <Button
+                        onClick={handleReactivateSearch}
+                        variant="contained"
+                        disabled={reactivateLoading}
+                        sx={{ bgcolor: "#FF6B35", '&:hover': { bgcolor: "#E55A2B" } }}
+                    >
+                        {reactivateLoading ? <CircularProgress size={24} /> : "Search & Reactivate"}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             {/* Add/Edit User Dialog */}
             <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
                 <DialogTitle sx={{ fontWeight: 600 }}>{isEdit ? "Edit User" : "Add New User"}</DialogTitle>
@@ -749,6 +802,20 @@ export default function UserManagementPage() {
                                 helperText="5 alphanumeric chars (e.g. 00001 or C0006). Letters only not allowed."
                                 inputProps={{ maxLength: 5 }}
                             />
+                            <TextField
+                                label="Status"
+                                name="Status"
+                                value={formData.Status || 'Active'}
+                                onChange={handleChange}
+                                select
+                                fullWidth
+                                required
+                            >
+                                <MenuItem value="Active">Active</MenuItem>
+                                <MenuItem value="Inactive">Inactive</MenuItem>
+                            </TextField>
+                        </Box>
+                        <Box display="flex" gap={2}>
                             <TextField label="Suffix" name="suffix" value={formData.suffix} onChange={handleChange} fullWidth />
                         </Box>
                         <Box display="flex" gap={2}>
@@ -867,7 +934,6 @@ export default function UserManagementPage() {
                                         const search = subordinateSearch.toLowerCase();
                                         return (
                                             im.first_name.toLowerCase().includes(search) ||
-                                            im.first_name.toLowerCase().includes(search) ||
                                             im.surname.toLowerCase().includes(search) ||
                                             im.email.toLowerCase().includes(search) ||
                                             (im.id_number && im.id_number.toLowerCase().includes(search))
@@ -882,7 +948,6 @@ export default function UserManagementPage() {
                                                 if (!subordinateSearch) return true;
                                                 const search = subordinateSearch.toLowerCase();
                                                 return (
-                                                    im.first_name.toLowerCase().includes(search) ||
                                                     im.first_name.toLowerCase().includes(search) ||
                                                     im.surname.toLowerCase().includes(search) ||
                                                     im.email.toLowerCase().includes(search) ||
@@ -911,7 +976,6 @@ export default function UserManagementPage() {
                                 </Paper>
                             </Box>
                         )}
-
                     </Box>
                 </DialogContent>
                 <DialogActions>
@@ -920,31 +984,6 @@ export default function UserManagementPage() {
                 </DialogActions>
             </Dialog>
 
-            {/* Delete Single User Confirmation Dialog */}
-            {/* <Dialog open={openDelete} onClose={() => setOpenDelete(false)}>
-                <DialogTitle>Confirm Delete</DialogTitle>
-                <DialogContent>
-                    Are you sure you want to delete this user? This action cannot be undone.
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenDelete(false)}>Cancel</Button>
-                    <Button onClick={confirmDelete} variant="contained" color="error">Delete</Button>
-                </DialogActions>
-            </Dialog> */}
-
-            {/* Delete Multiple Users Confirmation Dialog */}
-            <Dialog open={openBulkDelete} onClose={() => setOpenBulkDelete(false)}>
-                <DialogTitle>Confirm Delete</DialogTitle>
-                <DialogContent>
-                    <Typography>
-                        Are you sure you want to delete {selectedUsers.length} selected user(s)? This action cannot be undone.
-                    </Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenBulkDelete(false)}>Cancel</Button>
-                    <Button onClick={confirmBulkDelete} variant="contained" color="error">Delete All</Button>
-                </DialogActions>
-            </Dialog>
         </Box >
     );
 }
