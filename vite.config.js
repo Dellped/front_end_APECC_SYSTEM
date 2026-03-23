@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5175, // Fixed port for consistent Google OAuth configuration
-    strictPort: true, // Exit if port is already in use (prevents port changes)
+    strictPort: false, // Allow fallback if port is already in use
   },
 });
+

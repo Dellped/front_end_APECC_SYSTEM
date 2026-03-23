@@ -1,5 +1,5 @@
 {
-  "name": "performance-management-front-end-copy",
+  "name": "apecc-front-end",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -24,5 +24,10 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.0",
     "vite": "^5.0.0"
-  }
+  },
+  "main": "apply_blue_theme.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
