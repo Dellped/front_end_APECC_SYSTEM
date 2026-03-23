@@ -1,4 +1,5 @@
 {
+  "homepage": "https://dellped.github.io/front_end_APECC_SYSTEM",
   "name": "apecc-front-end",
   "private": true,
   "version": "1.0.0",
@@ -7,7 +8,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "node server-web.js"
+    "start": "node server-web.js",
+    "deploy": "gh-pages -d dist",
+    "predeploy": "npm run build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -23,6 +26,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.0",
+    "gh-pages": "^6.3.0",
     "vite": "^5.0.0"
   },
   "main": "apply_blue_theme.js",
