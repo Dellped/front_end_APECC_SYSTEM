@@ -20,7 +20,7 @@ import {
 import { employees, payrollPeriods, attendanceRecords, specialEarnings, specialEarningTypes } from '../../data/mockData';
 import { exportToPDF, printTable } from '../../utils/exportUtils';
 
-const logoBlue = '#023DFB';
+const logoBlue = '#0241FB';
 const goldAccent = '#d4a843';
 
 export default function EmployeePayrollOverview() {
@@ -53,21 +53,23 @@ export default function EmployeePayrollOverview() {
       .filter(se => se.employeeId === selectedEmployee && se.periodId === selectedPeriod)
       .reduce((sum, se) => sum + se.amount, 0);
 
-    const gross = cutoffBasic + otPay + holidayPay + allowances + special;
+    const deminimis = 2000;
+    const gross = cutoffBasic + otPay + holidayPay + allowances + special + deminimis;
 
     // Deductions (Mock)
+    const taxableGross = gross - deminimis - special;
     const sss = Math.min(gross * 0.045, 1350);
     const ph = Math.min(gross * 0.025, 900);
     const hdmf = 100;
-    const tax = Math.max((gross - sss - ph - hdmf - (isSemiMonthly ? 10416 : 20833)) * 0.20, 0);
+    const tax = Math.max((taxableGross - sss - ph - hdmf - (isSemiMonthly ? 10416 : 20833)) * 0.20, 0);
     const absencesDed = (basic / 26) * att.absences;
     
     const totalDeductions = sss + ph + hdmf + tax + absencesDed;
     const netPay = gross - totalDeductions;
 
     return {
-      cutoffBasic, otPay, holidayPay, allowances, special, gross,
-      sss, ph, hdmf, tax, absencesDed, totalDeductions, netPay,
+      cutoffBasic, otPay, holidayPay, allowances, special, deminimis, gross,
+      sss, ph, hdmf, tax, totalDeductions, netPay,
       attendance: att
     };
   }, [currentEmployee, selectedPeriod, selectedEmployee]);
@@ -81,7 +83,7 @@ export default function EmployeePayrollOverview() {
         <Box>
           <Typography variant="h4" sx={{ 
             fontWeight: 800, color: logoBlue, 
-            background: `linear-gradient(90deg, ${logoBlue}, #4a75e6)`,
+            background: `linear-gradient(90deg, ${logoBlue}, #4470ED)`,
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             mb: 0.5 
           }}>
@@ -94,7 +96,7 @@ export default function EmployeePayrollOverview() {
       </Box>
 
       {/* Search & Profile Bar */}
-      <Card sx={{ mb: 3, borderRadius: 3, boxShadow: '0 4px 24px rgba(0,0,0,0.06)', overflow: 'visible' }}>
+      <Card sx={{ mb: 3, borderRadius: 3, borderTop: `3px solid #d4a843`, boxShadow: '0 4px 24px rgba(0,0,0,0.06)', overflow: 'visible' }}>
         <CardContent sx={{ p: 0 }}>
             <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
@@ -147,7 +149,7 @@ export default function EmployeePayrollOverview() {
                                 left: '50%', 
                                 transform: 'translateX(-50%)',
                                 bgcolor: '#2e7d32', 
-                                color: '#fff',
+                                color: '#FDFDFC',
                                 fontWeight: 800,
                                 fontSize: '0.6rem',
                                 border: '2px solid #fff'
@@ -155,48 +157,52 @@ export default function EmployeePayrollOverview() {
                         />
                     </Box>
 
-                    <Grid container columnSpacing={4} rowSpacing={1}>
-                        <Grid item xs={12} sm={4}>
+                    <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', gap: 2, minWidth: 0 }}>
+                        <Box sx={{ flexShrink: 0, minWidth: 200 }}>
                             <Typography variant="caption" sx={{ fontWeight: 800, color: logoBlue, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                Employee Full Name
+                                {currentEmployee.employmentType || currentEmployee.employmentDetails?.employmentType || 'Employee'}
                             </Typography>
                             <Typography variant="h5" sx={{ fontWeight: 900, color: '#1a202c', mt: 0.5, lineHeight: 1.2 }}>
                                 {currentEmployee.firstName} {currentEmployee.lastName}
                             </Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
-                                Employee Account Profile
+                                Date Joined: {currentEmployee.employmentDate ? new Date(currentEmployee.employmentDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : (currentEmployee.employmentDetails?.dateHired ? new Date(currentEmployee.employmentDetails.dateHired).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—')}
                             </Typography>
                             <Typography variant="body2" sx={{ fontWeight: 800, color: logoBlue, fontSize: '0.75rem', mt: 0.5 }}>
                                 Payroll Location: {currentEmployee.payrollLocation || 'N/A'}
                             </Typography>
-                        </Grid>
+                        </Box>
 
-                        <Grid item xs={12} sm={8}>
+                        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                             <Box sx={{ 
                                 display: 'grid', 
-                                gridTemplateColumns: 'repeat(3, 1fr)', 
-                                gap: 3, 
+                                gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 0.8fr) minmax(0, 1.8fr)', 
+                                gap: 1.5, 
                                 mt: 1,
                                 bgcolor: 'rgba(0,0,0,0.02)',
-                                p: 2,
+                                p: 1.5,
                                 borderRadius: 2,
                                 border: '1px solid rgba(0,0,0,0.05)'
                             }}>
-                                <Box>
-                                    <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block' }}>DESIGNATION</Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 800, color: '#2d3748' }}>{currentEmployee.designation}</Typography>
+                                <Box sx={{ minWidth: 0 }}>
+                                    <Typography variant="caption" noWrap sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', fontSize: '0.65rem' }}>DESIGNATION</Typography>
+                                    <Typography noWrap sx={{ fontWeight: 800, color: '#2d3748', fontSize: '0.75rem' }} title={currentEmployee.designation}>{currentEmployee.designation}</Typography>
                                 </Box>
-                                <Box>
-                                    <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block' }}>DEPARTMENT</Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 800, color: '#2d3748' }}>{currentEmployee.department}</Typography>
+                                <Box sx={{ minWidth: 0 }}>
+                                    <Typography variant="caption" noWrap sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', fontSize: '0.65rem' }}>DEPARTMENT</Typography>
+                                    <Typography noWrap sx={{ fontWeight: 800, color: '#2d3748', fontSize: '0.75rem' }} title={currentEmployee.department}>{currentEmployee.department}</Typography>
                                 </Box>
-                                <Box>
-                                    <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block' }}>EMPLOYEE ID</Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 900, color: logoBlue, letterSpacing: '1px' }}>{currentEmployee.id}</Typography>
+                                <Box sx={{ minWidth: 0 }}>
+                                    <Typography variant="caption" noWrap sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', fontSize: '0.65rem' }}>EMPLOYEE ID</Typography>
+                                    <Typography noWrap sx={{ fontWeight: 900, color: logoBlue, letterSpacing: '0.5px', fontSize: '0.75rem' }}>{currentEmployee.id}</Typography>
+                                </Box>
+                                <Box sx={{ minWidth: 0 }}>
+                                    <Typography variant="caption" noWrap sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', fontSize: '0.65rem' }}>JOB LEVEL</Typography>
+                                    <Typography noWrap sx={{ fontWeight: 800, color: '#2d3748', fontSize: '0.75rem' }} title={currentEmployee.employmentDetails?.jobLevel || '—'}>{currentEmployee.employmentDetails?.jobLevel || '—'}</Typography>
                                 </Box>
                             </Box>
-                        </Grid>
-                    </Grid>
+                        </Box>
+                    </Box>
                 </Box>
             )}
         </CardContent>
@@ -206,9 +212,9 @@ export default function EmployeePayrollOverview() {
         <Grid container spacing={3}>
           {/* Summary Stats */}
           <Grid item xs={12} md={4}>
-            <Card sx={{ borderRadius: 4, height: '100%', border: '1px solid rgba(0,0,0,0.05)' }}>
+            <Card sx={{ borderRadius: 4,  height: '100%', border: '1px solid rgba(0,0,0,0.05)' }}>
               <CardContent sx={{ p: 3 }}>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 700, mb: 2 }}>GROSS INCOME</Typography>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 700, mb: 2 }}>GROSS PAY</Typography>
                 <Typography variant="h4" sx={{ fontWeight: 800, color: '#2e7d32' }}>{formatCurrency(payrollData.gross)}</Typography>
                 <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
                   <Chip label="Before Tax" size="small" variant="outlined" />
@@ -229,7 +235,7 @@ export default function EmployeePayrollOverview() {
             </Card>
           </Grid>
           <Grid item xs={12} md={4}>
-            <Card sx={{ borderRadius: 4, height: '100%', bgcolor: '#023DFB', color: '#fff' }}>
+            <Card sx={{ borderRadius: 4, height: '100%', background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)', color: '#FDFDFC' }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, opacity: 0.8 }}>NET TAKE-HOME PAY</Typography>
                 <Typography variant="h3" sx={{ fontWeight: 800 }}>{formatCurrency(payrollData.netPay)}</Typography>
@@ -243,9 +249,9 @@ export default function EmployeePayrollOverview() {
             <Card sx={{ borderRadius: 4 }}>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} sx={{ px: 2 }}>
-                  <Tab label="Earnings" sx={{ fontWeight: 700 }} />
+                  <Tab label="Pay" sx={{ fontWeight: 700 }} />
                   <Tab label="Deductions" sx={{ fontWeight: 700 }} />
-                  <Tab label="Benefits & Bonuses" sx={{ fontWeight: 700 }} />
+                  <Tab label="Bonuses" sx={{ fontWeight: 700 }} />
                 </Tabs>
               </Box>
               <CardContent sx={{ p: 0 }}>
@@ -258,19 +264,12 @@ export default function EmployeePayrollOverview() {
                           <TableCell align="right">{formatCurrency(payrollData.cutoffBasic)}</TableCell>
                         </TableRow>
                         <TableRow>
-                          <TableCell sx={{ fontWeight: 600 }}>Overtime Pay ({payrollData.attendance.otHours}h)</TableCell>
-                          <TableCell align="right" sx={{ color: '#2e7d32', fontWeight: 700 }}>+{formatCurrency(payrollData.otPay)}</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>De Minimis</TableCell>
+                          <TableCell align="right" sx={{ color: '#0241FB', fontWeight: 600 }}>+{formatCurrency(payrollData.deminimis)}</TableCell>
                         </TableRow>
-                        <TableRow>
-                          <TableCell sx={{ fontWeight: 600 }}>Holiday Pay ({payrollData.attendance.holidayWork}d)</TableCell>
-                          <TableCell align="right" sx={{ color: '#2e7d32', fontWeight: 700 }}>+{formatCurrency(payrollData.holidayPay)}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell sx={{ fontWeight: 600 }}>Allowances & Incentives</TableCell>
-                          <TableCell align="right" sx={{ color: '#2e7d32', fontWeight: 700 }}>+{formatCurrency(payrollData.allowances)}</TableCell>
-                        </TableRow>
+
                         <TableRow sx={{ bgcolor: 'rgba(46, 125, 50, 0.05)' }}>
-                          <TableCell sx={{ fontWeight: 800 }}>Total Earnings</TableCell>
+                          <TableCell sx={{ fontWeight: 800 }}>Total Pay</TableCell>
                           <TableCell align="right" sx={{ fontWeight: 800, color: '#2e7d32' }}>{formatCurrency(payrollData.gross - payrollData.special)}</TableCell>
                         </TableRow>
                       </TableBody>
@@ -298,8 +297,16 @@ export default function EmployeePayrollOverview() {
                           <TableCell align="right" sx={{ color: '#d32f2f' }}>-{formatCurrency(payrollData.tax)}</TableCell>
                         </TableRow>
                         <TableRow>
-                          <TableCell sx={{ fontWeight: 600 }}>Lates & Absences ({payrollData.attendance.absences}d)</TableCell>
-                          <TableCell align="right" sx={{ color: '#d32f2f' }}>-{formatCurrency(payrollData.absencesDed)}</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>APECC SAVINGS</TableCell>
+                          <TableCell align="right" sx={{ color: '#d32f2f' }}>-{formatCurrency(0)}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600 }}>APECC SHARE</TableCell>
+                          <TableCell align="right" sx={{ color: '#d32f2f' }}>-{formatCurrency(0)}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600 }}>APECC LOAN</TableCell>
+                          <TableCell align="right" sx={{ color: '#d32f2f' }}>-{formatCurrency(0)}</TableCell>
                         </TableRow>
                         <TableRow sx={{ bgcolor: 'rgba(211, 47, 47, 0.05)' }}>
                           <TableCell sx={{ fontWeight: 800 }}>Total Deductions</TableCell>
@@ -314,15 +321,17 @@ export default function EmployeePayrollOverview() {
                     <Table>
                       <TableBody>
                         <TableRow>
-                          <TableCell sx={{ fontWeight: 600 }}>Special Bonuses / 13th Month</TableCell>
-                          <TableCell align="right" sx={{ color: '#023DFB', fontWeight: 700 }}>+{formatCurrency(payrollData.special)}</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>13th Month</TableCell>
+                          <TableCell align="right" sx={{ color: '#0241FB', fontWeight: 700 }}>+{formatCurrency(payrollData.special)}</TableCell>
                         </TableRow>
+                        {['Level 1 - Probationary', 'Level 2- upon regularization'].includes(currentEmployee.employmentDetails?.jobLevel) && (
+                          <TableRow>
+                            <TableCell sx={{ fontWeight: 600 }}>Service Incentive Leaves (SIL)</TableCell>
+                            <TableCell align="right" sx={{ color: '#2e7d32', fontWeight: 700 }}>+{formatCurrency(payrollData.allowances)}</TableCell>
+                          </TableRow>
+                        )}
                         <TableRow>
-                          <TableCell sx={{ fontWeight: 600 }}>Taxable Benefit Portion</TableCell>
-                          <TableCell align="right">₱0.00</TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell sx={{ fontWeight: 600 }}>Non-Taxable Portion</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Gratuity</TableCell>
                           <TableCell align="right" sx={{ color: '#2e7d32' }}>{formatCurrency(payrollData.special)}</TableCell>
                         </TableRow>
                       </TableBody>

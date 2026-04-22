@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Box, Typography, Paper, Grid, IconButton, Select, MenuItem, FormControl, Card, CardContent
 } from '@mui/material';
@@ -7,10 +7,11 @@ import {
 } from '@mui/icons-material';
 import { employees, leaveRecords } from '../../data/mockData';
 
-const logoBlue = '#023DFB';
+const logoBlue = '#0241FB';
 const logoGold = '#d4a843';
 const logoMaroon = '#8b1a1a'; // From sidebar hover
 const lightPink = '#fce4ec'; // Requested pink/peach background
+const goldAccent = '#d4a843';
 
 export default function LeaveCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 2, 1)); // Default to March 2026 for demo
@@ -59,11 +60,11 @@ export default function LeaveCalendar() {
 
   return (
     <Box className="page-container">
-      <Card sx={{ borderRadius: 3, boxShadow: '0 10px 40px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+      <Card sx={{ borderRadius: 3, boxShadow: '0 10px 40px rgba(0,0,0,0.1)', overflow: 'hidden', border: `1px solid ${goldAccent}` }}>
         <Box sx={{ 
           background: `linear-gradient(135deg, ${logoBlue} 0%, #3065e8 100%)`, 
           p: 2, 
-          color: '#fff',
+          color: '#FDFDFC',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center'
@@ -73,17 +74,17 @@ export default function LeaveCalendar() {
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 2, px: 1 }}>
-              <IconButton size="small" onClick={handlePrevMonth} sx={{ color: '#fff' }}><ChevronLeft /></IconButton>
+              <IconButton size="small" onClick={handlePrevMonth} sx={{ color: '#FDFDFC' }}><ChevronLeft /></IconButton>
               <Typography sx={{ fontWeight: 700, minWidth: 120, textAlign: 'center' }}>
                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
               </Typography>
-              <IconButton size="small" onClick={handleNextMonth} sx={{ color: '#fff' }}><ChevronRight /></IconButton>
+              <IconButton size="small" onClick={handleNextMonth} sx={{ color: '#FDFDFC' }}><ChevronRight /></IconButton>
             </Box>
             <FormControl variant="standard" sx={{ m: 1, minWidth: 100 }}>
               <Select
                 value={currentDate.getMonth()}
                 onChange={(e) => setCurrentDate(new Date(currentDate.getFullYear(), e.target.value, 1))}
-                sx={{ color: '#fff', '&:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiSvgIcon-root': { color: '#fff' } }}
+                sx={{ color: '#FDFDFC', '&:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiSvgIcon-root': { color: '#FDFDFC' } }}
               >
                 {monthNames.map((m, i) => <MenuItem key={i} value={i}>{m}</MenuItem>)}
               </Select>
@@ -96,7 +97,7 @@ export default function LeaveCalendar() {
             {daysOfWeek.map(day => (
               <Box key={day} sx={{ 
                 bgcolor: '#db899f', // The pink from mockup
-                color: '#fff', 
+                color: '#FDFDFC', 
                 p: 1.5, 
                 textAlign: 'center', 
                 fontWeight: 700,

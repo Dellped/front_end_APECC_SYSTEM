@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import {
   Box, Card, CardContent, Typography, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Grid, TextField,
-  Paper, InputAdornment, Avatar, Stack, Chip, Divider, Button
+  Paper, InputAdornment, Avatar, Stack, Chip, Divider, Button,
+  IconButton, Dialog, DialogTitle, DialogContent
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -14,14 +15,17 @@ import {
   FileDownload as CsvIcon,
   PictureAsPdf as PdfIcon,
   Print as PrintIcon,
+  Visibility as ViewIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
 import { exportToCSV, printTable, exportToPDF } from '../../utils/exportUtils';
 
-const apeccBlue = '#023DFB';
+const apeccBlue = '#0241FB';
+const goldAccent = '#d4a843';
 
 const headerStyle = {
   bgcolor: apeccBlue,
-  color: '#fff',
+  color: '#FDFDFC',
   fontWeight: 700,
   fontSize: '0.75rem',
   padding: '12px 16px',
@@ -29,14 +33,17 @@ const headerStyle = {
 };
 
 const mockHistory = [
-  { id: 1, empId: 'EMP001', employee: 'Juan Dela Cruz', oldSalary: 22000, newSalary: 25000, type: 'Increase', date: 'Jan 01 2026', processedBy: 'HR Admin' },
-  { id: 2, empId: 'EMP001', employee: 'Juan Dela Cruz', oldSalary: 25000, newSalary: 27000, type: 'Promotion', date: 'Mar 01 2026', processedBy: 'HR Admin' },
-  { id: 3, empId: 'EMP002', employee: 'Maria Santos', oldSalary: 28000, newSalary: 30000, type: 'Increase', date: 'Feb 15 2026', processedBy: 'HR Admin' },
+  { id: 1, empId: '0001', employee: 'Juan Dela Cruz', oldSalary: 22000, newSalary: 25000, type: 'Increase', date: 'Jan 01 2026', processedBy: 'HR Admin' },
+  { id: 2, empId: '0001', employee: 'Juan Dela Cruz', oldSalary: 25000, newSalary: 27000, type: 'Promotion', date: 'Mar 01 2026', processedBy: 'HR Admin' },
+  { id: 3, empId: '0002', employee: 'Maria Santos', oldSalary: 28000, newSalary: 30000, type: 'Increase', date: 'Feb 15 2026', processedBy: 'HR Admin' },
 ];
 
 export default function SalaryHistory() {
   const [search, setSearch] = useState('');
   const [data, setData] = useState(mockHistory);
+  const [timelineOpen, setTimelineOpen] = useState(false);
+  const [selectedEmpHistory, setSelectedEmpHistory] = useState([]);
+  const [activeEmpName, setActiveEmpName] = useState('');
 
   const filteredData = React.useMemo(() => {
     return data.filter(item => 
@@ -44,6 +51,13 @@ export default function SalaryHistory() {
       item.empId.toLowerCase().includes(search.toLowerCase())
     );
   }, [data, search]);
+
+  const handleViewTimeline = (empId, empName) => {
+    const history = data.filter(item => item.empId === empId).slice().reverse();
+    setSelectedEmpHistory(history);
+    setActiveEmpName(empName);
+    setTimelineOpen(true);
+  };
 
   return (
     <Box sx={{ p: 4, bgcolor: '#f4f7fe', minHeight: '100%' }}>
@@ -64,7 +78,14 @@ export default function SalaryHistory() {
         </Stack>
       </Box>
 
-      <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', mb: 4 }}>
+      <Card sx={{ 
+        borderRadius: 3, 
+        mb: 4, 
+        boxShadow: '0 8px 32px rgba(5,7,126,0.22)',
+        background: 'linear-gradient(160deg, #05077E 0%, #0241FB 55%, #4470ED 80%, #B4B7D3 100%)',
+        borderTop: '3px solid #d4a843',
+        color: '#ffffff'
+      }}>
         <CardContent sx={{ p: 3 }}>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} md={6}>
@@ -73,7 +94,16 @@ export default function SalaryHistory() {
                 label="Search Employee"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                InputProps={{ startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} /> }}
+                InputProps={{ startAdornment: <SearchIcon sx={{ mr: 1, color: '#FDFDFC', opacity: 0.8 }} /> }}
+                InputLabelProps={{ sx: { color: 'rgba(253,253,252,0.8)', '&.Mui-focused': { color: '#d4a843' } } }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: 'rgba(253,253,252,0.1)', color: '#FDFDFC', borderRadius: 2,
+                    '& fieldset': { borderColor: 'rgba(253,253,252,0.3)' },
+                    '&:hover fieldset': { borderColor: '#FDFDFC' },
+                    '&.Mui-focused fieldset': { borderColor: '#d4a843', borderWidth: '2px' },
+                  },
+                }}
               />
             </Grid>
           </Grid>
@@ -81,8 +111,8 @@ export default function SalaryHistory() {
       </Card>
 
       <Grid container spacing={4}>
-        <Grid item xs={12} lg={8}>
-          <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+        <Grid item xs={12}>
+          <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', overflow: 'hidden', borderTop: `3px solid ${goldAccent}` }}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -94,6 +124,7 @@ export default function SalaryHistory() {
                   <TableCell sx={headerStyle}>Adjustment Type</TableCell>
                   <TableCell sx={headerStyle}>Effective Date</TableCell>
                   <TableCell sx={headerStyle}>Processed By</TableCell>
+                  <TableCell sx={headerStyle}>Timeline</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -135,68 +166,96 @@ export default function SalaryHistory() {
                         <Typography variant="caption" sx={{ color: '#666' }}>{row.processedBy}</Typography>
                       </Stack>
                     </TableCell>
+                    <TableCell>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleViewTimeline(row.empId, row.employee)}
+                        sx={{ color: apeccBlue, bgcolor: 'rgba(2, 61, 251, 0.05)', '&:hover': { bgcolor: 'rgba(2, 61, 251, 0.1)' } }}
+                      >
+                        <ViewIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </TableContainer>
         </Grid>
-
-        {/* Salary Timeline */}
-        <Grid item xs={12} lg={4}>
-          <Card sx={{ borderRadius: 3, boxShadow: '0 10px 30px rgba(0,0,0,0.08)', height: '100%', position: 'relative', overflow: 'hidden' }}>
-            <Box sx={{ position: 'absolute', top: 0, right: 0, p: 3, opacity: 0.1 }}><TimelineIcon sx={{ fontSize: 100 }} /></Box>
-            <CardContent sx={{ p: 4, position: 'relative' }}>
-              <Typography variant="h6" sx={{ fontWeight: 800, mb: 4, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <TimelineIcon color="primary" /> Salary Timeline
-              </Typography>
-              
-              <Box sx={{ position: 'relative', pl: 4 }}>
-                {/* Vertical Line */}
-                <Box sx={{ 
-                  position: 'absolute', 
-                  left: 7, 
-                  top: 10, 
-                  bottom: 10, 
-                  width: 2, 
-                  background: `linear-gradient(to bottom, ${apeccBlue}, #ddd)` 
-                }} />
-                
-                <Stack spacing={4}>
-                  {filteredData.length > 0 ? (
-                    filteredData.slice().reverse().map((item, index) => (
-                      <Box key={item.id} sx={{ position: 'relative' }}>
-                        <Box sx={{ 
-                          position: 'absolute', 
-                          left: index === 0 ? -30 : -28, 
-                          top: index === 0 ? 4 : 6, 
-                          width: index === 0 ? 14 : 10, 
-                          height: index === 0 ? 14 : 10, 
-                          borderRadius: '50%', 
-                          bgcolor: index === 0 ? apeccBlue : '#ddd', 
-                          border: index === 0 ? '4px solid #fff' : '2px solid #fff',
-                          boxShadow: index === 0 ? '0 0 0 2px rgba(2, 61, 251, 0.2)' : 'none'
-                        }} />
-                        <Typography variant={index === 0 ? "caption" : "h6"} sx={{ fontWeight: 700, color: index === 0 ? 'text.secondary' : '#444' }}>
-                          {index === 0 ? 'Latest' : ''}
-                        </Typography>
-                        <Typography variant={index === 0 ? "h5" : "h6"} sx={{ fontWeight: 900, color: index === 0 ? apeccBlue : '#444' }}>
-                          ₱{item.newSalary.toLocaleString()}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: '#666' }}>
-                          {item.date} • {item.type}
-                        </Typography>
-                      </Box>
-                    ))
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">Search an employee to see timeline</Typography>
-                  )}
-                </Stack>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
       </Grid>
+
+      {/* Salary Timeline Modal */}
+      <Dialog 
+        open={timelineOpen} 
+        onClose={() => setTimelineOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: 'hidden' } }}
+      >
+        <DialogTitle sx={{ 
+          background: 'linear-gradient(135deg, #05077E 0%, #0241FB 100%)', 
+          color: '#fff',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          py: 2.5
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <TimelineIcon sx={{ fontSize: '1.4rem' }} />
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>Salary Timeline</Typography>
+          </Box>
+          <IconButton onClick={() => setTimelineOpen(false)} sx={{ color: '#fff' }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ p: 4 }}>
+          <Box sx={{ mb: 4, textAlign: 'center' }}>
+             <Avatar sx={{ width: 60, height: 60, bgcolor: 'rgba(2, 61, 251, 0.1)', color: apeccBlue, mx: 'auto', mb: 1.5 }}>
+               <PersonIcon sx={{ fontSize: 35 }} />
+             </Avatar>
+             <Typography variant="h6" sx={{ fontWeight: 800 }}>{activeEmpName}</Typography>
+             <Typography variant="caption" color="text.secondary">History of Salary Adjustments</Typography>
+          </Box>
+
+          <Box sx={{ position: 'relative', pl: 4 }}>
+            {/* Vertical Line */}
+            <Box sx={{ 
+              position: 'absolute', 
+              left: 7, 
+              top: 10, 
+              bottom: 10, 
+              width: 2, 
+              background: `linear-gradient(to bottom, ${apeccBlue}, #ddd)` 
+            }} />
+            
+            <Stack spacing={4}>
+              {selectedEmpHistory.map((item, index) => (
+                <Box key={item.id} sx={{ position: 'relative' }}>
+                  <Box sx={{ 
+                    position: 'absolute', 
+                    left: index === 0 ? -30 : -28, 
+                    top: index === 0 ? 4 : 6, 
+                    width: index === 0 ? 14 : 10, 
+                    height: index === 0 ? 14 : 10, 
+                    borderRadius: '50%', 
+                    bgcolor: index === 0 ? apeccBlue : '#ddd', 
+                    border: index === 0 ? '4px solid #fff' : '2px solid #fff',
+                    boxShadow: index === 0 ? '0 0 0 2px rgba(2, 61, 251, 0.2)' : 'none'
+                  }} />
+                  <Typography variant={index === 0 ? "caption" : "caption"} sx={{ fontWeight: 700, color: index === 0 ? 'text.secondary' : '#666', display: 'block' }}>
+                    {index === 0 ? 'Current Base Salary' : 'Previous Adjustment'}
+                  </Typography>
+                  <Typography variant={index === 0 ? "h5" : "h6"} sx={{ fontWeight: 900, color: index === 0 ? apeccBlue : '#444', lineHeight: 1.2 }}>
+                    ₱{item.newSalary.toLocaleString()}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#888', display: 'block', mt: 0.5 }}>
+                    {item.date} • {item.type}
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

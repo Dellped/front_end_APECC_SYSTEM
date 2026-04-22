@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Paper, MenuItem, Select, FormControl, InputLabel, TextField, InputAdornment, Button
@@ -7,9 +7,11 @@ import { Search as SearchIcon, FileDownload as CsvIcon, Print as PrintIcon } fro
 import { exportToCSV, printTable } from '../../utils/exportUtils';
 import { employees } from '../../data/mockData';
 
+const goldAccent = '#d4a843';
+
 const headerStyle = {
-  bgcolor: '#023DFB',
-  color: '#fff',
+  background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)',
+  color: '#FDFDFC',
   fontWeight: 700,
   fontSize: '0.65rem',
   padding: '4px 2px',
@@ -28,21 +30,21 @@ const cellStyle = {
 
 const mockLeaveCredits = [
   { 
-    empId: 'E0041', name: 'Federio, Norman Aspera', position: 'Clerk- Liason Officer', dept: 'IT', hired: '2020-01-15', tenure: 6, status: 'Regular',
+    empId: '0041', name: 'Federio, Norman Aspera', position: 'Clerk- Liason Officer', dept: 'IT', hired: '2020-01-15', tenure: 6, status: 'Regular',
     totalAvail: 15, totalUsed: 5, totalBalance: 10,
     earnedVL: 10, earnedSL: 5, earnedML: 0, earnedPL: 0,
     usedVL: 3, usedSL: 2, usedML: 0, usedPL: 0, usedSPL: 0, usedSEL: 0, usedWL: 0,
     balVL: 7, balSL: 3, balML: 0, balPL: 0, balSPL: 0, balWL: 0
   },
   { 
-    empId: 'E0212', name: 'Saez Arvin, Donyell Aranda', position: 'Clerk-SL Field', dept: 'Human Resources', hired: '2021-06-10', tenure: 4, status: 'Regular',
+    empId: '0212', name: 'Saez Arvin, Donyell Aranda', position: 'Clerk-SL Field', dept: 'Human Resources', hired: '2021-06-10', tenure: 4, status: 'Regular',
     totalAvail: 15, totalUsed: 3, totalBalance: 12,
     earnedVL: 10, earnedSL: 5, earnedML: 0, earnedPL: 0,
     usedVL: 2, usedSL: 1, usedML: 0, usedPL: 0, usedSPL: 0, usedSEL: 0, usedWL: 0,
     balVL: 8, balSL: 4, balML: 0, balPL: 0, balSPL: 0, balWL: 0
   },
   { 
-    empId: 'E0222', name: 'Bueza Raymond Alfon', position: 'Clerk-SW Field', dept: 'Finance', hired: '2025-10-01', tenure: 1, status: 'Probitionary',
+    empId: '0222', name: 'Bueza Raymond Alfon', position: 'Clerk-SW Field', dept: 'Finance', hired: '2025-10-01', tenure: 1, status: 'Probitionary',
     totalAvail: 5, totalUsed: 0, totalBalance: 5,
     earnedVL: 2.5, earnedSL: 2.5, earnedML: 0, earnedPL: 0,
     usedVL: 0, usedSL: 0, usedML: 0, usedPL: 0, usedSPL: 0, usedSEL: 0, usedWL: 0,
@@ -95,7 +97,7 @@ export default function LeaveCredits() {
     <Box className="page-container">
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: '#023DFB', mb: 1 }}>Leave Credits</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: '#0241FB', mb: 1 }}>Leave Credits</Typography>
           <Typography variant="body2" color="text.secondary">Detailed view of allowances, usage, and balances</Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
@@ -104,7 +106,7 @@ export default function LeaveCredits() {
         </Box>
       </Box>
 
-      <Card sx={{ borderRadius: 3, mb: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+      <Card sx={{ borderRadius: 3, mb: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: `1px solid ${goldAccent}` }}>
         <CardContent sx={{ p: 3 }}>
           <Grid container spacing={2}>
             <Grid item xs={12} md={3}>
@@ -116,7 +118,7 @@ export default function LeaveCredits() {
                 InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> }}
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} md={3} sx={{ minWidth: 110, '& .MuiInputLabel-root': { maxWidth: 'calc(100% - 24px)' } }} >
               <FormControl fullWidth size="small">
                 <InputLabel>Department</InputLabel>
                 <Select value={deptFilter} label="Department" onChange={e => setDeptFilter(e.target.value)}>
@@ -144,7 +146,7 @@ export default function LeaveCredits() {
         </CardContent>
       </Card>
 
-      <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 10px 30px rgba(0,0,0,0.08)', overflowX: 'auto', maxHeight: '65vh' }}>
+      <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: '0 10px 30px rgba(0,0,0,0.08)', overflowX: 'auto', maxHeight: '65vh', border: `1px solid ${goldAccent}` }}>
         <Table stickyHeader size="small" sx={{ minWidth: 2400 }}>
           <TableHead>
             <TableRow>
@@ -204,7 +206,7 @@ export default function LeaveCredits() {
                 
                 <TableCell sx={{ ...cellStyle, fontWeight: 700, bgcolor: 'rgba(26,35,126,0.03)' }}>{row.totalAvail}</TableCell>
                 <TableCell sx={{ ...cellStyle, fontWeight: 700, color: '#d32f2f', bgcolor: 'rgba(26,35,126,0.03)' }}>{row.totalUsed}</TableCell>
-                <TableCell sx={{ ...cellStyle, fontWeight: 800, color: '#023DFB', bgcolor: 'rgba(26,35,126,0.03)' }}>{row.totalBalance}</TableCell>
+                <TableCell sx={{ ...cellStyle, fontWeight: 800, color: '#0241FB', bgcolor: 'rgba(26,35,126,0.03)' }}>{row.totalBalance}</TableCell>
 
                 <TableCell sx={cellStyle}>{row.earnedVL}</TableCell>
                 <TableCell sx={cellStyle}>{row.earnedSL}</TableCell>

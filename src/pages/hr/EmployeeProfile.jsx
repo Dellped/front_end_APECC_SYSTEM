@@ -1,19 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box, Card, CardContent, Typography, Tabs, Tab, Grid, Avatar, Chip,
   Button, Divider, Table, TableBody, TableCell, TableContainer, TableHead,
-  TableRow, IconButton, Paper, Autocomplete, TextField, createFilterOptions
+  TableRow, IconButton, Paper, Autocomplete, TextField, createFilterOptions,
+  FormControl, InputLabel, Select, MenuItem, Stack
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon, Edit as EditIcon, Print as PrintIcon,
   Person as PersonIcon, FamilyRestroom as FamilyIcon, School as SchoolIcon,
   Work as WorkIcon, ListAlt as AlphalistIcon, Search as SearchIcon,
-  ExitToApp as ExitIcon, AssignmentTurnedIn as InterviewIcon
+  ExitToApp as ExitIcon, AssignmentTurnedIn as InterviewIcon,
+  Info as InfoIcon, AccountBalanceWallet as WalletIcon,
+  EventNote as LeavesIcon, Gavel as SanctionsIcon, Add as AddIcon
 } from '@mui/icons-material';
 import {
-    Dialog, DialogTitle, DialogContent, DialogActions, Stack
+    Dialog, DialogTitle, DialogContent, DialogActions,
+    Avatar as MuiAvatar
 } from '@mui/material';
-import { employees } from '../../data/mockData';
+import { useNavigate } from 'react-router-dom';
+import { 
+  CheckCircle as ApproveIcon 
+} from '@mui/icons-material';
+import { employees, payrollPeriods, attendanceRecords, specialEarnings, leaveRecords, leaveBalances, sanctions, onboardingRecords } from '../../data/mockData';
+import LeaveApplicationForm from './LeaveApplicationForm';
+import ExitInterviewForm from '../../components/forms/ExitInterviewForm';
 
 const goldAccent = '#d4a843';
 
@@ -35,18 +45,97 @@ function InfoRow({ label, value }) {
 }
 
 export default function EmployeeProfile() {
+  const navigate = useNavigate();
   const [selectedEmployee, setSelectedEmployee] = useState(0);
   const [tabValue, setTabValue] = useState(0);
   const [openResignation, setOpenResignation] = useState(false);
-  const [exitInterviewData, setExitInterviewData] = useState({});
+  const [successModal, setSuccessModal] = useState(false);
+  const [successModalType, setSuccessModalType] = useState('Resignation'); // 'Resignation' or 'Leave'
+  const [exitInterviewData, setExitInterviewData] = useState({
+    reasons: { whyLeave: '', managerRel: '', peersRel: '', generalOpinion: '', prevention: '' },
+    experience: { managementOpinion: '', feedback: '', missingPrograms: '', recognition: '', overall: '' },
+    role: { resources: '', training: '', expectations: '', rewardChallenge: '', skillUtilization: '', support: '', workload: '', careerGoals: '', likedMost: '', likedLeast: '', growth: '', environment: '', valued: '', whatMadeValued: '' },
+    forward: { advice: '', improvements: '', workAgain: '', recommend: '', oneThingChange: '', additional: '' }
+  });
+  const [payrollTabValue, setPayrollTabValue] = useState(0);
+  const [selectedPeriod, setSelectedPeriod] = useState(payrollPeriods[0]?.id || '');
+  const [isLeaveFormOpen, setIsLeaveFormOpen] = useState(false);
 
-  const handleResignationSubmit = () => {
-    console.log('Forwarding Exit Interview Data:', exitInterviewData);
-    alert('Resignation application and Exit Interview forwarded to HR for review.');
+  const handleExitFormSubmit = (data) => {
+    setExitInterviewData(data);
+    handleResignationSubmit(data);
+  };
+
+  const handleResignationSubmit = (interviewData) => {
+    const today = new Date().toISOString().split('T')[0];
+    const newId = `RES-${String(onboardingRecords.length + 1).padStart(3, '0')}`;
+    const emp = employees[selectedEmployee];
+
+    onboardingRecords.push({
+      id: newId,
+      type: 'Resignation',
+      submittedDate: today,
+      submittedBy: 'System',
+      status: 'Pending HR Officer',
+      employeeData: {
+        ...emp,
+        resignationDetails: {
+          reason: exitInterviewData.reasons.whyLeave,
+          date: today, // or add a specific date field to the form
+          remarks: (interviewData || exitInterviewData).forward.additional
+        },
+        exitInterviewFull: interviewData || exitInterviewData // Store the full comprehensive interview
+      },
+      approvalChain: [
+        { role: 'Employee Action', name: `${emp.firstName} ${emp.lastName}`, status: 'Submitted', date: today, remarks: 'Exit Interview Completed' },
+        { role: 'HR Officer', name: '', status: 'Pending', date: '', remarks: '' },
+        { role: 'Unit Manager', name: '', status: 'Pending', date: '', remarks: '' },
+        { role: 'Asst. General Manager', name: '', status: 'Pending', date: '', remarks: '' },
+        { role: 'General Manager', name: '', status: 'Pending', date: '', remarks: '' },
+      ]
+    });
+
     setOpenResignation(false);
+    setSuccessModal(true);
   };
 
   const emp = employees[selectedEmployee];
+
+  // Leave data for selected employee
+  const employeeLeaves = useMemo(() => leaveRecords.filter(l => l.employeeId === emp?.id), [emp]);
+  const employeeBalances = useMemo(() => leaveBalances.filter(lb => lb.employeeId === emp?.id), [emp]);
+  const employeeSanctions = useMemo(() => sanctions.filter(s => s.employeeId === emp?.id), [emp]);
+
+  const currentPeriod = useMemo(() => payrollPeriods.find(p => p.id === selectedPeriod), [selectedPeriod]);
+
+  const payrollData = useMemo(() => {
+    if (!emp) return null;
+    const basic = emp.payrollProfile?.basicSalary || 0;
+    const isSemiMonthly = currentPeriod?.type?.includes('Semi');
+    const cutoffBasic = isSemiMonthly ? basic / 2 : basic;
+    const att = attendanceRecords.find(a => a.employeeId === emp.id && a.periodId === selectedPeriod) ||
+                { daysWorked: 11, absences: 0, late: 0, otHours: 0, holidayWork: 0 };
+    const otPay = (basic / 26 / 8) * 1.25 * att.otHours;
+    const holidayPay = (basic / 26) * att.holidayWork;
+    const allowances = 2500;
+    const special = specialEarnings
+      .filter(se => se.employeeId === emp.id && se.periodId === selectedPeriod)
+      .reduce((sum, se) => sum + se.amount, 0);
+    const deminimis = 2000;
+    const gross = cutoffBasic + otPay + holidayPay + allowances + special + deminimis;
+    const taxableGross = gross - deminimis - special;
+    const sss = Math.min(gross * 0.045, 1350);
+    const ph = Math.min(gross * 0.025, 900);
+    const hdmf = 100;
+    const tax = Math.max((taxableGross - sss - ph - hdmf - (isSemiMonthly ? 10416 : 20833)) * 0.20, 0);
+    const absencesDed = (basic / 26) * att.absences;
+    const totalDeductions = sss + ph + hdmf + tax + absencesDed;
+    const netPay = gross - totalDeductions;
+    return { cutoffBasic, otPay, holidayPay, allowances, special, deminimis, gross, sss, ph, hdmf, tax, totalDeductions, netPay, attendance: att };
+  }, [emp, selectedPeriod, currentPeriod]);
+
+  const formatCurrency = (val) => `₱${val.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
 
   const filterOptions = createFilterOptions({
     stringify: (option) => `${option.firstName} ${option.lastName} ${option.id} ${option.designation}`
@@ -55,7 +144,7 @@ export default function EmployeeProfile() {
   return (
     <Box className="page-container">
       {/* Search & Profile Bar */}
-      <Card sx={{ mb: 3, borderRadius: 3, boxShadow: '0 4px 24px rgba(0,0,0,0.06)', overflow: 'visible' }}>
+      <Card sx={{ mb: 3, borderRadius: 3,borderTop: `3px solid #d4a843`, boxShadow: '0 4px 24px rgba(0,0,0,0.06)', overflow: 'visible' }}>
         <CardContent sx={{ p: 0 }}>
             <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
@@ -79,20 +168,28 @@ export default function EmployeeProfile() {
                         )}
                     />
                 </Box>
-                <Box sx={{ display: 'flex', gap: 2 }}>
+                <Box sx={{ display: 'flex', gap: 1.5 }}>
                     <Button 
                         variant="outlined" 
                         color="error"
                         startIcon={<ExitIcon />}
                         onClick={() => setOpenResignation(true)}
-                        sx={{ borderRadius: 2, textTransform: 'none', px: 3 }}
+                        sx={{ borderRadius: 2, textTransform: 'none', px: 2.5 }}
                     >
                         Apply for Resignation
                     </Button>
                     <Button 
+                        variant="outlined"
+                        startIcon={<LeavesIcon />}
+                        onClick={() => setIsLeaveFormOpen(true)}
+                        sx={{ borderRadius: 2, textTransform: 'none', px: 2.5, borderColor: '#2e7d32', color: '#2e7d32', '&:hover': { bgcolor: 'rgba(46,125,50,0.05)', borderColor: '#2e7d32' } }}
+                    >
+                        Apply for Leave
+                    </Button>
+                    <Button 
                         variant="contained" 
                         startIcon={<PrintIcon />}
-                        sx={{ bgcolor: '#023DFB', borderRadius: 2, textTransform: 'none', px: 3, '&:hover': { bgcolor: '#012dc7' } }}
+                        sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)', borderRadius: 2, textTransform: 'none', px: 2.5, '&:hover': { bgcolor: '#012dc7' } }}
                     >
                         Print Profile
                     </Button>
@@ -106,11 +203,11 @@ export default function EmployeeProfile() {
                             sx={{ 
                                 width: 90, 
                                 height: 90, 
-                                border: `4px solid #023DFB`,
+                                border: `4px solid #0241FB`,
                                 boxShadow: '0 8px 16px rgba(2, 61, 251, 0.15)',
                                 fontSize: '2rem',
                                 fontWeight: 800,
-                                bgcolor: '#023DFB'
+                                background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)'
                             }}
                         >
                             {emp.firstName[0]}{emp.lastName[0]}
@@ -124,7 +221,7 @@ export default function EmployeeProfile() {
                                 left: '50%', 
                                 transform: 'translateX(-50%)',
                                 bgcolor: '#2e7d32', 
-                                color: '#fff',
+                                color: '#FDFDFC',
                                 fontWeight: 800,
                                 fontSize: '0.6rem',
                                 border: '2px solid #fff'
@@ -132,45 +229,49 @@ export default function EmployeeProfile() {
                         />
                     </Box>
 
-                    <Grid container columnSpacing={4} rowSpacing={1}>
-                        <Grid item xs={12} sm={4}>
-                            <Typography variant="caption" sx={{ fontWeight: 800, color: '#023DFB', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                Employee Full Name
+                    <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', gap: 2, minWidth: 0 }}>
+                        <Box sx={{ flexShrink: 0, minWidth: 200 }}>
+                            <Typography variant="caption" sx={{ fontWeight: 800, color: '#0241FB', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                {emp.employmentType || emp.employmentDetails?.employmentType || 'Employee'}
                             </Typography>
                             <Typography variant="h5" sx={{ fontWeight: 900, color: '#1a202c', mt: 0.5, lineHeight: 1.2 }}>
                                 {emp.firstName} {emp.lastName}
                             </Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
-                                Employee Account Profile
+                                Date Joined: {emp.employmentDate ? new Date(emp.employmentDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : (emp.employmentDetails?.dateHired ? new Date(emp.employmentDetails.dateHired).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—')}
                             </Typography>
-                        </Grid>
+                        </Box>
 
-                        <Grid item xs={12} sm={8}>
+                        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                             <Box sx={{ 
                                 display: 'grid', 
-                                gridTemplateColumns: 'repeat(3, 1fr)', 
-                                gap: 3, 
+                                gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 0.8fr) minmax(0, 1.8fr)', 
+                                gap: 1.5, 
                                 mt: 1,
                                 bgcolor: 'rgba(0,0,0,0.02)',
-                                p: 2,
+                                p: 1.5,
                                 borderRadius: 2,
                                 border: '1px solid rgba(0,0,0,0.05)'
                             }}>
-                                <Box>
-                                    <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block' }}>DESIGNATION</Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 800, color: '#2d3748' }}>{emp.designation}</Typography>
+                                <Box sx={{ minWidth: 0 }}>
+                                    <Typography variant="caption" noWrap sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', fontSize: '0.65rem' }}>DESIGNATION</Typography>
+                                    <Typography noWrap sx={{ fontWeight: 800, color: '#2d3748', fontSize: '0.75rem' }} title={emp.designation}>{emp.designation}</Typography>
                                 </Box>
-                                <Box>
-                                    <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block' }}>DEPARTMENT</Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 800, color: '#2d3748' }}>{emp.department}</Typography>
+                                <Box sx={{ minWidth: 0 }}>
+                                    <Typography variant="caption" noWrap sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', fontSize: '0.65rem' }}>DEPARTMENT</Typography>
+                                    <Typography noWrap sx={{ fontWeight: 800, color: '#2d3748', fontSize: '0.75rem' }} title={emp.department}>{emp.department}</Typography>
                                 </Box>
-                                <Box>
-                                    <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block' }}>EMPLOYEE ID</Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 900, color: '#023DFB', letterSpacing: '1px' }}>{emp.id}</Typography>
+                                <Box sx={{ minWidth: 0 }}>
+                                    <Typography variant="caption" noWrap sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', fontSize: '0.65rem' }}>EMPLOYEE ID</Typography>
+                                    <Typography noWrap sx={{ fontWeight: 900, color: '#0241FB', letterSpacing: '0.5px', fontSize: '0.75rem' }}>{emp.id}</Typography>
+                                </Box>
+                                <Box sx={{ minWidth: 0 }}>
+                                    <Typography variant="caption" noWrap sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', fontSize: '0.65rem' }}>JOB LEVEL</Typography>
+                                    <Typography noWrap sx={{ fontWeight: 800, color: '#2d3748', fontSize: '0.75rem' }} title={emp.employmentDetails?.jobLevel || '—'}>{emp.employmentDetails?.jobLevel || '—'}</Typography>
                                 </Box>
                             </Box>
-                        </Grid>
-                    </Grid>
+                        </Box>
+                    </Box>
                 </Box>
             )}
         </CardContent>
@@ -180,22 +281,26 @@ export default function EmployeeProfile() {
       <Grid container spacing={3}>
         {/* Detail Tabs */}
         <Grid item xs={12}>
-          <Card sx={{ borderRadius: 3 }}>
+          <Card sx={{ borderRadius: 3,borderTop: `3px solid #d4a843` }}>
             <CardContent sx={{ p: 2.5 }}>
               <Tabs
                 value={tabValue}
                 onChange={(_, v) => setTabValue(v)}
+                variant="scrollable"
+                scrollButtons="auto"
                 sx={{
-                  '& .MuiTab-root': { textTransform: 'none', fontWeight: 500, fontSize: '0.85rem', minHeight: 42 },
-                  '& .Mui-selected': { color: '#023DFB', fontWeight: 600 },
+                  '& .MuiTab-root': { textTransform: 'none', fontWeight: 500, fontSize: '0.75rem', minHeight: 38, px: 1.5, minWidth: 'unset' },
+                  '& .Mui-selected': { color: '#0241FB', fontWeight: 700 },
                   '& .MuiTabs-indicator': { backgroundColor: goldAccent, height: 3, borderRadius: '3px 3px 0 0' },
                 }}
               >
-                <Tab icon={<PersonIcon sx={{ fontSize: '1.1rem' }} />} iconPosition="start" label="Personal Info" />
-                <Tab icon={<FamilyIcon sx={{ fontSize: '1.1rem' }} />} iconPosition="start" label="Family" />
-                <Tab icon={<SchoolIcon sx={{ fontSize: '1.1rem' }} />} iconPosition="start" label="Education" />
-                <Tab icon={<WorkIcon sx={{ fontSize: '1.1rem' }} />} iconPosition="start" label="Work Experience" />
-                <Tab icon={<AlphalistIcon sx={{ fontSize: '1.1rem' }} />} iconPosition="start" label="Requirements" />
+                <Tab icon={<PersonIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" label="Personal Info" />
+                <Tab icon={<FamilyIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" label="Family" />
+                <Tab icon={<SchoolIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" label="Education" />
+                <Tab icon={<WorkIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" label="Work Experience" />
+                <Tab icon={<AlphalistIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" label="Requirements" />
+                <Tab icon={<WalletIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" label="Payroll Overview" />
+                <Tab icon={<LeavesIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" label="Leave Summary" />
               </Tabs>
 
               {/* Personal Info */}
@@ -217,13 +322,13 @@ export default function EmployeeProfile() {
                     </Grid>
                   ))}
                   <Grid item xs={12}>
-                    <Typography variant="subtitle2" sx={{ color: '#023DFB', fontWeight: 600, mt: 2, mb: 1 }}>Present Address</Typography>
+                    <Typography variant="subtitle2" sx={{ color: '#0241FB', fontWeight: 600, mt: 2, mb: 1 }}>Present Address</Typography>
                     <InfoRow label="Address" value={emp.personal.presentAddress} />
                     <InfoRow label="Tenureship" value={emp.personal.tenureship} />
                     <InfoRow label="Zipcode" value={emp.personal.presentZipcode} />
                   </Grid>
                   <Grid item xs={12}>
-                    <Typography variant="subtitle2" sx={{ color: '#023DFB', fontWeight: 600, mt: 1, mb: 1 }}>Permanent Address</Typography>
+                    <Typography variant="subtitle2" sx={{ color: '#0241FB', fontWeight: 600, mt: 1, mb: 1 }}>Permanent Address</Typography>
                     <InfoRow label="Address" value={emp.personal.permanentAddress} />
                     <InfoRow label="Zipcode" value={emp.personal.permanentZipcode} />
                   </Grid>
@@ -235,7 +340,7 @@ export default function EmployeeProfile() {
                   </Grid>
                 </Grid>
 
-                <Typography variant="subtitle2" sx={{ color: '#023DFB', fontWeight: 600, mt: 3, mb: 1.5 }}>
+                <Typography variant="subtitle2" sx={{ color: '#0241FB', fontWeight: 600, mt: 3, mb: 1.5 }}>
                   Requirements Document Upload
                 </Typography>
                 <Grid container spacing={2}>
@@ -285,7 +390,7 @@ export default function EmployeeProfile() {
               <TabPanel value={tabValue} index={1}>
                 {emp.family.spouse && (
                   <Box sx={{ mb: 2.5 }}>
-                    <Typography variant="subtitle2" sx={{ color: '#023DFB', fontWeight: 600, mb: 1 }}>Spouse</Typography>
+                    <Typography variant="subtitle2" sx={{ color: '#0241FB', fontWeight: 600, mb: 1 }}>Spouse</Typography>
                     <InfoRow label="Name" value={emp.family.spouse.name} />
                     <InfoRow label="Birthdate" value={emp.family.spouse.birthdate} />
                     <InfoRow label="Occupation" value={emp.family.spouse.occupation} />
@@ -296,13 +401,13 @@ export default function EmployeeProfile() {
                   </Box>
                 )}
                 <Box sx={{ mb: 2.5 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#023DFB', fontWeight: 600, mb: 1 }}>Parents</Typography>
+                  <Typography variant="subtitle2" sx={{ color: '#0241FB', fontWeight: 600, mb: 1 }}>Parents</Typography>
                   <InfoRow label="Father" value={`${emp.family.father.name} (${emp.family.father.birthdate}) — ${emp.family.father.occupation}`} />
                   <InfoRow label="Mother" value={`${emp.family.mother.name} (${emp.family.mother.birthdate}) — ${emp.family.mother.occupation}`} />
                 </Box>
                 {emp.family.children.length > 0 && (
                   <Box>
-                    <Typography variant="subtitle2" sx={{ color: '#023DFB', fontWeight: 600, mb: 1 }}>Children</Typography>
+                    <Typography variant="subtitle2" sx={{ color: '#0241FB', fontWeight: 600, mb: 1 }}>Children</Typography>
                     <TableContainer sx={{
                       overflowX: 'auto',
                       '&::-webkit-scrollbar': { height: 6 },
@@ -348,7 +453,7 @@ export default function EmployeeProfile() {
                         <TableCell>Distinction</TableCell>
                         <TableCell>Units</TableCell>
                         <TableCell>From</TableCell>
-                        <TableCell>Till</TableCell>
+                        <TableCell>To</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -404,7 +509,7 @@ export default function EmployeeProfile() {
 
                 {emp.references.length > 0 && (
                   <Box sx={{ mt: 3 }}>
-                    <Typography variant="subtitle2" sx={{ color: '#023DFB', fontWeight: 600, mb: 1 }}>References</Typography>
+                    <Typography variant="subtitle2" sx={{ color: '#0241FB', fontWeight: 600, mb: 1 }}>References</Typography>
                     <TableContainer sx={{
                       overflowX: 'auto',
                       '&::-webkit-scrollbar': { height: 6 },
@@ -475,110 +580,438 @@ export default function EmployeeProfile() {
                   </Table>
                 </TableContainer>
               </TabPanel>
+
+              {/* Payroll Overview */}
+              <TabPanel value={tabValue} index={5}>
+                {/* Period Selector */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                  <FormControl size="small" sx={{ minWidth: 280 }}>
+                    <InputLabel>Payroll Period</InputLabel>
+                    <Select
+                      value={selectedPeriod}
+                      label="Payroll Period"
+                      onChange={(e) => setSelectedPeriod(e.target.value)}
+                    >
+                      {payrollPeriods.map(p => (
+                        <MenuItem key={p.id} value={p.id}>{p.startDate} – {p.endDate} ({p.type})</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                {payrollData ? (
+                  <Grid container spacing={3}>
+                    {/* Summary Cards */}
+                    <Grid item xs={12} md={4}>
+                      <Card sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.06)', height: '100%' }}>
+                        <CardContent sx={{ p: 2.5 }}>
+                          <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Gross Pay</Typography>
+                          <Typography variant="h5" sx={{ fontWeight: 800, color: '#2e7d32', mt: 0.5 }}>{formatCurrency(payrollData.gross)}</Typography>
+                          <Stack direction="row" spacing={0.5} sx={{ mt: 1.5 }}>
+                            <Chip label="Before Tax" size="small" variant="outlined" sx={{ fontSize: '0.65rem' }} />
+                            <Chip label="All Credits" size="small" variant="outlined" sx={{ fontSize: '0.65rem' }} />
+                          </Stack>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Card sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.06)', height: '100%' }}>
+                        <CardContent sx={{ p: 2.5 }}>
+                          <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Deductions</Typography>
+                          <Typography variant="h5" sx={{ fontWeight: 800, color: '#d32f2f', mt: 0.5 }}>{formatCurrency(payrollData.totalDeductions)}</Typography>
+                          <Stack direction="row" spacing={0.5} sx={{ mt: 1.5 }}>
+                            <Chip label="Tax + Statutory" size="small" variant="outlined" sx={{ fontSize: '0.65rem' }} />
+                          </Stack>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Card sx={{ borderRadius: 3, background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)', color: '#FDFDFC', height: '100%' }}>
+                        <CardContent sx={{ p: 2.5 }}>
+                          <Typography variant="caption" sx={{ fontWeight: 700, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Net Take-Home Pay</Typography>
+                          <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5 }}>{formatCurrency(payrollData.netPay)}</Typography>
+                          <Typography variant="caption" sx={{ display: 'block', opacity: 0.7, mt: 1 }}>Credited to Payroll Account</Typography>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+
+                    {/* Breakdown & Sidebar */}
+                    <Grid item xs={12} lg={8}>
+                      <Card sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.06)' }}>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                          <Tabs
+                            value={payrollTabValue}
+                            onChange={(e, v) => setPayrollTabValue(v)}
+                            sx={{
+                              px: 2,
+                              '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, fontSize: '0.82rem', minHeight: 40 },
+                              '& .Mui-selected': { color: '#0241FB' },
+                              '& .MuiTabs-indicator': { backgroundColor: goldAccent, height: 3, borderRadius: '3px 3px 0 0' },
+                            }}
+                          >
+                            <Tab label="Pay" />
+                            <Tab label="Deductions" />
+                            <Tab label="Bonuses" />
+                          </Tabs>
+                        </Box>
+                        <CardContent sx={{ p: 0 }}>
+                          {payrollTabValue === 0 && (
+                            <TableContainer>
+                              <Table size="small">
+                                <TableBody>
+                                  <TableRow>
+                                    <TableCell sx={{ fontWeight: 600 }}>Basic Salary (Current Period)</TableCell>
+                                    <TableCell align="right">{formatCurrency(payrollData.cutoffBasic)}</TableCell>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableCell sx={{ fontWeight: 600 }}>De Minimis</TableCell>
+                                    <TableCell align="right" sx={{ color: '#0241FB', fontWeight: 600 }}>+{formatCurrency(payrollData.deminimis)}</TableCell>
+                                  </TableRow>
+                                  <TableRow sx={{ bgcolor: 'rgba(46,125,50,0.05)' }}>
+                                    <TableCell sx={{ fontWeight: 800 }}>Total Pay</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 800, color: '#2e7d32' }}>{formatCurrency(payrollData.gross - payrollData.special)}</TableCell>
+                                  </TableRow>
+                                </TableBody>
+                              </Table>
+                            </TableContainer>
+                          )}
+                          {payrollTabValue === 1 && (
+                            <TableContainer>
+                              <Table size="small">
+                                <TableBody>
+                                  {[['SSS Contribution (Employee Share)', payrollData.sss], ['PhilHealth Contribution', payrollData.ph], ['Pag-IBIG Premium', payrollData.hdmf], ['Withholding Tax', payrollData.tax], ['APECC SAVINGS', 0], ['APECC SHARE', 0], ['APECC LOAN', 0]].map(([label, val]) => (
+                                    <TableRow key={label}>
+                                      <TableCell sx={{ fontWeight: 600 }}>{label}</TableCell>
+                                      <TableCell align="right" sx={{ color: '#d32f2f' }}>-{formatCurrency(val)}</TableCell>
+                                    </TableRow>
+                                  ))}
+                                  <TableRow sx={{ bgcolor: 'rgba(211,47,47,0.05)' }}>
+                                    <TableCell sx={{ fontWeight: 800 }}>Total Deductions</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 800, color: '#d32f2f' }}>{formatCurrency(payrollData.totalDeductions)}</TableCell>
+                                  </TableRow>
+                                </TableBody>
+                              </Table>
+                            </TableContainer>
+                          )}
+                          {payrollTabValue === 2 && (
+                            <TableContainer>
+                              <Table size="small">
+                                <TableBody>
+                                  <TableRow>
+                                    <TableCell sx={{ fontWeight: 600 }}>13th Month</TableCell>
+                                    <TableCell align="right" sx={{ color: '#0241FB', fontWeight: 700 }}>+{formatCurrency(payrollData.special)}</TableCell>
+                                  </TableRow>
+                                  {['Level 1 - Probationary', 'Level 2- upon regularization'].includes(emp.employmentDetails?.jobLevel) && (
+                                    <TableRow>
+                                      <TableCell sx={{ fontWeight: 600 }}>Service Incentive Leaves (SIL)</TableCell>
+                                      <TableCell align="right" sx={{ color: '#2e7d32', fontWeight: 700 }}>+{formatCurrency(payrollData.allowances)}</TableCell>
+                                    </TableRow>
+                                  )}
+                                  <TableRow>
+                                    <TableCell sx={{ fontWeight: 600 }}>Gratuity</TableCell>
+                                    <TableCell align="right" sx={{ color: '#2e7d32' }}>{formatCurrency(payrollData.special)}</TableCell>
+                                  </TableRow>
+                                </TableBody>
+                              </Table>
+                            </TableContainer>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </Grid>
+
+                    {/* Quick Info Sidebar */}
+                    <Grid item xs={12} lg={4}>
+                      <Stack spacing={2.5}>
+                        <Card sx={{ borderRadius: 3, bgcolor: '#f8fafc' }}>
+                          <CardContent sx={{ p: 2.5 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <InfoIcon color="primary" fontSize="small" /> Payroll Context
+                            </Typography>
+                            <Stack spacing={1.5}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Typography variant="body2" color="text.secondary">Payroll Cycle</Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 700 }}>Semi-Monthly</Typography>
+                              </Box>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Typography variant="body2" color="text.secondary">Work Comp Plan</Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 700 }}>Regular Full-time</Typography>
+                              </Box>
+                              <Divider />
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Typography variant="body2" color="text.secondary">Status</Typography>
+                                <Chip label="Verified & Paid" size="small" color="success" />
+                              </Box>
+                            </Stack>
+                          </CardContent>
+                        </Card>
+
+                        <Card sx={{ borderRadius: 3, bgcolor: 'rgba(212,168,67,0.05)', border: `1px solid ${goldAccent}33` }}>
+                          <CardContent sx={{ p: 2.5 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 1, color: goldAccent }}>Tax Cap Status</Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                              Non-taxable benefits cumulative limit tracking (₱90k Cap)
+                            </Typography>
+                            <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between' }}>
+                              <Typography variant="caption" sx={{ fontWeight: 700 }}>Current Utilization</Typography>
+                              <Typography variant="caption" sx={{ fontWeight: 700 }}>22%</Typography>
+                            </Box>
+                            <Paper sx={{ height: 8, bgcolor: 'rgba(0,0,0,0.05)', borderRadius: 4, overflow: 'hidden' }}>
+                              <Box sx={{ width: '22%', height: '100%', bgcolor: goldAccent }} />
+                            </Paper>
+                          </CardContent>
+                        </Card>
+                      </Stack>
+                    </Grid>
+                  </Grid>
+                ) : (
+                  <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
+                    <WalletIcon sx={{ fontSize: 48, opacity: 0.3, mb: 1 }} />
+                    <Typography variant="body2">No payroll data available for this period.</Typography>
+                  </Box>
+                )}
+              </TabPanel>
+
+              {/* Leave Summary */}
+              <TabPanel value={tabValue} index={6}>
+                {/* Summary Stat Cards */}
+                <Grid container spacing={2.5} sx={{ mb: 3 }}>
+                  <Grid item xs={12} sm={4}>
+                    <Card sx={{ borderRadius: 3, background: 'linear-gradient(135deg, #05077E 0%, #4470ED 100%)', color: '#FDFDFC' }}>
+                      <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
+                        <Box>
+                          <Typography variant="body2" sx={{ opacity: 0.8 }}>Pending Applications</Typography>
+                          <Typography variant="h4" sx={{ fontWeight: 800 }}>{employeeLeaves.filter(l => l.status === 'Pending').length}</Typography>
+                        </Box>
+                        <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}><LeavesIcon /></Avatar>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Card sx={{ borderRadius: 3, background: 'linear-gradient(135deg, #2e7d32 0%, #4caf50 100%)', color: '#FDFDFC' }}>
+                      <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
+                        <Box>
+                          <Typography variant="body2" sx={{ opacity: 0.8 }}>Remaining Credits</Typography>
+                          <Typography variant="h4" sx={{ fontWeight: 800 }}>{employeeBalances.reduce((acc, b) => acc + (b.remaining || 0), 0)}</Typography>
+                        </Box>
+                        <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}><WalletIcon /></Avatar>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Card sx={{ borderRadius: 3, background: 'linear-gradient(135deg, #c62828 0%, #ef5350 100%)', color: '#FDFDFC' }}>
+                      <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
+                        <Box>
+                          <Typography variant="body2" sx={{ opacity: 0.8 }}>Active Sanctions</Typography>
+                          <Typography variant="h4" sx={{ fontWeight: 800 }}>{employeeSanctions.filter(s => s.status === 'Active').length}</Typography>
+                        </Box>
+                        <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}><SanctionsIcon /></Avatar>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
+
+                {/* History + Sidebar */}
+                <Grid container spacing={2.5}>
+                  {/* Leave History */}
+                  <Grid item xs={12} md={8}>
+                    <Card sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.06)' }}>
+                      <CardContent>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>Leave Application History</Typography>
+                        <TableContainer sx={{ maxHeight: 380, '&::-webkit-scrollbar': { width: 6 }, '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(0,0,0,0.1)', borderRadius: 3 } }}>
+                          <Table stickyHeader size="small">
+                            <TableHead>
+                              <TableRow>
+                                {['Type', 'Start Date', 'End Date', 'Days', 'Status'].map(h => (
+                                  <TableCell key={h} sx={{ fontWeight: 700, bgcolor: '#0241FB', color: '#FDFDFC', fontSize: '0.75rem' }}>{h}</TableCell>
+                                ))}
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {employeeLeaves.length > 0 ? employeeLeaves.map((l, i) => (
+                                <TableRow key={i} hover>
+                                  <TableCell sx={{ fontWeight: 600 }}>{l.type}</TableCell>
+                                  <TableCell>{l.startDate}</TableCell>
+                                  <TableCell>{l.endDate}</TableCell>
+                                  <TableCell>{l.days}</TableCell>
+                                  <TableCell>
+                                    <Chip
+                                      label={l.status}
+                                      size="small"
+                                      sx={{
+                                        fontWeight: 700, fontSize: '0.7rem',
+                                        bgcolor: l.status === 'Approved' ? 'rgba(46,125,50,0.1)' : 'rgba(230,81,0,0.1)',
+                                        color: l.status === 'Approved' ? '#2e7d32' : '#ed6c02'
+                                      }}
+                                    />
+                                  </TableCell>
+                                </TableRow>
+                              )) : (
+                                <TableRow>
+                                  <TableCell colSpan={5} align="center" sx={{ py: 4, color: 'text.secondary' }}>No leave records found.</TableCell>
+                                </TableRow>
+                              )}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+
+                  {/* Credits & Sanctions */}
+                  <Grid item xs={12} md={4}>
+                    <Stack spacing={2.5}>
+                      <Card sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.06)' }}>
+                        <CardContent>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>Leave Credit Details</Typography>
+                          <Table size="small">
+                            <TableHead>
+                              <TableRow>
+                                <TableCell sx={{ fontWeight: 700 }}>Type</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 700 }}>Used</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 700 }}>Rem.</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {employeeBalances.length > 0 ? employeeBalances.map((lb, i) => (
+                                <TableRow key={i}>
+                                  <TableCell sx={{ fontSize: '0.8rem' }}>{lb.type}</TableCell>
+                                  <TableCell align="center" sx={{ fontSize: '0.8rem', color: '#d32f2f' }}>{lb.used}</TableCell>
+                                  <TableCell align="center" sx={{ fontSize: '0.8rem', fontWeight: 600, color: '#2e7d32' }}>{lb.remaining}</TableCell>
+                                </TableRow>
+                              )) : (
+                                <TableRow><TableCell colSpan={3} align="center" sx={{ color: 'text.secondary', py: 2 }}>No credits found.</TableCell></TableRow>
+                              )}
+                            </TableBody>
+                          </Table>
+                        </CardContent>
+                      </Card>
+
+                      <Card sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.06)' }}>
+                        <CardContent>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>Active Sanctions</Typography>
+                          {employeeSanctions.filter(s => s.status === 'Active').length > 0 ? (
+                            employeeSanctions.filter(s => s.status === 'Active').map((s, i) => (
+                              <Box key={i} sx={{ p: 1, borderLeft: '3px solid #d32f2f', bgcolor: 'rgba(211,47,47,0.05)', mb: 1, borderRadius: '0 4px 4px 0' }}>
+                                <Typography variant="body2" sx={{ fontWeight: 700 }}>{s.type}</Typography>
+                                <Typography variant="caption" sx={{ display: 'block' }}>{s.reason}</Typography>
+                                <Typography variant="caption" color="text.secondary">{s.date}</Typography>
+                              </Box>
+                            ))
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">No active sanctions.</Typography>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </Stack>
+                  </Grid>
+                </Grid>
+              </TabPanel>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
-      
+
+      {/* Leave Application Dialog */}
+      <Dialog
+        open={isLeaveFormOpen}
+        onClose={() => setIsLeaveFormOpen(false)}
+        maxWidth="md"
+        fullWidth
+        scroll="paper"
+        PaperProps={{ sx: { borderRadius: 3 } }}
+      >
+        <DialogContent sx={{ p: 0 }}>
+          <LeaveApplicationForm
+            employee={emp}
+            onCancel={() => setIsLeaveFormOpen(false)}
+            onSubmit={(data) => {
+              const today = new Date().toISOString().split('T')[0];
+              const newId = `LV-${String(onboardingRecords.length + 1).padStart(3, '0')}`;
+              const emp = employees[selectedEmployee];
+
+              onboardingRecords.push({
+                id: newId,
+                type: 'Leave',
+                submittedDate: today,
+                submittedBy: 'System',
+                status: 'Pending HR Officer',
+                employeeData: {
+                  ...emp,
+                  leaveDetails: {
+                    ...data,
+                    submittedAt: today
+                  }
+                },
+                approvalChain: [
+                  { role: 'Employee Action', name: `${emp.firstName} ${emp.lastName}`, status: 'Submitted', date: today, remarks: `Applied for ${data.designation} Leave` },
+                  { role: 'HR Officer', name: '', status: 'Pending', date: '', remarks: '' },
+                  { role: 'Unit Manager', name: '', status: 'Pending', date: '', remarks: '' },
+                  { role: 'Asst. General Manager', name: '', status: 'Pending', date: '', remarks: '' },
+                ]
+              });
+
+              setIsLeaveFormOpen(false);
+              setSuccessModal(true);
+              setSuccessModalType('Leave');
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
       {/* Exit Interview Dialog */}
       <Dialog open={openResignation} onClose={() => setOpenResignation(false)} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ bgcolor: '#f8fafc', borderBottom: '1px solid #eee', py: 2 }}>
-          <Box sx={{ textAlign: 'center', mb: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 800, color: '#023DFB' }}>
-              ASA PHILIPPINES EMPLOYEES CREDIT COOPERATIVE
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-              18-E San Martin St. Corner San Francisco St. Brgy. Kapitolyo Pasig City
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
-            <InterviewIcon color="primary" />
-            <Typography variant="h5" sx={{ fontWeight: 900 }}>EXIT INTERVIEW</Typography>
-          </Box>
-        </DialogTitle>
-        <DialogContent dividers sx={{ p: 4 }}>
-          <Stack spacing={4}>
-            {/* Section: Reasons for Leaving */}
-            <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#023DFB', mb: 2 }}>Reasons for Leaving</Typography>
-              <Stack spacing={2.5}>
-                <TextField fullWidth multiline rows={3} label="Why did you decide to leave the company?" variant="outlined" />
-                <TextField fullWidth label="Did you get along with your direct manager?" variant="outlined" />
-                <TextField fullWidth label="Did you get along with your peers?" variant="outlined" />
-                <TextField fullWidth multiline rows={2} label="In general, what do you think about working at our company?" variant="outlined" />
-                <TextField fullWidth multiline rows={2} label="Is there anything we could have done to prevent you from leaving?" variant="outlined" />
-              </Stack>
-            </Box>
-
-            <Divider />
-
-            {/* Section: Employee Experience */}
-            <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#023DFB', mb: 2 }}>Employee Experience</Typography>
-              <Stack spacing={2.5}>
-                <TextField fullWidth multiline rows={2} label="What did you think of the way you were managed?" variant="outlined" />
-                <TextField fullWidth label="Did you receive frequent, constructive feedback from your manager?" variant="outlined" />
-                <TextField fullWidth multiline rows={2} label="What benefits or programs did you feel were missing from the organization?" variant="outlined" />
-                <TextField fullWidth label="Were you recognized enough for your accomplishments?" variant="outlined" />
-                <TextField fullWidth multiline rows={2} label="How was your overall experience working for this company?" variant="outlined" />
-              </Stack>
-            </Box>
-
-            <Divider />
-
-            {/* Section: Role-Specific Questions */}
-            <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#023DFB', mb: 2 }}>Role-Specific Questions</Typography>
-              <Stack spacing={2.5}>
-                <TextField fullWidth label="Did you feel you had all the resources you needed to do your work here?" variant="outlined" />
-                <TextField fullWidth multiline rows={2} label="Did you receive enough training/ Were you given the training and resources you needed to succeed in this role?" variant="outlined" />
-                <TextField fullWidth label="Did the role meet your expectations?" variant="outlined" />
-                <TextField fullWidth multiline rows={2} label="What did you like about your work? Was it rewarding, challenging, or too easy?" variant="outlined" />
-                <TextField fullWidth multiline rows={2} label="Did you feel that your skills and talents were effectively utilized in your position?" variant="outlined" />
-                <TextField fullWidth label="Did you feel supported by your manager and colleagues in your role?" variant="outlined" />
-                <TextField fullWidth label="How did you feel about your workload? (Too heavy, too light, or just right?)" variant="outlined" />
-                <TextField fullWidth multiline rows={2} label="How satisfied were you with your role in relation to your career goals and aspirations?" variant="outlined" />
-                <TextField fullWidth label="What part of the job did you like the most?" variant="outlined" />
-                <TextField fullWidth label="What part of the job did you like the least?" variant="outlined" />
-                <TextField fullWidth label="Did you feel you had the opportunity to grow and develop your skills in this role?" variant="outlined" />
-                <TextField fullWidth label="How would you describe your work environment in this role?" variant="outlined" />
-                <TextField fullWidth label="Did you feel valued and recognized within this role?" variant="outlined" />
-                <TextField fullWidth multiline rows={2} label="What did the company do to make you feel valued and recognized in your role?" variant="outlined" />
-              </Stack>
-            </Box>
-
-            <Divider />
-
-            {/* Section: Forward-Facing Questions */}
-            <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#023DFB', mb: 2 }}>Forward-Facing Questions</Typography>
-              <Stack spacing={2.5}>
-                <TextField fullWidth multiline rows={2} label="What advice would you like to give to your team?" variant="outlined" />
-                <TextField fullWidth multiline rows={2} label="What would make this a better place to work?" variant="outlined" />
-                <TextField fullWidth label="Would you ever consider working here again?" variant="outlined" />
-                <TextField fullWidth label="Would you recommend this company to a friend or family member?" variant="outlined" />
-                <TextField fullWidth multiline rows={2} label="What is one thing you would change about this company if you could?" variant="outlined" />
-                <TextField fullWidth multiline rows={3} label="Is there anything else you would like to add?" variant="outlined" />
-              </Stack>
-            </Box>
-
-            <Box sx={{ p: 2, bgcolor: '#fffbed', border: '1px solid #ffe58f', borderRadius: 2 }}>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: '#856404', display: 'block', mb: 0.5 }}>
-                CONFIDENTIALITY NOTICE:
-              </Typography>
-              <Typography variant="caption" sx={{ color: '#856404', display: 'block', lineHeight: 1.4 }}>
-                This contains confidential information and is intended for the sole use of the addressee. Any unauthorized disclosure, distribution, or copying is strictly prohibited. If you have received this in error, please notify the sender immediately. Any unauthorized use, disclosure, or copying of this file may result in legal action.
-              </Typography>
-            </Box>
-          </Stack>
+        <DialogContent dividers sx={{ p: 0 }}>
+          <ExitInterviewForm 
+            employee={emp}
+            initialData={exitInterviewData}
+            onCancel={() => setOpenResignation(false)}
+            onSubmit={handleExitFormSubmit}
+          />
         </DialogContent>
-        <DialogActions sx={{ p: 3, bgcolor: '#f8fafc', borderTop: '1px solid #eee' }}>
-          <Button onClick={() => setOpenResignation(false)} sx={{ color: 'text.secondary', fontWeight: 600 }}>Cancel</Button>
-          <Button variant="contained" onClick={handleResignationSubmit} sx={{ bgcolor: '#023DFB', px: 4, fontWeight: 700, borderRadius: 2 }}>
-            Submit Resignation
-          </Button>
-        </DialogActions>
       </Dialog>
+
+      {/* Submission Success Modal (Payroll Style) */}
+      <Dialog 
+        open={successModal} 
+        onClose={() => setSuccessModal(false)} 
+        maxWidth="xs" 
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, p: 3, textAlign: 'center' } }}
+      >
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
+          <MuiAvatar sx={{ width: 80, height: 80, bgcolor: 'rgba(46, 125, 50, 0.1)', color: '#2e7d32' }}>
+            <ApproveIcon sx={{ fontSize: 50 }} />
+          </MuiAvatar>
+        </Box>
+        <Typography variant="h5" sx={{ fontWeight: 800, color: '#2e7d32', mb: 2 }}>
+          Submission Successful
+        </Typography>
+        <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4, px: 2, lineHeight: 1.6 }}>
+          {successModalType === 'Resignation' 
+            ? 'Resignation application and Exit Interview forwarded to HR for review.' 
+            : 'Leave application successfully submitted and forwarded to the approval queue.'}
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+          <Button 
+            variant="outlined" 
+            onClick={() => setSuccessModal(false)}
+            sx={{ fontWeight: 700, borderRadius: 2, borderColor: 'rgba(0,0,0,0.15)', color: 'text.secondary', px: 3 }}
+          >
+            Close
+          </Button>
+          <Button 
+            variant="contained" 
+            onClick={() => {
+              setSuccessModal(false);
+              navigate(`/hr/onboarding/approvals?type=${successModalType}`);
+            }}
+            sx={{ fontWeight: 700, borderRadius: 2, px: 3, background: 'linear-gradient(135deg, #05077E, #0241FB)' }}
+          >
+            View Queue
+          </Button>
+        </Box>
+      </Dialog>
+
     </Box>
   );
 }

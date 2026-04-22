@@ -1,9 +1,8 @@
 import React, { useState, useRef } from 'react';
 import {
-  Box, Card, CardContent, Typography, Grid, Button, Table, TableBody,
+  Box, Card, Typography, Grid, Button, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, TextField, InputAdornment,
-  Checkbox, FormControlLabel, Divider, Stack, Paper,
-  ToggleButton, ToggleButtonGroup
+  Stack, Paper, Autocomplete
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -16,38 +15,20 @@ import { exportToCSV } from '../../utils/exportUtils';
 import logo from '../../../assets/images/apecc-favicon.png';
 
 export default function WithdrawalMembership() {
-  const [search, setSearch] = useState('');
-  const [selectedMember, setSelectedMember] = useState(exitRecords[0]);
-  const [viewMode, setViewMode] = useState('clearance'); // 'clearance' or 'withdrawal'
+  const [selectedMember, setSelectedMember] = useState(exitRecords[0] || null);
   const printRef = useRef();
 
   // Helper for safe currency formatting
   const fComm = (val) => {
     const n = parseFloat(val);
-    return isNaN(n) ? '0' : n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  };
-
-  const handleSearch = () => {
-    console.log('Searching for:', search);
-    const searchTerm = search.trim().toLowerCase();
-    const found = exitRecords.find(r => 
-      r.idNo.toLowerCase().includes(searchTerm) || 
-      r.name.toLowerCase().includes(searchTerm)
-    );
-    console.log('Found:', found);
-    if (found) {
-      setSelectedMember(found);
-    } else {
-      alert('Member not found');
-    }
+    return isNaN(n) ? '0' : n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
   };
 
   const handleDownloadPDF = () => {
     const element = document.getElementById('withdrawal-form-print');
-    const docTitle = viewMode === 'clearance' ? 'Membership_Clearance' : 'Withdrawal_Membership';
     const opt = {
-      margin: [10, 10],
-      filename: `${docTitle}_${selectedMember?.idNo || 'Member'}.pdf`,
+      margin: [5, 5],
+      filename: `Clearance_Withdrawal_${selectedMember?.idNo || 'Member'}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true, logging: false },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -63,28 +44,22 @@ export default function WithdrawalMembership() {
   const handlePrint = () => {
     const content = document.getElementById('withdrawal-form-print').innerHTML;
     const printWindow = window.open('', '_blank');
-    const docTitle = viewMode === 'clearance' ? 'Membership Clearance Form' : 'Withdrawal of Membership';
     printWindow.document.write(`
       <html>
         <head>
-          <title>${docTitle} - ${selectedMember?.name}</title>
+          <title>Clearance and Withdrawal Form - ${selectedMember?.name}</title>
           <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-            body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-            .print-container { width: 210mm; margin: auto; padding: 10mm; box-sizing: border-box; }
-            @page { size: A4; margin: 0; }
+            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
+            body { font-family: 'Roboto', sans-serif; margin: 0; padding: 0; }
+            .print-container { width: 210mm; margin: auto; padding: 5mm; box-sizing: border-box; }
+            @page { size: A4 portrait; margin: 5mm; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #000; padding: 4px; font-size: 8pt; }
+            th, td { border: 1px solid #000; padding: 3px 6px; font-size: 8pt; }
             .no-border td { border: none; }
-            .bg-grey { background-color: #d3d3d3 !important; }
-            .bg-yellow { background-color: #ffffcc !important; }
-            .text-center { text-align: center; }
-            .text-right { text-align: right; }
-            .font-bold { font-weight: bold; }
-            .section-header { background-color: #404040; color: white; text-align: center; font-weight: bold; padding: 4px; font-size: 10pt; }
-            .form-label { font-size: 8pt; font-weight: bold; }
-            .form-value { font-size: 8pt; border-bottom: 1px solid #000; display: inline-block; min-width: 100px; padding: 0 4px; }
+            .bg-grey { background-color: #d8d8d8 !important; }
+            .bg-yellow { background-color: #ffff66 !important; }
+            input[type="checkbox"] { width: 12px; height: 12px; margin: 0; }
           </style>
         </head>
         <body>
@@ -111,7 +86,7 @@ export default function WithdrawalMembership() {
       ['DIVIDEND', fComm(selectedMember?.dividend)],
       ['VOLUNTARY SAVINGS', fComm(selectedMember?.voluntarySavings)],
       ['Rebates Salary Loan (Valid until April 2026)', fComm(0)],
-      ['Rebates Housing Loan (Valid until March 2026)', fComm(25000)],
+      ['Rebates Housing Loan (Valid until March 2026)', fComm(selectedMember?.rebates || selectedMember?.rebates2 || 25000)],
       ['TOTAL', fComm(selectedMember?.total)],
       ['LESS: SHORT TERM LOAN', fComm(selectedMember?.stlLoan)],
       ['LESS: SALARY LOAN BALANCE', fComm(selectedMember?.salaryLoan)],
@@ -126,297 +101,440 @@ export default function WithdrawalMembership() {
     exportToCSV(headers, rows, `Withdrawal_${selectedMember?.idNo || 'Member'}`);
   };
 
+  const totalAssets = selectedMember?.total || 0;
+  const totalLiabilities = (selectedMember?.stlLoan || 0) + (selectedMember?.salaryLoan || 0) + (selectedMember?.motorcycleLoan || 0) + (selectedMember?.housingLoan || 0) + (selectedMember?.carLoan || 0) + (selectedMember?.educationalLoan || 0) + (selectedMember?.gadgetLoan || 0) + (selectedMember?.malasakitLoan || 0);
+  const netAmountDue = selectedMember?.grandTotal || 0; // Same as totalAssets - totalLiabilities
+
+  // Custom checkbox visually
+  const PrintCheckbox = () => (
+     <Box sx={{ width: 12, height: 12, border: '1px solid #000', borderRadius: '2px', display: 'inline-block', mr: 1, position: 'relative', top: '2px' }} />
+  );
+
   return (
     <Box className="page-container">
-      {/* Top Controls */}
-      <Card sx={{ mb: 3, borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-        <Box sx={{ p: 2, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flex: 1, minWidth: '400px' }}>
-            <ToggleButtonGroup
-              value={viewMode}
-              exclusive
-              onChange={(e, val) => val && setViewMode(val)}
-              size="small"
-              sx={{ bgcolor: '#f4f4f4' }}
-            >
-              <ToggleButton value="clearance" sx={{ px: 2, fontWeight: 'bold' }}>Clearance Form</ToggleButton>
-              <ToggleButton value="withdrawal" sx={{ px: 2, fontWeight: 'bold' }}>Withdrawal Form</ToggleButton>
-            </ToggleButtonGroup>
+      {/* ── Page Header ─────────────────────────────────────────────────── */}
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 2 }}>
+        <Box>
+          <Typography variant="h4" sx={{
+            fontWeight: 800,
+            background: 'linear-gradient(135deg, #05077E 0%, #0241FB 55%, #4470ED 100%)',
+            backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          }}>
+            Withdrawal Membership
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+            Generate official Clearance and Withdrawal documentation.
+          </Typography>
+        </Box>
+      </Box>
 
-            <TextField
-              size="small"
-              sx={{ maxWidth: 250 }}
-              placeholder="Search ID No. or Name..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              InputProps={{
-                startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#023DFB' }} /></InputAdornment>,
-              }}
-            />
-            <Button variant="contained" onClick={handleSearch} sx={{ bgcolor: '#023DFB', borderRadius: 2 }}>Search</Button>
-          </Box>
+      {/* ── Filters Card ─────────────────────────────────────────────────── */}
+      <Card sx={{
+        mb: 4, borderRadius: 3, borderTop: '3px solid #d4a843',
+        background: 'linear-gradient(160deg, #05077E 0%, #0241FB 55%, #4470ED 80%, #B4B7D3 100%)',
+        boxShadow: '0 8px 32px rgba(5,7,126,0.22)'
+      }}>
+        <Box sx={{ p: 4 }}>
+          <Grid container spacing={3} alignItems="center" justifyContent="space-between">
+            <Grid item xs={12} md={5}>
+              <Typography variant="subtitle2" sx={{ color: 'rgba(253,253,252,0.8)', mb: 1, fontWeight: 700 }}>Select Employee</Typography>
+              <Autocomplete
+                options={exitRecords}
+                getOptionLabel={(option) => `${option.name} (${option.idNo})`}
+                value={selectedMember}
+                onChange={(event, newValue) => {
+                  if (newValue) setSelectedMember(newValue);
+                }}
+                renderInput={(params) => (
+                  <TextField 
+                    {...params}
+                    placeholder="Search by Name or ID No. ..."
+                    size="small"
+                    InputProps={{
+                      ...params.InputProps,
+                      startAdornment: (
+                        <>
+                          <InputAdornment position="start" sx={{ pl: 1 }}>
+                            <SearchIcon sx={{ color: '#FDFDFC', opacity: 0.8 }} />
+                          </InputAdornment>
+                          {params.InputProps.startAdornment}
+                        </>
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        bgcolor: 'rgba(253,253,252,0.1)', color: '#FDFDFC', borderRadius: 2,
+                        '& fieldset': { borderColor: 'rgba(253,253,252,0.3)' },
+                        '&:hover fieldset': { borderColor: '#FDFDFC' },
+                        '&.Mui-focused fieldset': { borderColor: '#d4a843', borderWidth: '2px' },
+                      },
+                      '& .MuiInputBase-input': { color: '#FDFDFC' },
+                      '& .MuiInputBase-input::placeholder': { color: 'rgba(253,253,252,0.6)', opacity: 1 },
+                      '& .MuiSvgIcon-root': { color: 'rgba(253,253,252,0.8)' },
+                      '& .MuiAutocomplete-clearIndicator': { color: 'rgba(253,253,252,0.8)' }
+                    }}
+                  />
+                )}
+                sx={{
+                  width: '100%',
+                  '& .MuiAutocomplete-listbox': { bgcolor: '#FDFDFC', color: '#05077E' },
+                  '& .MuiAutocomplete-option': { '&[aria-selected="true"]': { bgcolor: 'rgba(212,168,67,0.2)' } }
+                }}
+              />
+            </Grid>
 
-          <Stack direction="row" spacing={1}>
-            <Button variant="outlined" startIcon={<CsvIcon />} onClick={handleExportCSV} sx={{ borderRadius: 2 }}>CSV</Button>
-            <Button variant="outlined" startIcon={<PdfIcon />} onClick={handleDownloadPDF} sx={{ borderRadius: 2 }}>Download PDF</Button>
-            <Button variant="outlined" startIcon={<PrintIcon />} onClick={handlePrint} sx={{ borderRadius: 2 }}>Print</Button>
-          </Stack>
+            {/* Currently Selected Employee Card */}
+            <Grid item xs={12} md={4}>
+              {selectedMember && (
+                <Box sx={{ 
+                  bgcolor: 'rgba(253,253,252,0.15)', border: '1px solid rgba(253,253,252,0.3)', 
+                  p: 2, borderRadius: 2, display: 'flex', flexDirection: 'column',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  <Typography variant="caption" sx={{ color: '#d4a843', fontWeight: 800, mb: 0.5, textTransform: 'uppercase' }}>
+                    Currently Selected
+                  </Typography>
+                  <Typography variant="h6" sx={{ color: '#FDFDFC', fontWeight: 800, lineHeight: 1.2 }}>
+                    {selectedMember.name}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(253,253,252,0.8)', display: 'flex', gap: 1, mt: 0.5 }}>
+                     <span>ID: {selectedMember.idNo}</span>
+                     <span>•</span>
+                     <span>{selectedMember.designation}</span>
+                  </Typography>
+                </Box>
+              )}
+            </Grid>
+
+            <Grid item xs={12} md={3} sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
+              <Stack direction="row" spacing={1}>
+                <Button variant="contained" startIcon={<PdfIcon />} onClick={handleDownloadPDF} 
+                  sx={{ 
+                    background: 'linear-gradient(135deg, #d32f2f 0%, #ef5350 100%)', color: '#FDFDFC', borderRadius: 2, fontWeight: 800, boxShadow: '0 4px 12px rgba(211,47,47,0.3)',
+                    '&:hover': { filter: 'brightness(1.15)' } 
+                  }}>
+                  PDF
+                </Button>
+                <Button variant="contained" startIcon={<CsvIcon />} onClick={handleExportCSV} 
+                  sx={{ 
+                    background: 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)', color: '#FDFDFC', borderRadius: 2, fontWeight: 800, boxShadow: '0 4px 12px rgba(46,125,50,0.3)',
+                    '&:hover': { filter: 'brightness(1.15)' } 
+                  }}>
+                  CSV
+                </Button>
+                <Button variant="contained" startIcon={<PrintIcon />} onClick={handlePrint} 
+                  sx={{ 
+                    background: 'linear-gradient(135deg, #8d6e63 0%, #a1887f 100%)', color: '#FDFDFC', borderRadius: 2, fontWeight: 800, boxShadow: '0 4px 12px rgba(141,110,99,0.3)',
+                    '&:hover': { filter: 'brightness(1.15)' } 
+                  }}>
+                  Print
+                </Button>
+              </Stack>
+            </Grid>
+          </Grid>
         </Box>
       </Card>
 
       {/* Preview Section */}
       <Paper elevation={0} sx={{ p: 4, borderRadius: 4, bgcolor: '#525659', display: 'flex', justifyContent: 'center', overflow: 'auto', minHeight: '1000px' }}>
-         <Card sx={{ width: '210mm', minHeight: '297mm', bgcolor: '#fff', p: '10mm', boxShadow: '0 0 20px rgba(0,0,0,0.5)', borderRadius: 0 }}>
-            <Box id="withdrawal-form-print" sx={{ bgcolor: '#fff', color: '#000', p: 1, width: '100%', maxWidth: '800px', margin: 'auto' }}>
-              {/* Header (Shared) */}
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <img src={logo} alt="Logo" style={{ width: 50, height: 50, marginRight: 10 }} />
-                <Box>
-                  <Typography sx={{ fontWeight: 800, fontSize: '12pt', color: '#000' }}>ASA PHILIPPINES EMPLOYEES CREDIT COOPERATIVE</Typography>
-                  <Typography sx={{ fontSize: '8pt' }}>Ortigas Pasig City, Metro Manila | Contact Number: 09985523801</Typography>
+         <Card sx={{ width: '210mm', minHeight: '297mm', bgcolor: '#FDFDFC', p: '5mm', boxShadow: '0 0 20px rgba(0,0,0,0.5)', borderRadius: 0, '& *': { fontFamily: "'Roboto', sans-serif" } }}>
+            <Box id="withdrawal-form-print" sx={{ bgcolor: '#FDFDFC', color: '#000', p: 0.5, width: '100%', maxWidth: '800px', margin: 'auto' }}>
+              
+              {/* Output Shared Header */}
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, justifyContent: 'center' }}>
+                <img src={logo} alt="Logo" style={{ width: 60, height: 60, marginRight: 15 }} />
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography sx={{ fontWeight: 900, fontSize: '15pt', color: '#000', lineHeight: 1.1, letterSpacing: '-0.2px' }}>ASA PHILIPPINES EMPLOYEES CREDIT COOPERATIVE</Typography>
+                  <Typography sx={{ fontSize: '9pt' }}>Ortigas Pasig City, Metro Manila | Contact Number: 09985523801</Typography>
+                  <Typography sx={{ fontSize: '8pt', color: '#666' }}>https://apecc.com.ph</Typography>
                 </Box>
               </Box>
 
-              {viewMode === 'clearance' ? (
-                /* SECTION 1: MEMBERSHIP CLEARANCE FORM */
-                <Box>
-                  <Box sx={{ bgcolor: '#d3d3d3', border: '1px solid #000', py: 0.5, mb: 0.5 }}>
-                    <Typography sx={{ fontWeight: 900, textAlign: 'center', fontSize: '11pt' }}>MEMBERSHIP CLEARANCE FORM</Typography>
-                  </Box>
+              {/* ───────────────────────────────────────────────────────── */}
+              {/* SECTION 1: MEMBERSHIP CLEARANCE FORM */}
+              {/* ───────────────────────────────────────────────────────── */}
 
-                  <TableContainer component={Box} sx={{ mb: 0.5 }}>
-                    <Table size="small" sx={{ border: '1px solid #000' }}>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '8pt', width: '150px' }}>Name of Member:</TableCell>
-                          <TableCell sx={{ border: '1px solid #000', bgcolor: '#ffffcc', fontWeight: 'bold', fontSize: '9pt', color: '#000' }}>{selectedMember?.name || '#N/A'}</TableCell>
-                          <TableCell sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '8pt', width: '100px' }}>ID No.:</TableCell>
-                          <TableCell sx={{ border: '1px solid #000', bgcolor: '#f4f4f4', fontSize: '8pt', width: '120px' }}>{selectedMember?.idNo || ''}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '8pt' }}>Date of Exit:</TableCell>
-                          <TableCell sx={{ border: '1px solid #000', bgcolor: '#ffffcc', fontSize: '8pt' }}>{selectedMember?.dateExit || ''}</TableCell>
-                          <TableCell sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '8pt' }}>Position:</TableCell>
-                          <TableCell sx={{ border: '1px solid #000', bgcolor: '#ffffcc', fontSize: '8pt' }}>{selectedMember?.designation || '#N/A'}</TableCell>
-                          <TableCell sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '8pt', width: '80px' }}>Cell #:</TableCell>
-                          <TableCell sx={{ border: '1px solid #000', bgcolor: '#ffffcc', fontSize: '8pt', width: '100px' }}></TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+              <Box sx={{ border: '2px solid #555', mb: 1, pb: 0.5 }}>
+                 <Box sx={{ bgcolor: '#c9cacb', borderBottom: '2px solid #555', py: 0.2, mb: 0 }}>
+                    <Typography sx={{ fontWeight: 900, textAlign: 'center', fontSize: '12pt', letterSpacing: '0.5px' }}>MEMBERSHIP CLEARANCE FORM</Typography>
+                 </Box>
 
-                  <TableContainer component={Box} sx={{ mb: 0.5 }}>
-                    <Table size="small" sx={{ border: '1px solid #000' }}>
-                      <TableBody>
-                        <TableRow sx={{ bgcolor: '#d3d3d3' }}>
-                          <TableCell colSpan={2} sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '8pt' }}>I. ASSETS</TableCell>
-                          <TableCell sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '8pt', textAlign: 'center', width: '150px' }}>AMOUNT</TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell colSpan={2} sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '8pt' }}>TOTAL ASSETS:</TableCell>
-                          <TableCell sx={{ border: '1px solid #000', textAlign: 'center', fontSize: '8pt', fontWeight: 'bold' }}>#N/A</TableCell>
-                        </TableRow>
-                        <TableRow sx={{ bgcolor: '#d3d3d3' }}>
-                          <TableCell colSpan={2} sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '8pt' }}>II. LIABILITIES</TableCell>
-                          <TableCell sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '8pt', textAlign: 'center' }}>AMOUNT</TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell colSpan={2} sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '8pt' }}>TOTAL LIABILITIES:</TableCell>
-                          <TableCell sx={{ border: '1px solid #000', textAlign: 'center', fontSize: '8pt', fontWeight: 'bold' }}>#N/A</TableCell>
-                        </TableRow>
-                        <TableRow sx={{ bgcolor: '#f4f4f4' }}>
-                          <TableCell sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '8pt' }}>Net Amounts Due (Total Assets less Total Liabilities):</TableCell>
-                          <TableCell sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '8pt', textAlign: 'right', width: '100px' }}>Php:</TableCell>
-                          <TableCell sx={{ border: '1px solid #000', textAlign: 'center', fontSize: '9pt', fontWeight: '900' }}>#N/A</TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+                 <Box sx={{ px: 0 }}>
+                   <TableContainer component={Box} sx={{ mb: 0, '& td, & th': { py: 0.5, px: 1, border: '1px solid #777' } }}>
+                     <Table size="small">
+                       <TableBody>
+                         <TableRow>
+                           <TableCell sx={{ fontWeight: 'bold', fontSize: '8.5pt', width: '20%', bgcolor: '#e6e6e6' }}>Name of Member:</TableCell>
+                           <TableCell sx={{ bgcolor: '#ffff80', fontWeight: 'bold', fontSize: '9pt', color: '#000', width: '45%' }}>{selectedMember?.name || ''}</TableCell>
+                           <TableCell sx={{ fontWeight: 'bold', fontSize: '8.5pt', width: '10%', bgcolor: '#e6e6e6', textAlign: 'center' }}>ID No.:</TableCell>
+                           <TableCell sx={{ bgcolor: '#f4f4f4', fontSize: '8.5pt', textAlign: 'center' }}>{selectedMember?.idNo || ''}</TableCell>
+                         </TableRow>
+                         <TableRow>
+                           <TableCell sx={{ fontWeight: 'bold', fontSize: '8.5pt', bgcolor: '#e6e6e6' }}>Date of Exit:</TableCell>
+                           <TableCell sx={{ bgcolor: '#ffff80', fontSize: '9pt', fontWeight: 600 }}>{selectedMember?.dateExit ? new Date(selectedMember.dateExit).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : ''}</TableCell>
+                           <TableCell sx={{ fontWeight: 'bold', fontSize: '8.5pt', bgcolor: '#e6e6e6', textAlign: 'center' }}>Position:</TableCell>
+                           <TableCell sx={{ bgcolor: '#ffff80', fontSize: '8.5pt', fontWeight: 600, textAlign: 'center' }}>{selectedMember?.designation || ''}</TableCell>
+                         </TableRow>
+                       </TableBody>
+                     </Table>
+                   </TableContainer>
 
-                  <Typography sx={{ fontSize: '6.5pt', fontStyle: 'italic', mb: 0.5 }}>
-                    We certify the correctness of above calculations and acknowledge the net amount due to the abovementioned staff. Therefore, we recommend for his settlement of accounts.
-                  </Typography>
+                   <TableContainer component={Box} sx={{ mt: 1, '& td, & th': { py: 0.5, px: 1, border: '1px solid #777' } }}>
+                     <Table size="small">
+                       <TableBody>
+                         <TableRow sx={{ bgcolor: '#e6e6e6' }}>
+                           <TableCell sx={{ fontWeight: 'bold', fontSize: '8.5pt' }}>I. ASSETS</TableCell>
+                           <TableCell sx={{ fontWeight: 'bold', fontSize: '8.5pt', textAlign: 'center', width: '35%' }}>AMOUNT</TableCell>
+                         </TableRow>
+                         <TableRow>
+                           <TableCell sx={{ fontWeight: 'bold', fontSize: '8.5pt', pl: 4 }}>TOTAL ASSETS:</TableCell>
+                           <TableCell sx={{ textAlign: 'center', fontSize: '9pt', fontWeight: 'bold' }}>{fComm(totalAssets)}</TableCell>
+                         </TableRow>
+                         <TableRow sx={{ bgcolor: '#e6e6e6' }}>
+                           <TableCell sx={{ fontWeight: 'bold', fontSize: '8.5pt' }}>II. LIABILITIES</TableCell>
+                           <TableCell sx={{ fontWeight: 'bold', fontSize: '8.5pt', textAlign: 'center' }}>AMOUNT</TableCell>
+                         </TableRow>
+                         <TableRow>
+                           <TableCell sx={{ fontWeight: 'bold', fontSize: '8.5pt', pl: 4 }}>TOTAL LIABILITIES:</TableCell>
+                           <TableCell sx={{ textAlign: 'center', fontSize: '9pt', fontWeight: 'bold' }}>{fComm(totalLiabilities)}</TableCell>
+                         </TableRow>
+                       </TableBody>
+                     </Table>
+                   </TableContainer>
+                   
+                   <TableContainer component={Box} sx={{ mb: 0.5, '& td': { border: '1px solid #777', py: 0.5, px: 1 } }}>
+                     <Table size="small">
+                       <TableBody>
+                         <TableRow sx={{ bgcolor: '#f4f4f4' }}>
+                           <TableCell sx={{ fontWeight: 'bold', fontSize: '8.5pt' }}>Net Amounts Due (Total Assets less Total Liabilities):</TableCell>
+                           <TableCell sx={{ fontWeight: 'bold', fontSize: '8.5pt', width: '100px', textAlign: 'right' }}>Php:</TableCell>
+                           <TableCell sx={{ textAlign: 'center', fontSize: '9.5pt', fontWeight: '900', width: '25%' }}>{fComm(netAmountDue)}</TableCell>
+                         </TableRow>
+                       </TableBody>
+                     </Table>
+                   </TableContainer>
 
-                  <Box sx={{ border: '1px solid #000', p: 0.5, mb: 1 }}>
-                    <Typography sx={{ fontSize: '7pt', fontWeight: 'bold', mb: 0.5 }}>REMARKS:</Typography>
-                    <Grid container spacing={1}>
-                      <Grid item xs={6}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Typography sx={{ fontSize: '7pt', mr: 1 }}>Veriied thru Call:</Typography>
-                          <Box sx={{ bgcolor: '#ffffcc', borderBottom: '1px solid #000', flex: 1, height: 15 }}></Box>
-                        </Box>
-                        <Typography sx={{ fontSize: '6pt', textAlign: 'center', mt: 0.2 }}>Printed Name with ID Number</Typography>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Typography sx={{ fontSize: '7pt', mr: 1 }}>Comments thru Call:</Typography>
-                          <Box sx={{ bgcolor: '#ffffcc', borderBottom: '1px solid #000', flex: 1, height: 15 }}></Box>
-                        </Box>
-                      </Grid>
-                    </Grid>
+                   <Box sx={{ px: 1 }}>
+                     <Typography sx={{ fontSize: '7pt', fontStyle: 'italic', mb: 0.5, lineHeight: 1.1 }}>
+                       We certify the correctness of above calculations and acknowledge the net amount due to the abovementioned staff. Therefore, we recommend for his settlement of accounts.
+                     </Typography>
 
-                    <Grid container sx={{ mt: 1 }}>
-                      <Grid item xs={6}>
-                        <Typography sx={{ fontSize: '7pt', fontWeight: 'bold' }}>Prepared /Checked by</Typography>
-                        <Box sx={{ mt: 2, textAlign: 'center' }}>
-                           <Typography sx={{ fontSize: '8pt', fontWeight: 800, borderBottom: '1px solid #000', display: 'inline-block', px: 2, bgcolor: '#ffffcc' }}>Kyzeel M. Estrella (E-013)</Typography>
-                           <Typography sx={{ fontSize: '6pt' }}>Printed Name with ID Number aboved signature</Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Typography sx={{ fontSize: '7pt', fontWeight: 'bold' }}>Cleared / Approved by</Typography>
-                        <Box sx={{ mt: 2, textAlign: 'center' }}>
-                           <Typography sx={{ fontSize: '8pt', fontWeight: 800, borderBottom: '1px solid #000', display: 'inline-block', px: 2, bgcolor: '#ffffcc' }}>Ma. Lyn Jee Tupas (E-011-22)</Typography>
-                           <Typography sx={{ fontSize: '6pt' }}>Printed Name with ID Number aboved signature</Typography>
-                        </Box>
-                      </Grid>
-                    </Grid>
-                  </Box>
-                </Box>
-              ) : (
-                /* SECTION 2: WITHDRAWAL OF MEMBERSHIP */
-                <Box>
-                  <Box sx={{ bgcolor: '#404040', color: '#fff', border: '1px solid #000', py: 0.2, textAlign: 'center', mb: 0.5 }}>
-                    <Typography sx={{ fontWeight: 800, fontSize: '10pt' }}>WITHDRAWAL OF MEMBERSHIP</Typography>
-                  </Box>
+                     <Typography sx={{ fontSize: '7.5pt', fontWeight: 'bold', mb: 0.2 }}>REMARKS:</Typography>
+                     <Box sx={{ display: 'flex', gap: 4, mb: 1, pr: 2 }}>
+                       <Box sx={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
+                         <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                           <Typography sx={{ fontSize: '7.5pt', mr: 1, whiteSpace: 'nowrap' }}>Verified thru Call:</Typography>
+                           <Box sx={{ bgcolor: '#ffff80', borderBottom: '1px solid #000', flex: 1, height: 16 }}></Box>
+                         </Box>
+                         <Typography sx={{ fontSize: '6.5pt', textAlign: 'center', mt: 0.2 }}>Printed Name with ID Number</Typography>
+                       </Box>
+                       <Box sx={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
+                         <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                           <Typography sx={{ fontSize: '7.5pt', mr: 1, whiteSpace: 'nowrap' }}>Comments thru Call:</Typography>
+                           <Box sx={{ borderBottom: '1px solid #000', flex: 1, height: 16 }}></Box>
+                         </Box>
+                       </Box>
+                     </Box>
+                     
+                     <Grid container spacing={4} sx={{ mt: 1 }}>
+                       <Grid item xs={6}>
+                         <Typography sx={{ fontSize: '7.5pt', fontWeight: 'bold' }}>Prepared /Checked by</Typography>
+                         <Box sx={{ mt: 1, textAlign: 'center' }}>
+                            <Typography sx={{ fontSize: '8pt', fontWeight: 800, borderBottom: '1px solid #000', display: 'inline-block', minWidth: '80%', bgcolor: '#ffff80', minHeight: 15 }}>
+                               Kyzeel M. Estrella (E-013)
+                            </Typography>
+                            <Typography sx={{ fontSize: '6.5pt' }}>Printed Name with ID Number aboved signature</Typography>
+                         </Box>
+                       </Grid>
+                       <Grid item xs={6}>
+                         <Typography sx={{ fontSize: '7.5pt', fontWeight: 'bold' }}>Cleared / Approved by</Typography>
+                         <Box sx={{ mt: 1, textAlign: 'center' }}>
+                            <Typography sx={{ fontSize: '8pt', fontWeight: 800, borderBottom: '1px solid #000', display: 'inline-block', minWidth: '80%', bgcolor: '#ffff80', minHeight: 15 }}>
+                               Ma. Lyn Jee Tupas (E0006)
+                            </Typography>
+                            <Typography sx={{ fontSize: '6.5pt' }}>Printed Name with ID Number aboved signature</Typography>
+                         </Box>
+                       </Grid>
+                     </Grid>
+                   </Box>
+                 </Box>
+              </Box>
 
-                  <Typography sx={{ fontSize: '7.5pt', mb: 0.5, lineHeight: 1.2 }}>
-                    I wish to withdraw my membership with ASA Philippines Employees Credit Cooperative. I am fully aware that by withdrawing my membership from ______________________to _____________________of the current year, I am no longer entitled to dividend/patronage refund.
-                  </Typography>
+              {/* ───────────────────────────────────────────────────────── */}
+              {/* SECTION 2: WITHDRAWAL OF MEMBERSHIP */}
+              {/* ───────────────────────────────────────────────────────── */}
 
-                  <Box sx={{ mb: 1 }}>
-                    <Typography sx={{ fontSize: '7.5pt', fontWeight: 'bold' }}>Reason for Withdrawal: _____________________________________________________________________________________</Typography>
-                    <Typography sx={{ fontSize: '7.5pt', fontWeight: 'bold' }}>Effectivity Date: ___________________________________________________________________________________________</Typography>
-                    <Box sx={{ display: 'flex', gap: 4, mt: 0.5 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Box sx={{ width: 10, height: 10, border: '1px solid #000', mr: 1 }}></Box>
-                        <Typography sx={{ fontSize: '7.5pt' }}>Active Employee</Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Box sx={{ width: 10, height: 10, border: '1px solid #000', mr: 1 }}></Box>
-                        <Typography sx={{ fontSize: '7.5pt' }}>Resigned / Retired from the company/ Discontinued from service of the company</Typography>
-                      </Box>
-                    </Box>
-                  </Box>
+              <Box sx={{ border: '2px solid #555', pb: 0.5 }}>
+                 <Box sx={{ bgcolor: '#c9cacb', borderBottom: '2px solid #555', py: 0.3, textAlign: 'center', mb: 0.5 }}>
+                   <Typography sx={{ fontWeight: 900, fontSize: '11pt', letterSpacing: '0.5px' }}>WITHDRAWAL OF MEMBERSHIP</Typography>
+                 </Box>
 
-                  <Box sx={{ bgcolor: '#d3d3d3', border: '1px solid #000', py: 0.2, textAlign: 'center', mb: 0.5 }}>
-                    <Typography sx={{ fontWeight: 800, fontSize: '8pt' }}>INSTRUCTIONS</Typography>
-                  </Box>
+                 <Box sx={{ px: 1 }}>
+                   <Typography sx={{ fontSize: '7.5pt', mb: 1, lineHeight: 1.2 }}>
+                     I wish to withdraw my membership with ASA Philippines Employees Credit Cooperative. I am fully aware that by withdrawing my membership 
+                     from <span style={{display: 'inline-block', borderBottom: '1px solid #000', width: 120}}></span> to <span style={{display: 'inline-block', borderBottom: '1px solid #000', width: 120}}></span> of the current year, I am no longer entitled to dividend/patronage refund.
+                   </Typography>
 
-                  <Typography sx={{ fontSize: '7pt', fontStyle: 'italic', mb: 0.5 }}>Kindly check your preference.</Typography>
-                  <Box sx={{ px: 1, mb: 1 }}>
-                    <Typography sx={{ fontSize: '7.5pt', fontWeight: 'bold', mb: 0.3 }}>A. For my Savings, Share capital contribution and dividend and patronage refund</Typography>
-                    <Box sx={{ ml: 2, display: 'flex', alignItems: 'center', mb: 0.2 }}>
-                      <Box sx={{ width: 10, height: 10, border: '1px solid #000', mr: 1 }}></Box>
-                      <Typography sx={{ fontSize: '7.5pt' }}>Please credit my Membership withdrawal proceeds to the settlement of account.</Typography>
-                    </Box>
-                    <Box sx={{ ml: 2, display: 'flex', alignItems: 'center', mb: 0.2 }}>
-                      <Box sx={{ width: 10, height: 10, border: '1px solid #000', mr: 1 }}></Box>
-                      <Typography sx={{ fontSize: '7.5pt' }}>Please credit my Membership withdrawal proceeds to my BDO bank account.</Typography>
-                    </Box>
-                    <Box sx={{ ml: 2 }}>
-                      <Typography sx={{ fontSize: '7.5pt' }}>BDO Account no: ________________&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( &nbsp;&nbsp;&nbsp; )&nbsp;&nbsp;Savings Account &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( &nbsp;&nbsp;&nbsp; )&nbsp;&nbsp;Credit Account</Typography>
-                    </Box>
-                  </Box>
+                   <Box sx={{ mb: 1 }}>
+                     <Typography sx={{ fontSize: '7.5pt', fontWeight: 'bold', mb: 0.5 }}>
+                       Reason for Withdrawal: <span style={{display: 'inline-block', borderBottom: '1px solid #000', width: '80%'}}></span>
+                     </Typography>
+                     <Typography sx={{ fontSize: '7.5pt', fontWeight: 'bold', mb: 0.5 }}>
+                       Effectivity Date: <span style={{display: 'inline-block', borderBottom: '1px solid #000', width: '85%'}}></span>
+                     </Typography>
+                     <Box sx={{ display: 'flex', gap: 6, mt: 0.5, pl: 2 }}>
+                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                         <PrintCheckbox /> <Typography sx={{ fontSize: '7.5pt' }}>Active Employee</Typography>
+                       </Box>
+                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                         <PrintCheckbox /> <Typography sx={{ fontSize: '7.5pt' }}>Resigned / Retired from the company/ Discontinued from service of the company</Typography>
+                       </Box>
+                     </Box>
+                   </Box>
 
-                  <Box sx={{ px: 2 }}>
-                    <Typography sx={{ fontSize: '7.5pt', fontWeight: 'bold', mb: 0.5 }}>C. Accounts in the cooperative</Typography>
-                    <TableContainer component={Box}>
-                      <Table size="small" sx={{ border: '1px solid #000', tableLayout: 'fixed' }}>
-                        <TableHead>
-                          <TableRow sx={{ bgcolor: '#d3d3d3' }}>
-                            <TableCell sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '8pt', textAlign: 'center' }}>BREAKDOWN</TableCell>
-                            <TableCell sx={{ border: '1px solid #000', fontWeight: 'bold', fontSize: '8pt', textAlign: 'center', width: '150px' }}>AMOUNT (PHP)</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {[
-                            ['SHARE CAPITAL', fComm(selectedMember?.shareCapital)],
-                            ['PATRONAGE REFUND', fComm(selectedMember?.patronageRefund)],
-                            ['SAVINGS WITH INTEREST', fComm(selectedMember?.savingsWithInterest)],
-                            ['DIVIDEND', fComm(selectedMember?.dividend)],
-                            ['VOLUNTARY SAVINGS', fComm(selectedMember?.voluntarySavings)],
-                            ['Rebates Salary Loan (Valid until April 2026)', fComm(0)],
-                            ['Rebates Housing Loan (Valid until March 2026)', fComm(25000)],
-                          ].map(([label, val], i) => (
-                            <TableRow key={i} sx={{ bgcolor: i % 2 === 0 ? '#ffffcc' : '#fff' }}>
-                              <TableCell sx={{ border: '1px solid #000', fontSize: '8pt', fontWeight: 'bold' }}>{label}</TableCell>
-                              <TableCell sx={{ border: '1px solid #000', fontSize: '8pt', textAlign: 'center' }}>{val}</TableCell>
-                            </TableRow>
-                          ))}
-                          <TableRow sx={{ bgcolor: '#fff' }}>
-                            <TableCell sx={{ border: '1px solid #000', fontSize: '8pt', fontWeight: '900', color: 'red' }}>TOTAL</TableCell>
-                            <TableCell sx={{ border: '1px solid #000', fontSize: '8pt', textAlign: 'center', fontWeight: '900' }}>{fComm(selectedMember?.total)}</TableCell>
-                          </TableRow>
-                          {[
-                            ['LESS: SHORT TERM LOAN', fComm(selectedMember?.stlLoan)],
-                            ['LESS: SALARY LOAN BALANCE', fComm(selectedMember?.salaryLoan)],
-                            ['LESS: MOTORCYCLE LOAN BALANCE', fComm(selectedMember?.motorcycleLoan)],
-                            ['LESS: HOUSING LOAN BALANCE', fComm(selectedMember?.housingLoan)],
-                            ['LESS: CAR LOAN BALANCE', fComm(selectedMember?.carLoan)],
-                            ['LESS: EDUCATION LOAN BALANCE', fComm(selectedMember?.educationalLoan)],
-                            ['LESS: GADGET LOAN BALANCE', fComm(selectedMember?.gadgetLoan)],
-                            ['LESS: MALASAKIT LOAN BALANCE', fComm(selectedMember?.malasakitLoan)],
-                          ].map(([label, val], i) => (
-                            <TableRow key={i} sx={{ bgcolor: '#ffffcc' }}>
-                              <TableCell sx={{ border: '1px solid #000', fontSize: '8pt', fontStyle: 'italic' }}>{label}</TableCell>
-                              <TableCell sx={{ border: '1px solid #000', fontSize: '8pt', textAlign: 'center' }}>{val}</TableCell>
-                            </TableRow>
-                          ))}
-                          <TableRow sx={{ bgcolor: '#fff' }}>
-                            <TableCell sx={{ border: '1px solid #000', fontSize: '9pt', fontWeight: '900', color: 'red' }}>GRAND TOTAL</TableCell>
-                            <TableCell sx={{ border: '1px solid #000', fontSize: '9pt', textAlign: 'center', fontWeight: '900' }}>{fComm(selectedMember?.grandTotal)}</TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </Box>
+                   <Box sx={{ bgcolor: '#c9cacb', border: '1px solid #555', py: 0.2, textAlign: 'center', mb: 0.5 }}>
+                     <Typography sx={{ fontWeight: 800, fontSize: '8pt' }}>INSTRUCTIONS</Typography>
+                   </Box>
 
-                  <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', px: 2 }}>
+                   <Grid container spacing={1}>
+                     {/* Left Column: Instructions A & B */}
+                     <Grid item xs={6} sx={{ pr: 1 }}>
+                       <Typography sx={{ fontSize: '7pt', fontStyle: 'italic', mb: 0.5 }}>Kindly check your preference.</Typography>
+                       
+                       <Box sx={{ mb: 1 }}>
+                         <Typography sx={{ fontSize: '7.5pt', fontWeight: 'bold', mb: 0.5 }}>A. For my Savings, Share capital contribution and dividend and patronage refund</Typography>
+                         
+                         <Box sx={{ ml: 2, display: 'flex', alignItems: 'flex-start', mb: 0.5 }}>
+                           <PrintCheckbox /> <Typography sx={{ fontSize: '7.5pt', lineHeight: 1.2 }}>Please credit my Membership withdrawal proceeds to the settlement of account.</Typography>
+                         </Box>
+                         <Box sx={{ ml: 2, display: 'flex', alignItems: 'flex-start', mb: 0.5 }}>
+                           <PrintCheckbox /> <Typography sx={{ fontSize: '7.5pt', lineHeight: 1.2 }}>Please credit my Membership withdrawal proceeds to my BDO bank account.</Typography>
+                         </Box>
+                         
+                         <Typography sx={{ fontSize: '7.5pt', fontWeight: 'bold', ml: 2, mt: 0.5, mb: 0.5 }}>
+                           BDO Account no: <span style={{display: 'inline-block', borderBottom: '1px solid #000', width: 120}}></span>
+                           &nbsp;&nbsp;&nbsp; ( &nbsp;&nbsp; ) Savings Account &nbsp;&nbsp;&nbsp; ( &nbsp;&nbsp; ) Credit Account
+                         </Typography>
+
+                         <Box sx={{ ml: 2, display: 'flex', alignItems: 'flex-start', mb: 0.5 }}>
+                           <PrintCheckbox /> <Typography sx={{ fontSize: '7.5pt', lineHeight: 1.2 }}>Check for pick-up at the ASA Philippines Employees Credit Cooperative office <br/> <i>(Pls. bring any valid I.D upon claiming the Check)</i></Typography>
+                         </Box>
+                         <Box sx={{ ml: 2, display: 'flex', alignItems: 'flex-start', mb: 0.5 }}>
+                           <PrintCheckbox /> <Typography sx={{ fontSize: '7.5pt', lineHeight: 1.2 }}>Check for pick-up at the Coop's office by my authorized representative. <br/> <i>(Attached is a written authorization. My identification card and that of my reprented upon claiming my check).</i></Typography>
+                         </Box>
+                       </Box>
+
+                       <Box sx={{ mb: 2 }}>
+                         <Typography sx={{ fontSize: '7.5pt', fontWeight: 'bold', mb: 0.5 }}>B. Requirements</Typography>
+                         <Typography sx={{ fontSize: '7.5pt', ml: 2, mb: 0.3 }}>1. Photocopy of member's valid ID with signature</Typography>
+                         <Typography sx={{ fontSize: '7.5pt', ml: 2, mb: 0.3 }}>2. stock Certificate (Applicable to members who received a stock certificate)</Typography>
+                       </Box>
+
+                     </Grid>
+
+                     {/* Right Column: Accounts Table */}
+                     <Grid item xs={6}>
+                       <Typography sx={{ fontSize: '7.5pt', fontWeight: 'bold', mb: 0.3 }}>C. Accounts in the cooperative</Typography>
+                       <TableContainer component={Box}>
+                         <Table size="small" sx={{ border: '1px solid #555', tableLayout: 'fixed', '& td, & th': { p: '2px 4px', border: '1px solid #777' } }}>
+                           <TableHead>
+                             <TableRow sx={{ bgcolor: '#e6e6e6' }}>
+                               <TableCell sx={{ fontWeight: 'bold', fontSize: '7.5pt', textAlign: 'center' }}>BREAKDOWN</TableCell>
+                               <TableCell sx={{ fontWeight: 'bold', fontSize: '7.5pt', textAlign: 'center', width: '35%' }}>AMOUNT (PHP)</TableCell>
+                             </TableRow>
+                           </TableHead>
+                           <TableBody>
+                             {[
+                               ['SHARE CAPITAL', fComm(selectedMember?.shareCapital)],
+                               ['PATRONAGE REFUND', fComm(selectedMember?.patronageRefund)],
+                               ['SAVINGS WITH INTEREST', fComm(selectedMember?.savingsWithInterest)],
+                               ['DIVIDEND', fComm(selectedMember?.dividend)],
+                               ['VOLUNTARY SAVINGS', fComm(selectedMember?.voluntarySavings)],
+                               ['Rebates Salary Loan (Valid until April. 2026)', fComm(0)],
+                               ['RebatesHousing Loan (Valid until March. 2026)', fComm(selectedMember?.rebates || selectedMember?.rebates2 || 25000)],
+                             ].map(([label, val], i) => (
+                               <TableRow key={i} sx={{ bgcolor: i % 2 === 0 ? '#ffff80' : '#fff' }}>
+                                 <TableCell sx={{ fontSize: '7pt', fontWeight: 'bold' }}>{label}</TableCell>
+                                 <TableCell sx={{ fontSize: '7.5pt', textAlign: 'center' }}>{val}</TableCell>
+                               </TableRow>
+                             ))}
+                             <TableRow sx={{ bgcolor: '#fff' }}>
+                               <TableCell sx={{ fontSize: '7.5pt', fontWeight: '900', color: '#c00' }}>TOTAL</TableCell>
+                               <TableCell sx={{ fontSize: '8pt', textAlign: 'center', fontWeight: '900' }}>{fComm(totalAssets)}</TableCell>
+                             </TableRow>
+                             {[
+                               ['LESS: SHORT TERM LOAN', fComm(selectedMember?.stlLoan)],
+                               ['LESS: SALARY LOAN BALANCE', fComm(selectedMember?.salaryLoan)],
+                               ['LESS: MOTORCYCLE LOAN BALANCE', fComm(selectedMember?.motorcycleLoan)],
+                               ['LESS: HOUSING LOAN BALANCE', fComm(selectedMember?.housingLoan)],
+                               ['LESS: CAR LOAN BALANCE', fComm(selectedMember?.carLoan)],
+                               ['LESS: EDUCATION LOAN BALANCE', fComm(selectedMember?.educationalLoan)],
+                               ['LESS: GADGET LOAN BALANCE', fComm(selectedMember?.gadgetLoan)],
+                               ['LESS: MALASAKIT LOAN BALANCE', fComm(selectedMember?.malasakitLoan)],
+                             ].map(([label, val], i) => (
+                               <TableRow key={i} sx={{ bgcolor: '#ffff80' }}>
+                                 <TableCell sx={{ fontSize: '7pt', fontStyle: 'italic' }}>{label}</TableCell>
+                                 <TableCell sx={{ fontSize: '7.5pt', textAlign: 'center' }}>{val}</TableCell>
+                               </TableRow>
+                             ))}
+                             <TableRow sx={{ bgcolor: '#fff' }}>
+                               <TableCell sx={{ fontSize: '8pt', fontWeight: '900', color: '#c00' }}>GRAND TOTAL</TableCell>
+                               <TableCell sx={{ fontSize: '8pt', textAlign: 'center', fontWeight: '900' }}>{fComm(netAmountDue)}</TableCell>
+                             </TableRow>
+                           </TableBody>
+                         </Table>
+                       </TableContainer>
+                     </Grid>
+                   </Grid>
+                 </Box>
+
+                 <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', px: 2 }}>
                     <Box sx={{ textAlign: 'center', width: '30%' }}>
-                      <Typography sx={{ borderBottom: '1px solid #000', fontSize: '8pt', minHeight: 15, bgcolor: '#ffffcc', fontWeight: 'bold' }}>{selectedMember?.name || '#N/A'}</Typography>
-                      <Typography sx={{ fontSize: '7pt' }}>Signature over Printed Name</Typography>
-                    </Box>
-                    <Box sx={{ textAlign: 'center', width: '20%' }}>
-                      <Typography sx={{ borderBottom: '1px solid #000', fontSize: '8pt', minHeight: 15, bgcolor: '#ffffcc', fontWeight: 'bold' }}>{selectedMember?.idNo || ''}</Typography>
-                      <Typography sx={{ fontSize: '7pt' }}>Staff ID No.</Typography>
+                      <Typography sx={{ fontSize: '8pt', minHeight: 15, bgcolor: '#ffff80', fontWeight: 'bold' }}>{selectedMember?.name || ''}</Typography>
+                      <Box sx={{ borderTop: '1px solid #000', pt: 0.5 }}>
+                        <Typography sx={{ fontSize: '7pt' }}>Signature over Printed Name</Typography>
+                      </Box>
                     </Box>
                     <Box sx={{ textAlign: 'center', width: '25%' }}>
-                      <Typography sx={{ borderBottom: '1px solid #000', fontSize: '8pt', minHeight: 15, bgcolor: '#ffffcc', fontWeight: 'bold' }}>March 05, 2026</Typography>
-                      <Typography sx={{ fontSize: '7pt' }}>Date</Typography>
+                      <Typography sx={{ fontSize: '8pt', minHeight: 15, bgcolor: '#ffff80', fontWeight: 'bold' }}>{selectedMember?.idNo || ''}</Typography>
+                      <Box sx={{ borderTop: '1px solid #000', pt: 0.5 }}>
+                        <Typography sx={{ fontSize: '7pt' }}>Staff ID No.</Typography>
+                      </Box>
                     </Box>
-                  </Box>
-
-                  <Box sx={{ border: '1px solid #000', mt: 1 }}>
-                    <Box sx={{ bgcolor: '#d3d3d3', borderBottom: '1px solid #000', textAlign: 'center', py: 0.2 }}>
-                       <Typography sx={{ fontWeight: 800, fontSize: '8pt' }}>THIS PORTION WILL BE FILLED OUT BY APECC SECRETARY / AUTHORIZED PERSON</Typography>
+                    <Box sx={{ textAlign: 'center', width: '25%' }}>
+                      <Typography sx={{ fontSize: '8pt', minHeight: 15, bgcolor: '#ffff80', fontWeight: 'bold' }}>March 05, 2026</Typography>
+                      <Box sx={{ borderTop: '1px solid #000', pt: 0.5 }}>
+                        <Typography sx={{ fontSize: '7pt' }}>Date</Typography>
+                      </Box>
                     </Box>
-                    <Table size="small">
-                      <TableBody>
-                        <TableRow>
-                          <TableCell sx={{ border: '1px solid #000', fontSize: '7.5pt', width: '25%' }}>Membership Account</TableCell>
-                          <TableCell sx={{ border: '1px solid #000', width: '25%' }}></TableCell>
-                          <TableCell sx={{ border: '1px solid #000', width: '50%' }}></TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell sx={{ border: '1px solid #000', fontSize: '7.5pt' }}>Board Resolution No</TableCell>
-                          <TableCell sx={{ border: '1px solid #000' }}></TableCell>
-                          <TableCell sx={{ border: '1px solid #000' }}></TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell sx={{ border: '1px solid #000', fontSize: '7.5pt', textAlign: 'center' }}>Secretary</TableCell>
-                          <TableCell colSpan={2} sx={{ border: '1px solid #000', fontSize: '7.5pt', textAlign: 'center' }}>signature over printed name</TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </Box>
-                </Box>
-              )}
+                 </Box>
 
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
-                  <Typography sx={{ fontSize: '6pt' }}>APECCVersion032022M</Typography>
+                 <Box sx={{ border: '2px solid #555', mt: 1, mx: 0.5, mb: 0.5 }}>
+                   <Box sx={{ bgcolor: '#c9cacb', borderBottom: '1px solid #555', textAlign: 'center', py: 0.2 }}>
+                      <Typography sx={{ fontWeight: 800, fontSize: '8pt' }}>THIS PORTION WILL BE FILLED OUT BY APECC SECRETARY / AUTHORIZED PERSON</Typography>
+                   </Box>
+                   <Table size="small" sx={{ '& td': { p: '4px 8px', border: '1px solid #777' } }}>
+                     <TableBody>
+                       <TableRow>
+                         <TableCell sx={{ fontSize: '7.5pt', width: '30%' }}>Membership Account</TableCell>
+                         <TableCell sx={{ width: '30%' }}></TableCell>
+                         <TableCell sx={{ width: '40%' }}></TableCell>
+                       </TableRow>
+                       <TableRow>
+                         <TableCell sx={{ fontSize: '7.5pt' }}>Board Resolution No</TableCell>
+                         <TableCell></TableCell>
+                         <TableCell></TableCell>
+                       </TableRow>
+                       <TableRow>
+                         <TableCell sx={{ fontSize: '7.5pt', textAlign: 'center' }}>Secretary</TableCell>
+                         <TableCell colSpan={2} sx={{ fontSize: '7.5pt', textAlign: 'center' }}>signature over printed name</TableCell>
+                       </TableRow>
+                     </TableBody>
+                   </Table>
+                 </Box>
+
               </Box>
+
             </Box>
          </Card>
       </Paper>

@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   Box, Card, CardContent, Typography, Grid, TextField, MenuItem,
-  Button, Divider, Chip, Avatar, Autocomplete, Checkbox, FormControlLabel, InputAdornment, createFilterOptions
+  Button, Divider, Chip, Avatar, Autocomplete, Checkbox, FormControlLabel, InputAdornment, createFilterOptions,
+  Dialog
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 const goldAccent = '#d4a843';
-import { Save as SaveIcon, CloudUpload as UploadIcon, Search as SearchIcon } from '@mui/icons-material';
-import { employees } from '../../data/mockData';
+import { 
+  Save as SaveIcon, 
+  CloudUpload as UploadIcon, 
+  Search as SearchIcon,
+  CheckCircle as ApproveIcon 
+} from '@mui/icons-material';
+import { employees, onboardingRecords } from '../../data/mockData';
 
 const addressHierarchy = {
   // Dagupan
@@ -28,9 +35,13 @@ const addressHierarchy = {
 const barangays = Object.keys(addressHierarchy).sort();
 
 export default function PersonalInfo() {
+  const navigate = useNavigate();
   const [selectedEmp, setSelectedEmp] = useState(0);
   const [personalData, setPersonalData] = useState(employees[0].personal);
   const [extractedIds, setExtractedIds] = useState({});
+  const [resignationOpen, setResignationOpen] = useState(false);
+  const [resignationData, setResignationData] = useState({ date: '', reason: '', remarks: '' });
+  const [successModal, setSuccessModal] = useState(false);
 
   useEffect(() => {
     setPersonalData(employees[selectedEmp].personal);
@@ -52,6 +63,35 @@ export default function PersonalInfo() {
       ...prev,
       [key]: idMap[key]
     }));
+  };
+
+  const handleSubmitResignation = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const newId = `RES-${String(onboardingRecords.length + 1).padStart(3, '0')}`;
+    const emp = employees[selectedEmp];
+    
+    onboardingRecords.push({
+      id: newId,
+      type: 'Resignation',
+      submittedDate: today,
+      submittedBy: 'System',
+      status: 'Pending HR Officer',
+      employeeData: {
+        ...emp,
+        resignationDetails: resignationData
+      },
+      approvalChain: [
+        { role: 'Employee Action', name: `${emp.firstName} ${emp.lastName}`, status: 'Submitted', date: today, remarks: resignationData.remarks },
+        { role: 'HR Officer', name: '', status: 'Pending', date: '', remarks: '' },
+        { role: 'Unit Manager', name: '', status: 'Pending', date: '', remarks: '' },
+        { role: 'Asst. General Manager', name: '', status: 'Pending', date: '', remarks: '' },
+        { role: 'General Manager', name: '', status: 'Pending', date: '', remarks: '' },
+      ]
+    });
+    
+    setResignationOpen(false);
+    setResignationData({ date: '', reason: '', remarks: '' });
+    setSuccessModal(true);
   };
 
   const filterOptions = createFilterOptions({
@@ -124,12 +164,12 @@ export default function PersonalInfo() {
           sx={{
             '& .MuiOutlinedInput-root': {
               borderRadius: 3,
-              bgcolor: '#fff',
+              bgcolor: '#FDFDFC',
               boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
               transition: 'all 0.3s ease',
               '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' },
               '&:hover fieldset': { borderColor: goldAccent },
-              '&.Mui-focused fieldset': { borderColor: '#023DFB', boxShadow: '0 4px 20px rgba(2,61,251,0.15)' }
+              '&.Mui-focused fieldset': { borderColor: '#0241FB', boxShadow: '0 4px 20px rgba(2,61,251,0.15)' }
             }
           }}
           renderInput={(params) => (
@@ -164,14 +204,14 @@ export default function PersonalInfo() {
         boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
       }}>
         <CardContent sx={{ py: 2, '&:last-child': { pb: 2 }, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar sx={{ bgcolor: '#023DFB', width: 45, height: 45, fontWeight: 700 }}>
+          <Avatar sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)', width: 45, height: 45, fontWeight: 700 }}>
             {employees[selectedEmp].firstName[0]}
           </Avatar>
           <Box>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
               Currently Viewing
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: '#023DFB', lineHeight: 1.2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: '#0241FB', lineHeight: 1.2 }}>
               {employees[selectedEmp].firstName} {employees[selectedEmp].lastName}
             </Typography>
           </Box>
@@ -186,8 +226,8 @@ export default function PersonalInfo() {
       }}>
         <CardContent sx={{ p: 4 }}>
           <Typography variant="h6" sx={{
-            fontWeight: 700, fontSize: '1.1rem', color: '#023DFB', mb: 3,
-            background: 'linear-gradient(135deg, #023DFB, #4a75e6)',
+            fontWeight: 700, fontSize: '1.1rem', color: '#0241FB', mb: 3,
+            background: 'linear-gradient(135deg, #0241FB, #4470ED)',
             backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>
             Basic Information
@@ -239,7 +279,7 @@ export default function PersonalInfo() {
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <TextField fullWidth size="small" label="Blood Type" select name="bloodType" value={personalData.bloodType || ''} onChange={handleChange}>
+              <TextField fullWidth sx={{ minWidth: 110, '& .MuiInputLabel-root': { maxWidth: 'calc(100% - 24px)' } }} size="small" label="Blood Type" select name="bloodType" value={personalData.bloodType || ''} onChange={handleChange}>
                 {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((bt) => <MenuItem key={bt} value={bt}>{bt}</MenuItem>)}
               </TextField>
             </Grid>
@@ -247,7 +287,7 @@ export default function PersonalInfo() {
 
           <Divider sx={{ my: 3 }} />
 
-          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#023DFB', mb: 2.5 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#0241FB', mb: 2.5 }}>
             Present Address
           </Typography>
           <Grid container spacing={2.5}>
@@ -263,7 +303,13 @@ export default function PersonalInfo() {
                   handleChange({ target: { name: 'presentBarangay', value: newValue || '' } });
                 }}
                 renderInput={(params) => (
-                  <TextField {...params} label="Barangay" name="presentBarangay" />
+                  <TextField {...params} label="Barangay" name="presentBarangay" 
+                   sx={{
+          minWidth: 110,
+          '& .MuiInputLabel-root': {
+            maxWidth: 'calc(100% - 24px)'
+          }
+        }}/>
                 )}
               />
             </Grid>
@@ -277,18 +323,18 @@ export default function PersonalInfo() {
               <TextField fullWidth size="small" label="Zipcode" name="presentZipcode" value={personalData.presentZipcode || ''} InputProps={{ readOnly: true }} />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField fullWidth size="small" select label="Tenureship" name="tenureship" value={personalData.tenureship || ''} onChange={handleChange}>
+              <TextField fullWidth sx={{ minWidth: 110, '& .MuiInputLabel-root': { maxWidth: 'calc(100% - 24px)' } }}  size="small" select label="Tenureship" name="tenureship" value={personalData.tenureship || ''} onChange={handleChange}>
                 {['Owner', 'Renter/Tenant', 'Living with relatives', 'Mortgaged'].map(t => <MenuItem key={t} value={t}>{t}</MenuItem>)}
               </TextField>
             </Grid>
           </Grid>
 
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 4, mb: 2.5 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#023DFB' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#0241FB' }}>
               Permanent Address
             </Typography>
             <FormControlLabel 
-              control={<Checkbox checked={personalData.sameAsPresent || false} onChange={handleCheckboxChange} sx={{ color: '#023DFB', '&.Mui-checked': { color: '#023DFB' } }} />} 
+              control={<Checkbox checked={personalData.sameAsPresent || false} onChange={handleCheckboxChange} sx={{ color: '#0241FB', '&.Mui-checked': { color: '#0241FB' } }} />} 
               label={<Typography variant="body2" sx={{ fontWeight: 600 }}>Same as Present Address</Typography>} 
             />
           </Box>
@@ -306,7 +352,8 @@ export default function PersonalInfo() {
                 }}
                 disabled={personalData.sameAsPresent}
                 renderInput={(params) => (
-                  <TextField {...params} label="Barangay" name="permanentBarangay" />
+                  <TextField {...params} label="Barangay" name="permanentBarangay"
+                  sx={{ minWidth: 110, '& .MuiInputLabel-root': { maxWidth: 'calc(100% - 24px)' } }}  />
                 )}
               />
             </Grid>
@@ -322,7 +369,7 @@ export default function PersonalInfo() {
           </Grid>
           
           <Divider sx={{ my: 3 }} />
-          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#023DFB', mb: 2.5 }}>Contact Information</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#0241FB', mb: 2.5 }}>Contact Information</Typography>
           <Grid container spacing={2.5}>
             {personalData.contactNumbers?.map((cn, i) => {
               const displayVal = cn ? cn.replace(/[^0-9]/g, '').slice(-9) : '';
@@ -358,11 +405,13 @@ export default function PersonalInfo() {
             ))}
           </Grid>
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 1.5 }}>
-            <Button variant="outlined" sx={{ borderColor: 'rgba(0,0,0,0.15)' }}>Cancel</Button>
-            <Button variant="contained" startIcon={<SaveIcon />} sx={{ background: 'linear-gradient(135deg, #023DFB 0%, #1a3a6b 100%)' }}>
-              Save Changes
-            </Button>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', gap: 1.5 }}>
+              <Button variant="outlined" sx={{ borderColor: 'rgba(0,0,0,0.15)' }}>Cancel</Button>
+              <Button variant="contained" startIcon={<SaveIcon />} sx={{ background: 'linear-gradient(135deg, #05077E 0%, #05077E 100%)' }}>
+                Save Changes
+              </Button>
+            </Box>
           </Box>
         </CardContent>
       </Card>
@@ -374,7 +423,7 @@ export default function PersonalInfo() {
         boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
       }}>
         <CardContent sx={{ p: 4 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#023DFB', mb: 2.5 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#0241FB', mb: 2.5 }}>
             Requirements Document Upload
           </Typography>
           <Grid container spacing={3}>
@@ -424,7 +473,7 @@ export default function PersonalInfo() {
                       <Typography variant="caption" sx={{ color: '#2e7d32', fontWeight: 600, display: 'block' }}>
                         ID Extracted:
                       </Typography>
-                      <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 700, color: '#023DFB' }}>
+                      <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 700, color: '#0241FB' }}>
                         {extractedIds[item.key]}
                       </Typography>
                     </Box>
@@ -439,6 +488,98 @@ export default function PersonalInfo() {
           </Grid>
         </CardContent>
       </Card>
+
+      {/* Resignation Application Modal */}
+      <Dialog open={resignationOpen} onClose={() => setResignationOpen(false)} maxWidth="sm" fullWidth>
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: '#d32f2f', mb: 1 }}>Submit Resignation</Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
+            You are initiating a formal exit process for <strong>{employees[selectedEmp]?.firstName} {employees[selectedEmp]?.lastName}</strong>. Once submitted, it will be directed to the Exit Approval Queue.
+          </Typography>
+          
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField 
+                fullWidth label="Intended Last Day of Work" type="date" 
+                InputLabelProps={{ shrink: true }} 
+                value={resignationData.date}
+                onChange={(e) => setResignationData({...resignationData, date: e.target.value})}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField 
+                fullWidth select label="Reason for Leaving" 
+                value={resignationData.reason}
+                onChange={(e) => setResignationData({...resignationData, reason: e.target.value})}
+              >
+                {['Career Growth', 'Personal Reasons', 'Relocation', 'Health Reasons', 'Retirement', 'Termination'].map(r => (
+                  <MenuItem key={r} value={r}>{r}</MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField 
+                fullWidth multiline rows={3} label="Additional Remarks/Notice" 
+                placeholder="Include details regarding turnover or specific clearance notes."
+                value={resignationData.remarks}
+                onChange={(e) => setResignationData({...resignationData, remarks: e.target.value})}
+              />
+            </Grid>
+          </Grid>
+          
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
+            <Button onClick={() => setResignationOpen(false)} color="inherit" sx={{ fontWeight: 600 }}>Cancel</Button>
+            <Button 
+              onClick={handleSubmitResignation} 
+              variant="contained" color="error" 
+              disabled={!resignationData.date || !resignationData.reason}
+              sx={{ fontWeight: 700 }}
+            >
+              Confirm Resignation
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
+
+      {/* Submission Success Modal (Payroll Style) */}
+      <Dialog 
+        open={successModal} 
+        onClose={() => setSuccessModal(false)} 
+        maxWidth="xs" 
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, p: 3, textAlign: 'center' } }}
+      >
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
+          <Avatar sx={{ width: 80, height: 80, bgcolor: 'rgba(46, 125, 50, 0.1)', color: '#2e7d32' }}>
+            <ApproveIcon sx={{ fontSize: 50 }} />
+          </Avatar>
+        </Box>
+        <Typography variant="h5" sx={{ fontWeight: 800, color: '#2e7d32', mb: 2 }}>
+          Submission Successful
+        </Typography>
+        <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4, px: 2, lineHeight: 1.6 }}>
+          Resignation application and Exit Interview forwarded to HR for review.
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+          <Button 
+            variant="outlined" 
+            onClick={() => setSuccessModal(false)}
+            sx={{ fontWeight: 700, borderRadius: 2, borderColor: 'rgba(0,0,0,0.15)', color: 'text.secondary', px: 3 }}
+          >
+            Close
+          </Button>
+          <Button 
+            variant="contained" 
+            onClick={() => {
+              setSuccessModal(false);
+              navigate('/hr/onboarding/approvals?type=Resignation');
+            }}
+            sx={{ fontWeight: 700, borderRadius: 2, px: 3, background: 'linear-gradient(135deg, #05077E, #0241FB)' }}
+          >
+            View Queue
+          </Button>
+        </Box>
+      </Dialog>
     </Box>
   );
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   Dialog, DialogContent, Box, Typography, Grid, Divider, Table, 
   TableBody, TableCell, TableContainer, TableHead, TableRow, 
@@ -11,7 +11,7 @@ import {
 } from '@mui/icons-material';
 import { employees } from '../../data/mockData';
 
-const logoBlue = '#023DFB';
+const logoBlue = '#0241FB';
 
 export default function StaffClearanceForm({ open, onClose, clearance }) {
   const emp = employees.find(e => e.id === clearance.employeeId);
@@ -85,7 +85,7 @@ export default function StaffClearanceForm({ open, onClose, clearance }) {
     <Dialog open={open} onClose={onClose} fullScreen>
       <DialogContent sx={{ bgcolor: '#f5f5f5', p: { xs: 2, md: 4 } }}>
         <Paper sx={{ 
-          maxWidth: 900, mx: 'auto', p: 5, pb: 10, bgcolor: '#fff', 
+          maxWidth: 900, mx: 'auto', p: 5, pb: 10, bgcolor: '#FDFDFC', 
           boxShadow: '0 0 40px rgba(0,0,0,0.1)', position: 'relative',
           minHeight: '100%'
         }}>
@@ -109,7 +109,7 @@ export default function StaffClearanceForm({ open, onClose, clearance }) {
              </Typography>
           </Box>
 
-          <Box sx={{ bgcolor: '#000', color: '#fff', textAlign: 'center', py: 1, mb: 2 }}>
+          <Box sx={{ bgcolor: '#000', color: '#FDFDFC', textAlign: 'center', py: 1, mb: 2 }}>
              <Typography sx={{ fontWeight: 950, letterSpacing: 2 }}>EMPLOYEE CLEARANCE FORM</Typography>
           </Box>
 

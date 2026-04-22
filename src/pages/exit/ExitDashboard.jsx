@@ -12,16 +12,20 @@ import {
 import { exitMembers } from '../../data/mockData';
 
 const goldAccent = '#d4a843';
+const NAV = '#05077E';
+const IND = '#0241FB';
+const ROY = '#4470ED';
+const PER = '#B4B7D3';
 const formatCurrency = (val) => `₱${val.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
 
 const summaryCards = [
-  { key: 'savings', label: 'Total Savings', icon: <SavingsIcon />, gradient: 'linear-gradient(135deg, #023DFB 0%, #1a3a6b 50%, #2156a5 100%)', borderColor: '#1a3a6b' },
-  { key: 'voluntary', label: 'Total Voluntary', icon: <VoluntaryIcon />, gradient: 'linear-gradient(135deg, #1a3a6b 0%, #2156a5 50%, #2979cc 100%)', borderColor: '#2156a5' },
-  { key: 'shareCapital', label: 'Share Capital', icon: <CapitalIcon />, gradient: 'linear-gradient(135deg, #023DFB 0%, #2156a5 100%)', borderColor: '#023DFB' },
-  { key: 'patronageRefund', label: 'Patronage Refund', icon: <RefundIcon />, gradient: `linear-gradient(135deg, #b08930 0%, ${goldAccent} 50%, #e8c96a 100%)`, borderColor: goldAccent },
-  { key: 'savingsInterest', label: 'Savings Interest', icon: <InterestIcon />, gradient: 'linear-gradient(135deg, #2156a5 0%, #2979cc 100%)', borderColor: '#2156a5' },
-  { key: 'dividend', label: 'Dividend', icon: <DividendIcon />, gradient: 'linear-gradient(135deg, #8b1a1a 0%, #c0392b 50%, #e74c3c 100%)', borderColor: '#c0392b' },
-  { key: 'rebates', label: 'Rebates', icon: <RebatesIcon />, gradient: `linear-gradient(135deg, ${goldAccent} 0%, #e8c96a 100%)`, borderColor: goldAccent },
+  { key: 'savings', label: 'Total Savings', icon: <SavingsIcon />, gradient: `linear-gradient(135deg, ${NAV} 0%, ${IND} 55%, ${ROY} 100%)` },
+  { key: 'voluntary', label: 'Total Voluntary', icon: <VoluntaryIcon />, gradient: `linear-gradient(135deg, ${NAV} 0%, #1a2cb0 50%, ${IND} 100%)` },
+  { key: 'shareCapital', label: 'Share Capital', icon: <CapitalIcon />, gradient: `linear-gradient(135deg, ${NAV} 0%, ${IND} 100%)` },
+  { key: 'patronageRefund', label: 'Patronage Refund', icon: <RefundIcon />, gradient: `linear-gradient(135deg, #b08930 0%, ${goldAccent} 50%, #e8c96a 100%)` },
+  { key: 'savingsInterest', label: 'Savings Interest', icon: <InterestIcon />, gradient: `linear-gradient(135deg, ${IND} 0%, ${ROY} 100%)` },
+  { key: 'dividend', label: 'Dividend', icon: <DividendIcon />, gradient: 'linear-gradient(135deg, #8b1a1a 0%, #c0392b 50%, #e74c3c 100%)' },
+  { key: 'rebates', label: 'Rebates', icon: <RebatesIcon />, gradient: `linear-gradient(135deg, ${goldAccent} 0%, #e8c96a 100%)` },
 ];
 
 
@@ -38,9 +42,9 @@ export default function ExitDashboard() {
       {/* Grand Total */}
       <Card sx={{
         borderRadius: 4, mb: 4,
-        background: 'linear-gradient(135deg, #0120a1 0%, #0d2137 50%, #122a4f 100%)',
-        color: '#fff',
-        boxShadow: '0 10px 30px rgba(10, 22, 40, 0.25)',
+        background: `linear-gradient(135deg, ${NAV} 0%, #0a1250 50%, #0e1d6a 100%)`,
+        color: '#FDFDFC',
+        boxShadow: '0 10px 30px rgba(5,7,126,0.30)',
         position: 'relative',
         overflow: 'hidden',
         '&::before': {
@@ -52,13 +56,13 @@ export default function ExitDashboard() {
       }}>
         <CardContent sx={{ p: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 1, '&:last-child': { pb: 4 } }}>
           <Box>
-            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 600, fontSize: '0.85rem', mb: 1, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            <Typography variant="body2" sx={{ color: 'rgba(253,253,252,0.72)', fontWeight: 600, fontSize: '0.85rem', mb: 1, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
               Total Settlement Amount
             </Typography>
             <Typography variant="h3" sx={{ fontWeight: 800, color: goldAccent, letterSpacing: '-0.02em', textShadow: '0 2px 10px rgba(212,168,67,0.3)' }}>
               {formatCurrency(grandTotal)}
             </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)', mt: 1 }}>
+            <Typography variant="body2" sx={{ color: 'rgba(253,253,252,0.5)', mt: 1 }}>
               Across <strong>{exitMembers.length}</strong> exiting members
             </Typography>
           </Box>
@@ -66,9 +70,9 @@ export default function ExitDashboard() {
             sx={{
               width: 72, height: 72,
               background: `linear-gradient(135deg, ${goldAccent}, #e8c96a)`,
-              color: '#0120a1',
+              color: NAV,
               boxShadow: `0 0 20px ${goldAccent}40`,
-              border: `4px solid rgba(255,255,255,0.1)`,
+              border: `4px solid rgba(253,253,252,0.1)`,
             }}
           >
             <ExitIcon sx={{ fontSize: 36 }} />
@@ -84,22 +88,22 @@ export default function ExitDashboard() {
             <Card className="stat-card" sx={{
               height: '100%', borderRadius: 3,
               background: card.gradient,
-              boxShadow: '0 4px 16px rgba(13,27,62,0.3)',
+              boxShadow: '0 4px 16px rgba(5,7,126,0.28)',
               transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-              '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 28px rgba(13,27,62,0.4)' },
+              '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 28px rgba(5,7,126,0.40)' },
             }}>
               <CardContent sx={{ p: 2, '&:last-child': { pb: 2 }, textAlign: 'center' }}>
                 <Avatar sx={{
                   width: 36, height: 36, mx: 'auto', mb: 1,
-                  bgcolor: 'rgba(255,255,255,0.15)', color: '#fff',
-                  backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)',
+                  bgcolor: 'rgba(253,253,252,0.15)', color: '#FDFDFC',
+                  backdropFilter: 'blur(8px)', border: '1px solid rgba(253,253,252,0.2)',
                 }}>
                   {card.icon}
                 </Avatar>
-                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 600, fontSize: '0.7rem', display: 'block', mb: 0.5, textTransform: 'uppercase' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(253,253,252,0.72)', fontWeight: 600, fontSize: '0.7rem', display: 'block', mb: 0.5, textTransform: 'uppercase' }}>
                   {card.label}
                 </Typography>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#fff', fontSize: '0.88rem' }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#FDFDFC', fontSize: '0.88rem' }}>
                   {formatCurrency(totals[card.key])}
                 </Typography>
               </CardContent>
@@ -112,8 +116,8 @@ export default function ExitDashboard() {
       {/* Members Table */}
       <Card sx={{
         borderRadius: 3, mt: 5,
-        background: 'linear-gradient(160deg, #023DFB 0%, #4a75e6 50%, #89B1D5 100%)',
-        boxShadow: '0 12px 40px rgba(2, 61, 251, 0.3)',
+        background: `linear-gradient(160deg, ${NAV} 0%, ${IND} 50%, ${ROY} 80%, ${PER} 100%)`,
+        boxShadow: `0 12px 40px rgba(2,65,251,0.28)`,
       }}>
         <CardContent sx={{ p: 3 }}>
           <Typography variant="h6" sx={{
@@ -142,15 +146,15 @@ export default function ExitDashboard() {
               </TableHead>
               <TableBody>
                 {exitMembers.map((m) => (
-                  <TableRow key={m.id} sx={{ '&:hover': { background: 'rgba(255,255,255,0.04)' }, '& td': { color: 'rgba(255,255,255,0.92)', borderBottom: '1px solid rgba(255,255,255,0.09)', fontSize: '0.8rem' } }}>
+                  <TableRow key={m.id} sx={{ '&:hover': { background: 'rgba(253,253,252,0.04)' }, '& td': { color: 'rgba(253,253,252,0.92)', borderBottom: '1px solid rgba(253,253,252,0.09)', fontSize: '0.8rem' } }}>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Avatar sx={{ width: 32, height: 32, background: `linear-gradient(135deg, ${goldAccent}, #e8c96a)`, color: '#0120a1', fontSize: '0.72rem', fontWeight: 700 }}>
+                        <Avatar sx={{ width: 32, height: 32, background: `linear-gradient(135deg, ${goldAccent}, #e8c96a)`, color: NAV, fontSize: '0.72rem', fontWeight: 700 }}>
                           {m.memberName.split(' ').map(n => n[0]).join('')}
                         </Avatar>
                         <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.82rem', lineHeight: 1.3, color: '#fff' }}>{m.memberName}</Typography>
-                          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.68rem' }}>{m.memberId}</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.82rem', lineHeight: 1.3, color: '#FDFDFC' }}>{m.memberName}</Typography>
+                          <Typography variant="caption" sx={{ color: 'rgba(253,253,252,0.5)', fontSize: '0.68rem' }}>{m.memberId}</Typography>
                         </Box>
                       </Box>
                     </TableCell>
@@ -167,7 +171,7 @@ export default function ExitDashboard() {
                       <Chip label={m.status} size="small" sx={{
                         fontWeight: 700, fontSize: '0.65rem', height: 20,
                         textTransform: 'uppercase', letterSpacing: '0.02em',
-                        bgcolor: m.status === 'Completed' ? 'rgba(46,125,50,0.3)' : m.status === 'Processing' ? 'rgba(230,81,0,0.3)' : 'rgba(21,101,192,0.3)',
+                        bgcolor: m.status === 'Completed' ? 'rgba(46,125,50,0.3)' : m.status === 'Processing' ? 'rgba(230,81,0,0.3)' : 'rgba(68,112,237,0.3)',
                         color: m.status === 'Completed' ? '#81c784' : m.status === 'Processing' ? '#ffb74d' : '#90caf9',
                       }} />
                     </TableCell>

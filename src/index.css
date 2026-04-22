@@ -32,12 +32,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(13, 27, 62, 0.25);
+  background: rgba(5, 7, 126, 0.25);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(13, 27, 62, 0.45);
+  background: rgba(2, 65, 251, 0.45);
 }
 
 /* ===== Print Styles for Payslips ===== */
@@ -72,7 +72,7 @@ body {
 .page-title {
   font-weight: 700;
   font-size: 1.75rem;
-  background: linear-gradient(135deg, #0d1b3e 0%, #1a3a6b 50%, #2156a5 100%);
+  background: linear-gradient(135deg, #05077E 0%, #0241FB 55%, #4470ED 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -89,27 +89,28 @@ body {
 .stat-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: default;
-  box-shadow: 0 4px 16px rgba(13, 27, 62, 0.10);
+  box-shadow: 0 4px 16px rgba(5, 7, 126, 0.12);
 }
 
 .stat-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 28px rgba(13, 27, 62, 0.16);
+  box-shadow: 0 8px 28px rgba(5, 7, 126, 0.20);
 }
 
 /* ===== Global Themed Table (dark card context) ===== */
-/*
-  Cards using the dark navy gradient use inline sx props.
-  These CSS tokens serve as fallback and helpers.
-*/
 :root {
-  --table-card-bg: linear-gradient(135deg, #023DFB 0%, #4a75e6 50%, #89B1D5 100%);
-  --table-header-bg: rgba(255, 255, 255, 0.15);
-  --table-header-color: #f1c40f;
-  --table-row-hover: rgba(255, 255, 255, 0.08);
-  --table-row-text: rgba(255, 255, 255, 0.95);
-  --table-border: rgba(255, 255, 255, 0.12);
-  --gold: #d4a843;
-  --gold-glow: rgba(212, 168, 67, 0.35);
-}
+  --navy:           #05077E;
+  --white:          #FDFDFC;
+  --bright-indigo:  #0241FB;
+  --royal-blue:     #4470ED;
+  --periwinkle:     #B4B7D3;
 
+  --table-card-bg:    linear-gradient(135deg, #05077E 0%, #0241FB 55%, #4470ED 80%, #B4B7D3 100%);
+  --table-header-bg:  rgba(255, 255, 255, 0.14);
+  --table-header-color: #f1c40f;
+  --table-row-hover:  rgba(255, 255, 255, 0.08);
+  --table-row-text:   rgba(255, 255, 255, 0.95);
+  --table-border:     rgba(255, 255, 255, 0.12);
+  --gold:             #d4a843;
+  --gold-glow:        rgba(212, 168, 67, 0.35);
+}

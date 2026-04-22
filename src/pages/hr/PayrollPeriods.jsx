@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, Button, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Chip, IconButton,
@@ -46,8 +46,8 @@ export default function PayrollPeriods() {
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4" sx={{ 
-            fontWeight: 800, color: '#023DFB', 
-            background: 'linear-gradient(90deg, #023DFB, #4a75e6)',
+            fontWeight: 800, color: '#0241FB', 
+            background: 'linear-gradient(90deg, #0241FB, #4470ED)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             mb: 0.5 
           }}>
@@ -63,7 +63,7 @@ export default function PayrollPeriods() {
           onClick={() => setOpen(true)}
           sx={{ 
             borderRadius: 2, 
-            background: 'linear-gradient(135deg, #023DFB, #4a75e6)',
+            background: 'linear-gradient(135deg, #0241FB, #4470ED)',
             boxShadow: '0 4px 12px rgba(2, 61, 251, 0.2)',
             px: 3
           }}
@@ -75,7 +75,7 @@ export default function PayrollPeriods() {
       <Grid container spacing={3}>
         {/* Quick Stats */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ borderRadius: 4, bgcolor: '#023DFB', color: '#fff', p: 1 }}>
+          <Card sx={{ borderRadius: 4, background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)', color: '#FDFDFC', p: 1 }}>
             <CardContent>
               <Typography variant="overline" sx={{ opacity: 0.8, fontWeight: 700 }}>Active Period</Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, my: 1 }}>March 1-15, 2025</Typography>
@@ -106,7 +106,7 @@ export default function PayrollPeriods() {
         <Grid item xs={12}>
           <Card sx={{ borderRadius: 4, boxShadow: '0 12px 32px rgba(10,22,40,0.05)', overflow: 'hidden' }}>
             <Box sx={{ p: 3, borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: '#023DFB' }}>Payroll Schedules</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: '#0241FB' }}>Payroll Schedules</Typography>
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
                 <TextField
                   size="small"
@@ -150,7 +150,7 @@ export default function PayrollPeriods() {
                     const statusStyle = getStatusColor(period.status);
                     return (
                       <TableRow key={period.id} hover>
-                        <TableCell sx={{ fontWeight: 600, color: '#023DFB' }}>{period.id}</TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: '#0241FB' }}>{period.id}</TableCell>
                         <TableCell>{period.startDate}</TableCell>
                         <TableCell>{period.endDate}</TableCell>
                         <TableCell>
@@ -173,7 +173,7 @@ export default function PayrollPeriods() {
                         </TableCell>
                         <TableCell>
                           <Box sx={{ display: 'flex', gap: 0.5 }}>
-                            <Tooltip title="Edit Period"><IconButton size="small" sx={{ color: '#023DFB' }}><EditIcon sx={{ fontSize: '1.1rem' }} /></IconButton></Tooltip>
+                            <Tooltip title="Edit Period"><IconButton size="small" sx={{ color: '#0241FB' }}><EditIcon sx={{ fontSize: '1.1rem' }} /></IconButton></Tooltip>
                             <Tooltip title="Delete Period"><IconButton size="small" sx={{ color: '#d32f2f' }}><DeleteIcon sx={{ fontSize: '1.1rem' }} /></IconButton></Tooltip>
                           </Box>
                         </TableCell>
@@ -189,7 +189,7 @@ export default function PayrollPeriods() {
 
       {/* New Period Dialog */}
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ fontWeight: 800, color: '#023DFB' }}>Create New Payroll Period</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800, color: '#0241FB' }}>Create New Payroll Period</DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={3} sx={{ mt: 0.5 }}>
             <Grid item xs={12} sm={6}>
@@ -217,7 +217,7 @@ export default function PayrollPeriods() {
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button onClick={() => setOpen(false)} sx={{ color: 'text.secondary', fontWeight: 600 }}>Cancel</Button>
-          <Button variant="contained" onClick={() => setOpen(false)} sx={{ background: 'linear-gradient(135deg, #023DFB, #4a75e6)', fontWeight: 700 }}>
+          <Button variant="contained" onClick={() => setOpen(false)} sx={{ background: 'linear-gradient(135deg, #0241FB, #4470ED)', fontWeight: 700 }}>
             Create Period
           </Button>
         </DialogActions>

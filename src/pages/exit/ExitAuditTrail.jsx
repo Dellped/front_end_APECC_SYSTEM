@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Box, Card, CardContent, Typography, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, TextField, InputAdornment,
@@ -26,8 +26,8 @@ export default function ExitAuditTrail() {
     <Box className="page-container">
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" sx={{ 
-          fontWeight: 800, color: '#023DFB', 
-          background: 'linear-gradient(90deg, #023DFB, #4a75e6)',
+          fontWeight: 800, color: '#0241FB', 
+          background: 'linear-gradient(90deg, #0241FB, #4470ED)',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           mb: 1 
         }}>
@@ -38,7 +38,7 @@ export default function ExitAuditTrail() {
         </Typography>
       </Box>
 
-      <Card sx={{ borderRadius: 3, borderTop: `3px solid #023DFB`, boxShadow: '0 8px 32px rgba(2, 61, 251, 0.15)' }}>
+      <Card sx={{ borderRadius: 3, borderTop: `3px solid #0241FB`, boxShadow: '0 8px 32px rgba(2, 61, 251, 0.15)' }}>
         <CardContent sx={{ p: 3 }}>
           <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap', alignItems: 'center' }}>
              <TextField
@@ -47,7 +47,7 @@ export default function ExitAuditTrail() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               InputProps={{
-                startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#023DFB' }} /></InputAdornment>,
+                startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#0241FB' }} /></InputAdornment>,
               }}
               sx={{ flex: 1, minWidth: 250, maxWidth: 400 }}
             />
@@ -79,9 +79,9 @@ export default function ExitAuditTrail() {
           <TableContainer>
             <Table>
               <TableHead>
-                <TableRow sx={{ bgcolor: '#023DFB' }}>
+                <TableRow sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)' }}>
                   {['Date & Time', 'User', 'Module', 'Action', 'Details'].map(h => (
-                    <TableCell key={h} sx={{ fontWeight: 700, color: '#fff', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                    <TableCell key={h} sx={{ fontWeight: 700, color: '#FDFDFC', textTransform: 'uppercase', fontSize: '0.75rem' }}>
                       {h}
                     </TableCell>
                   ))}
@@ -93,7 +93,7 @@ export default function ExitAuditTrail() {
                     <TableCell sx={{ whiteSpace: 'nowrap' }}><Typography variant="body2" sx={{ fontWeight: 600 }}>{log.date}</Typography></TableCell>
                     <TableCell>{log.user}</TableCell>
                     <TableCell>
-                       <Chip label={log.module} size="small" sx={{ bgcolor: 'rgba(2, 61, 251, 0.08)', color: '#023DFB', fontWeight: 600, fontSize: '0.7rem' }} />
+                       <Chip label={log.module} size="small" sx={{ bgcolor: 'rgba(2, 61, 251, 0.08)', color: '#0241FB', fontWeight: 600, fontSize: '0.7rem' }} />
                     </TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>{log.action}</TableCell>
                     <TableCell>{log.details}</TableCell>

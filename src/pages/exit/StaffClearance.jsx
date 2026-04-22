@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, Button, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Avatar,
@@ -14,7 +14,7 @@ import {
 import { employees, staffClearanceRecords } from '../../data/mockData';
 import StaffClearanceForm from './StaffClearanceForm';
 
-const logoBlue = '#023DFB';
+const logoBlue = '#0241FB';
 
 export default function StaffClearance() {
   const [search, setSearch] = useState('');
@@ -48,7 +48,7 @@ export default function StaffClearance() {
         <Box>
           <Typography variant="h4" sx={{ 
             fontWeight: 800, color: logoBlue, 
-            background: `linear-gradient(90deg, ${logoBlue}, #4a75e6)`,
+            background: `linear-gradient(90deg, ${logoBlue}, #4470ED)`,
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             mb: 0.5 
           }}>

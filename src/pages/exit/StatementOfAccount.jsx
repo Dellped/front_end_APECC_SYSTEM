@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, Select, MenuItem,
   FormControl, InputLabel, Divider, Button, Avatar, Table,
@@ -60,7 +60,7 @@ export default function StatementOfAccount() {
       {/* Member selector */}
       <Card sx={{
         borderRadius: 3, mb: 4,
-        background: 'linear-gradient(160deg, #023DFB 0%, #4a75e6 50%, #89B1D5 100%)',
+        background: 'linear-gradient(160deg, #05077E 0%, #4470ED 50%, #B4B7D3 100%)',
         boxShadow: '0 8px 32px rgba(13,27,62,0.35)',
       }}>
         <CardContent sx={{ p: 3, display: 'flex', gap: 3, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -81,10 +81,10 @@ export default function StatementOfAccount() {
                 bgcolor: 'rgba(255,255,255,0.1)',
                 borderRadius: 1,
                 '& .MuiOutlinedInput-root': {
-                  color: '#fff',
+                  color: '#FDFDFC',
                   '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
                   '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                  '&.Mui-focused fieldset': { borderColor: '#fff' }
+                  '&.Mui-focused fieldset': { bordercolor: '#FDFDFC' }
                 },
                 '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
                 '& .MuiSvgIcon-root': { color: 'rgba(255,255,255,0.7)' }
@@ -130,7 +130,7 @@ export default function StatementOfAccount() {
               fontWeight: 600,
               textTransform: 'none',
               background: `linear-gradient(135deg, #d32f2f, #f44336)`,
-              color: '#fff',
+              color: '#FDFDFC',
               boxShadow: `0 4px 12px rgba(211, 47, 47, 0.3)`,
               '&:hover': {
                 background: `linear-gradient(135deg, #f44336, #d32f2f)`,
@@ -210,7 +210,7 @@ export default function StatementOfAccount() {
           borderRadius: 3, 
           maxWidth: { xs: '100%', md: 850 }, 
           mx: 'auto', 
-          bgcolor: '#fff',
+          bgcolor: '#FDFDFC',
           color: '#333',
           boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
           overflow: 'visible'
@@ -278,7 +278,7 @@ export default function StatementOfAccount() {
                                     <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', px: 1, py: 0.2, height: 16 }}></Box>
                                 ))}
                             </Stack>
-                            <Box sx={{ bgcolor: '#fff', borderTop: '1px solid #000', display: 'flex', justifyContent: 'space-between', px: 1, py: 0.5 }}>
+                            <Box sx={{ bgcolor: '#FDFDFC', borderTop: '1px solid #000', display: 'flex', justifyContent: 'space-between', px: 1, py: 0.5 }}>
                                 <Typography variant="caption" sx={{ fontWeight: 800 }}>Total Compensations</Typography>
                                 <Typography variant="caption" sx={{ fontWeight: 800 }}>{totalCompensations.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Typography>
                             </Box>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Paper, TextField, InputAdornment, Button, Chip
@@ -6,9 +6,11 @@ import {
 import { Search as SearchIcon, FileDownload as CsvIcon, Print as PrintIcon } from '@mui/icons-material';
 import { exportToCSV, printTable } from '../../utils/exportUtils';
 
+const goldAccent = '#d4a843';
+
 const headerStyle = {
-  bgcolor: '#023DFB',
-  color: '#fff',
+  background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)',
+  color: '#FDFDFC',
   fontWeight: 700,
   fontSize: '0.65rem',
   padding: '10px 6px',
@@ -61,7 +63,7 @@ export default function LeaveApplications() {
     <Box className="page-container">
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: '#023DFB', mb: 1 }}>Leave Applications</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: '#0241FB', mb: 1 }}>Leave Applications</Typography>
           <Typography variant="body2" color="text.secondary">Review and manage filed leaves</Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
@@ -70,7 +72,7 @@ export default function LeaveApplications() {
         </Box>
       </Box>
 
-      <Card sx={{ borderRadius: 3, mb: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+      <Card sx={{ borderRadius: 2, mb: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: `1px solid ${goldAccent}` }}>
         <CardContent sx={{ p: 3 }}>
           <Typography variant="caption" sx={{ color: '#d32f2f', fontWeight: 700, display: 'block', mb: 2 }}>
             ** if the leave duration is halfday only, kindly put 0.5 in no.of days
@@ -86,7 +88,7 @@ export default function LeaveApplications() {
         </CardContent>
       </Card>
 
-      <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 10px 30px rgba(0,0,0,0.08)', overflowX: 'auto', maxHeight: '65vh' }}>
+      <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: '0 10px 30px rgba(0,0,0,0.08)', overflowX: 'auto', maxHeight: '65vh' , border: `1px solid ${goldAccent}`}}>
         <Table stickyHeader size="small" sx={{ minWidth: 1600 }}>
           <TableHead>
             <TableRow>
@@ -110,7 +112,7 @@ export default function LeaveApplications() {
               <TableRow key={row.id} hover>
                 <TableCell sx={cellStyle}>{row.dateFiled}</TableCell>
                 <TableCell sx={cellStyle}>{row.empId}</TableCell>
-                <TableCell sx={{ ...cellStyle, fontWeight: 700, color: '#023DFB' }}>{row.name}</TableCell>
+                <TableCell sx={{ ...cellStyle, fontWeight: 700, color: '#0241FB' }}>{row.name}</TableCell>
                 <TableCell sx={cellStyle}>{row.position}</TableCell>
                 <TableCell sx={cellStyle}>{row.dept}</TableCell>
                 <TableCell sx={cellStyle}>{row.type}</TableCell>

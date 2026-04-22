@@ -27,18 +27,15 @@ export const JOB_LEVELS = [
 ];
 
 export const SHIFT_SCHEDULES = [
-  { type: 'Flexible', in: '--', out: '--' },
-  { type: 'Day', in: '6:00:00 AM', out: '9:00:00 PM' },
-  { type: 'Mid', in: '2:00:00 PM', out: '10:00:00 PM' },
-  { type: 'Night', in: '10:00:00 PM', out: '6:00:00 AM' }
+  { type: 'Day', in: '9:00:00 AM', out: '6:00:00 PM' },
 ];
 
-export const EMPLOYMENT_STATUSES = ['Contractual', 'Probationary', 'Regular', 'On Call', 'OJT'];
+export const EMPLOYMENT_STATUSES = ['Contractual', 'Probationary', 'Regular'];
 
 // ===== Employee Data =====
 export const employees = [
   {
-    id: 'E0001',
+    id: '0001',
     firstName: 'Maria',
     middleName: 'Santos',
     lastName: 'Dela Cruz',
@@ -133,7 +130,7 @@ export const employees = [
     },
   },
   {
-    id: 'E0002',
+    id: '0002',
     firstName: 'Ricardo',
     middleName: 'Bautista',
     lastName: 'Flores',
@@ -213,7 +210,7 @@ export const employees = [
     },
   },
   {
-    id: 'E0003',
+    id: '0003',
     firstName: 'Elena',
     middleName: 'Ramos',
     lastName: 'Villanueva',
@@ -303,7 +300,7 @@ export const employees = [
     },
   },
   {
-    id: 'E0004',
+    id: '0004',
     firstName: 'Paolo',
     middleName: 'Garcia',
     lastName: 'Mendoza',
@@ -378,7 +375,7 @@ export const employees = [
     },
   },
   {
-    id: 'E0005',
+    id: '0005',
     firstName: 'Lourdes',
     middleName: 'Aquino',
     lastName: 'Reyes',
@@ -465,7 +462,7 @@ export const employees = [
     },
   },
   {
-    id: 'E-011-22',
+    id: '0006',
     firstName: 'Ma. Lyn Jee',
     middleName: 'Billones',
     lastName: 'Tupas',
@@ -504,12 +501,12 @@ const generatePayrollData = () => {
   const data = [];
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const baseRates = { 
-    'E0001': 35000, 
-    'E0002': 22000, 
-    'E0003': 28000, 
-    'E0004': 20000, 
-    'E0005': 32000,
-    'E-011-22': 30000 
+    '0001': 35000, 
+    '0002': 22000, 
+    '0003': 28000, 
+    '0004': 20000, 
+    '0005': 32000,
+    '0006': 30000 
   };
 
   Object.entries(baseRates).forEach(([empId, base]) => {
@@ -533,18 +530,18 @@ const generatePayrollData = () => {
         const deminimis = 2000;
         const nonTaxable = 0;
         const repairMaintenance = 0;
-        const savings = empId === 'E-011-22' ? 2000 : 2000;
+        const savings = empId === '0006' ? 2000 : 2000;
         const membership = 0;
         const otherDeduction = 0;
-        const housingLoan = empId === 'E-011-22' ? 6667 : 0;
+        const housingLoan = empId === '0006' ? 6667 : 0;
         const salaryLoan = 0;
-        const stl = empId === 'E-011-22' ? 2070 : (empId === 'E0001' ? 8280 : 0);
+        const stl = empId === '0006' ? 2070 : (empId === '0001' ? 8280 : 0);
         const malasakitLoan = 0;
         const educLoan = 0;
         const mcLoan = 0;
 
         // Specific overrides for Ma. Lyn Jee Tupas example
-        if (empId === 'E-011-22') {
+        if (empId === '0006') {
             sssER = 3303.00;
             phER = 750.00;
             hdmfER = 200.00;
@@ -606,27 +603,27 @@ export const payrollRecords = generatePayrollData();
 export const leaveTypes = ['Vacation Leave', 'Sick Leave', 'Emergency Leave', 'Maternity Leave', 'Paternity Leave', 'Solo Parent Leave'];
 
 export const leaveRecords = [
-  { id: 'LV-001', employeeId: 'E0001', type: 'Vacation Leave', startDate: '2025-01-06', endDate: '2025-01-10', days: 5, status: 'Approved', reason: 'Family vacation' },
-  { id: 'LV-002', employeeId: 'E0002', type: 'Sick Leave', startDate: '2025-01-15', endDate: '2025-01-16', days: 2, status: 'Approved', reason: 'Medical check-up' },
-  { id: 'LV-003', employeeId: 'E0003', type: 'Emergency Leave', startDate: '2025-02-03', endDate: '2025-02-03', days: 1, status: 'Approved', reason: 'Family emergency' },
-  { id: 'LV-004', employeeId: 'E0004', type: 'Vacation Leave', startDate: '2025-02-14', endDate: '2025-02-14', days: 1, status: 'Pending', reason: "Valentine's Day" },
-  { id: 'LV-005', employeeId: 'E0001', type: 'Sick Leave', startDate: '2025-02-20', endDate: '2025-02-21', days: 2, status: 'Approved', reason: 'Flu' },
+  { id: 'LV-001', employeeId: '0001', type: 'Vacation Leave', startDate: '2025-01-06', endDate: '2025-01-10', days: 5, status: 'Approved', reason: 'Family vacation' },
+  { id: 'LV-002', employeeId: '0002', type: 'Sick Leave', startDate: '2025-01-15', endDate: '2025-01-16', days: 2, status: 'Approved', reason: 'Medical check-up' },
+  { id: 'LV-003', employeeId: '0003', type: 'Emergency Leave', startDate: '2025-02-03', endDate: '2025-02-03', days: 1, status: 'Approved', reason: 'Family emergency' },
+  { id: 'LV-004', employeeId: '0004', type: 'Vacation Leave', startDate: '2025-02-14', endDate: '2025-02-14', days: 1, status: 'Pending', reason: "Valentine's Day" },
+  { id: 'LV-005', employeeId: '0001', type: 'Sick Leave', startDate: '2025-02-20', endDate: '2025-02-21', days: 2, status: 'Approved', reason: 'Flu' },
 ];
 
 export const leaveBalances = [
-  { employeeId: 'E0001', type: 'Vacation Leave', total: 15, used: 5, remaining: 10 },
-  { employeeId: 'E0001', type: 'Sick Leave', total: 15, used: 2, remaining: 13 },
-  { employeeId: 'E0002', type: 'Vacation Leave', total: 12, used: 0, remaining: 12 },
-  { employeeId: 'E0002', type: 'Sick Leave', total: 15, used: 2, remaining: 13 },
-  { employeeId: 'E0003', type: 'Vacation Leave', total: 15, used: 0, remaining: 15 },
-  { employeeId: 'E0003', type: 'Emergency Leave', total: 5, used: 1, remaining: 4 },
-  { employeeId: 'E0004', type: 'Vacation Leave', total: 10, used: 0, remaining: 10 },
-  { employeeId: 'E0004', type: 'Sick Leave', total: 15, used: 0, remaining: 15 },
+  { employeeId: '0001', type: 'Vacation Leave', total: 15, used: 5, remaining: 10 },
+  { employeeId: '0001', type: 'Sick Leave', total: 15, used: 2, remaining: 13 },
+  { employeeId: '0002', type: 'Vacation Leave', total: 12, used: 0, remaining: 12 },
+  { employeeId: '0002', type: 'Sick Leave', total: 15, used: 2, remaining: 13 },
+  { employeeId: '0003', type: 'Vacation Leave', total: 15, used: 0, remaining: 15 },
+  { employeeId: '0003', type: 'Emergency Leave', total: 5, used: 1, remaining: 4 },
+  { employeeId: '0004', type: 'Vacation Leave', total: 10, used: 0, remaining: 10 },
+  { employeeId: '0004', type: 'Sick Leave', total: 15, used: 0, remaining: 15 },
 ];
 
 export const sanctions = [
-  { id: 'SN-001', employeeId: 'E0004', type: 'Written Warning', date: '2024-11-15', reason: 'Tardiness (3rd offense)', status: 'Active' },
-  { id: 'SN-002', employeeId: 'E0002', type: 'Verbal Warning', date: '2024-09-20', reason: 'Incomplete documentation', status: 'Resolved' },
+  { id: 'SN-001', employeeId: '0004', type: 'Written Warning', date: '2024-11-15', reason: 'Tardiness (3rd offense)', status: 'Active' },
+  { id: 'SN-002', employeeId: '0002', type: 'Verbal Warning', date: '2024-09-20', reason: 'Incomplete documentation', status: 'Resolved' },
 ];
 
 // ===== Exit Member Data =====
@@ -1059,9 +1056,9 @@ export const payrollPeriods = [
 ];
 
 export const attendanceRecords = [
-  { employeeId: 'E0001', periodId: 'PP-2025-001', daysWorked: 11, absences: 0, late: 0, undertime: 0, otHours: 4, holidayWork: 0 },
-  { employeeId: 'E0002', periodId: 'PP-2025-001', daysWorked: 10, absences: 1, late: 2, undertime: 1, otHours: 0, holidayWork: 0 },
-  { employeeId: 'E0003', periodId: 'PP-2025-001', daysWorked: 11, absences: 0, late: 0, undertime: 0, otHours: 8, holidayWork: 1 },
+  { employeeId: '0001', periodId: 'PP-2025-001', daysWorked: 11, absences: 0, late: 0, undertime: 0, otHours: 4, holidayWork: 0 },
+  { employeeId: '0002', periodId: 'PP-2025-001', daysWorked: 10, absences: 1, late: 2, undertime: 1, otHours: 0, holidayWork: 0 },
+  { employeeId: '0003', periodId: 'PP-2025-001', daysWorked: 11, absences: 0, late: 0, undertime: 0, otHours: 8, holidayWork: 1 },
 ];
 
 export const allowances = [
@@ -1071,8 +1068,8 @@ export const allowances = [
 ];
 
 export const payrollAdjustments = [
-  { id: 'ADJ-001', employeeId: 'E0001', type: 'Salary Adjustment', amount: 5000, reason: 'Retroactive increase', status: 'Approved' },
-  { id: 'ADJ-002', employeeId: 'E0002', type: 'Deduction Adjustment', amount: -200, reason: 'Late correction', status: 'Pending' },
+  { id: 'ADJ-001', employeeId: '0001', type: 'Salary Adjustment', amount: 5000, reason: 'Retroactive increase', status: 'Approved' },
+  { id: 'ADJ-002', employeeId: '0002', type: 'Deduction Adjustment', amount: -200, reason: 'Late correction', status: 'Pending' },
 ];
 
 export const specialEarningTypes = [
@@ -1084,10 +1081,10 @@ export const specialEarningTypes = [
 ];
 
 export const specialEarnings = [
-  { id: 1, employeeId: 'E0001', periodId: 'PP-2025-001', typeId: 'SET-001', amount: 15000, createdAt: '2025-03-01T10:00:00Z' },
-  { id: 2, employeeId: 'E0002', periodId: 'PP-2025-001', typeId: 'SET-001', amount: 12000, createdAt: '2025-03-01T10:00:00Z' },
-  { id: 3, employeeId: 'E0003', periodId: 'PP-2025-001', typeId: 'SET-001', amount: 18000, createdAt: '2025-03-01T10:00:00Z' },
-  { id: 4, employeeId: 'E0001', periodId: 'PP-2025-001', typeId: 'SET-003', amount: 5000, createdAt: '2025-03-10T10:00:00Z' },
+  { id: 1, employeeId: '0001', periodId: 'PP-2025-001', typeId: 'SET-001', amount: 15000, createdAt: '2025-03-01T10:00:00Z' },
+  { id: 2, employeeId: '0002', periodId: 'PP-2025-001', typeId: 'SET-001', amount: 12000, createdAt: '2025-03-01T10:00:00Z' },
+  { id: 3, employeeId: '0003', periodId: 'PP-2025-001', typeId: 'SET-001', amount: 18000, createdAt: '2025-03-01T10:00:00Z' },
+  { id: 4, employeeId: '0001', periodId: 'PP-2025-001', typeId: 'SET-003', amount: 5000, createdAt: '2025-03-10T10:00:00Z' },
 ];
 
 
@@ -1095,7 +1092,7 @@ export const specialEarnings = [
 export const staffClearanceRecords = [
   {
     id: 'CLR-2025-0016',
-    employeeId: 'E0005', // Lourdes Reyes
+    employeeId: '0005', // Lourdes Reyes
     dateExit: '2025-04-17',
     reason: 'Resignation',
     cellNo: '0956-234-5678',
@@ -1182,7 +1179,7 @@ export const staffClearanceRecords = [
 export const exitRecords = [
   {
     no: 1,
-    idNo: 'E-011',
+    idNo: 'E0011',
     dateExit: '2026-02-01',
     name: 'TUPAS, MA. LYN JEE',
     designation: 'Asst. Gen Manager',
@@ -1210,11 +1207,11 @@ export const exitRecords = [
     clearance: 37273,
     system: 25000,
     rebates2: 25000, // Rabates
-    remarks: '10% HL MARCH 2026'
+    employeeType: 'Regular'
   },
   {
     no: 2,
-    idNo: 'E-005',
+    idNo: '0005',
     dateExit: '2025-12-15',
     name: 'REYES, LOURDES A.',
     designation: 'Bookkeeper',
@@ -1242,6 +1239,9 @@ export const exitRecords = [
     clearance: 78300,
     system: 5000,
     rebates2: 5000,
-    remarks: ''
+    employeeType: 'Probationary'
   }
 ];
+
+// ===== Onboarding Data =====
+export const onboardingRecords = [];

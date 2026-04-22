@@ -19,8 +19,8 @@ import { exportToCSV, printTable, exportToPDF } from '../../utils/exportUtils';
 const goldAccent = '#d4a843';
 
 const headerStyle = {
-  bgcolor: '#023DFB',
-  color: '#fff',
+  background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)',
+  color: '#FDFDFC',
   fontWeight: 700,
   fontSize: '0.65rem',
   padding: '8px 2px',
@@ -68,7 +68,7 @@ export default function LeavesSanctions() {
       {/* Summary Cards */}
       <Grid container spacing={2.5} sx={{ mb: 3 }}>
         {[
-          { title: 'Total Leave Applications', value: leaveRecords.length, gradient: 'linear-gradient(135deg, #023DFB 0%, #4a75e6 100%)', icon: <LeavesIcon /> },
+          { title: 'Total Leave Applications', value: leaveRecords.length, gradient: 'linear-gradient(135deg, #05077E 0%, #4470ED 100%)', icon: <LeavesIcon /> },
           { title: 'Pending Approval', value: leaveRecords.filter((l) => l.status === 'Pending').length, gradient: 'linear-gradient(135deg, #7c3200, #e65100)', icon: <LeavesIcon /> },
           { title: 'Active Sanctions', value: sanctions.filter((s) => s.status === 'Active').length, gradient: 'linear-gradient(135deg, #8b1a1a, #c0392b)', icon: <SanctionsIcon /> },
         ].map((card, i) => (
@@ -77,20 +77,20 @@ export default function LeavesSanctions() {
               <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
                   <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 500, fontSize: '0.78rem', mb: 0.3 }}>{card.title}</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#fff' }}>{card.value}</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#FDFDFC' }}>{card.value}</Typography>
                 </Box>
-                <Avatar sx={{ width: 44, height: 44, bgcolor: 'rgba(255,255,255,0.15)', color: '#fff', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)' }}>{card.icon}</Avatar>
+                <Avatar sx={{ width: 44, height: 44, bgcolor: 'rgba(255,255,255,0.15)', color: '#FDFDFC', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)' }}>{card.icon}</Avatar>
               </CardContent>
             </Card>
           </Grid>
         ))}
       </Grid>
 
-      <Card sx={{ borderRadius: 3, mb: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+      <Card sx={{ borderRadius: 3, mb: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', borderTop: `3px solid ${goldAccent}` }}>
         <CardContent sx={{ p: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem', color: '#023DFB', mr: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem', color: '#0241FB', mr: 2 }}>
                 Leave &amp; Sanction Records
               </Typography>
 
@@ -152,8 +152,8 @@ export default function LeavesSanctions() {
                 onChange={(_, v) => setTabValue(v)}
                 sx={{
                   '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, fontSize: '0.85rem', minHeight: 44 },
-                  '& .Mui-selected': { color: `#023DFB !important` },
-                  '& .MuiTabs-indicator': { backgroundColor: '#023DFB', height: 3, borderRadius: '3px 3px 0 0' },
+                  '& .Mui-selected': { color: `#0241FB !important` },
+                  '& .MuiTabs-indicator': { backgroundColor: '#0241FB', height: 3, borderRadius: '3px 3px 0 0' },
                 }}
               >
                 <Tab label="Applications" />
@@ -165,10 +165,11 @@ export default function LeavesSanctions() {
 
           {/* Leave Applications */}
           <TabPanel value={tabValue} index={0}>
-            <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 10px 30px rgba(0,0,0,0.08)', overflowX: 'auto' }}>
+            <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: '0 10px 30px rgba(0,0,0,0.08)', overflowX: 'auto' }}>
               <Table size="small" sx={{ minWidth: 800 }}>
                 <TableHead>
                   <TableRow>
+                    <TableCell sx={headerStyle}>Employee ID</TableCell>
                     <TableCell sx={headerStyle}>Employee</TableCell>
                     <TableCell sx={headerStyle}>Type</TableCell>
                     <TableCell sx={headerStyle}>Start Date</TableCell>
@@ -176,7 +177,6 @@ export default function LeavesSanctions() {
                     <TableCell sx={headerStyle}>Days</TableCell>
                     <TableCell sx={headerStyle}>Reason</TableCell>
                     <TableCell sx={headerStyle}>Status</TableCell>
-                    <TableCell sx={headerStyle} align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -184,6 +184,7 @@ export default function LeavesSanctions() {
                     const emp = employees.find((e) => e.id === leave.employeeId);
                     return (
                       <TableRow key={leave.id} hover>
+                        <TableCell sx={{ ...cellStyle, fontWeight: 600 }}>{leave.employeeId}</TableCell>
                         <TableCell sx={{ ...cellStyle, fontWeight: 700 }}>{emp ? `${emp.firstName} ${emp.lastName}` : leave.employeeId}</TableCell>
                         <TableCell sx={cellStyle}><Chip label={leave.type} size="small" variant="outlined" sx={{ fontSize: '0.72rem' }} /></TableCell>
                         <TableCell sx={cellStyle}>{leave.startDate}</TableCell>
@@ -198,18 +199,10 @@ export default function LeavesSanctions() {
                               : leave.status === 'Disapproved' ? 'rgba(198,40,40,0.1)' 
                               : 'rgba(230,81,0,0.1)',
                             color: leave.status === 'Approved' ? '#2e7d32' 
-                              : leave.status === 'Recommended' ? '#023DFB' 
+                              : leave.status === 'Recommended' ? '#0241FB' 
                               : leave.status === 'Disapproved' ? '#d32f2f' 
                               : '#ed6c02',
                           }} />
-                        </TableCell>
-                        <TableCell sx={cellStyle} align="center">
-                          {(leave.status === 'Pending' || leave.status === 'Recommended') && (
-                            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                              <Button size="small" variant="contained" color="success" sx={{ minWidth: 0, p: 0.5 }}><ApproveIcon fontSize="small" /></Button>
-                              <Button size="small" variant="contained" color="error" sx={{ minWidth: 0, p: 0.5 }}><RejectIcon fontSize="small" /></Button>
-                            </Box>
-                          )}
                         </TableCell>
                       </TableRow>
                     );
@@ -232,6 +225,7 @@ export default function LeavesSanctions() {
               <Table size="small" sx={{ minWidth: 800 }}>
                 <TableHead>
                   <TableRow>
+                    <TableCell sx={headerStyle}>Employee ID</TableCell>
                     <TableCell sx={headerStyle}>Employee</TableCell>
                     <TableCell sx={headerStyle}>Leave Type</TableCell>
                     <TableCell sx={headerStyle} align="center">Total</TableCell>
@@ -244,6 +238,7 @@ export default function LeavesSanctions() {
                     const emp = employees.find((e) => e.id === lb.employeeId);
                     return (
                       <TableRow key={i} hover>
+                        <TableCell sx={{ ...cellStyle, fontWeight: 600 }}>{lb.employeeId}</TableCell>
                         <TableCell sx={{ ...cellStyle, fontWeight: 700 }}>{emp ? `${emp.firstName} ${emp.lastName}` : lb.employeeId}</TableCell>
                         <TableCell sx={cellStyle}>{lb.type}</TableCell>
                         <TableCell sx={cellStyle} align="center">{lb.total}</TableCell>
@@ -269,6 +264,7 @@ export default function LeavesSanctions() {
               <Table size="small" sx={{ minWidth: 800 }}>
                 <TableHead>
                   <TableRow>
+                    <TableCell sx={headerStyle}>Employee ID</TableCell>
                     <TableCell sx={headerStyle}>Employee</TableCell>
                     <TableCell sx={headerStyle}>Type</TableCell>
                     <TableCell sx={headerStyle}>Date</TableCell>
@@ -281,6 +277,7 @@ export default function LeavesSanctions() {
                     const emp = employees.find((e) => e.id === s.employeeId);
                     return (
                       <TableRow key={s.id} hover>
+                        <TableCell sx={{ ...cellStyle, fontWeight: 600 }}>{s.employeeId}</TableCell>
                         <TableCell sx={{ ...cellStyle, fontWeight: 700 }}>{emp ? `${emp.firstName} ${emp.lastName}` : s.employeeId}</TableCell>
                         <TableCell sx={cellStyle}>
                           <Chip label={s.type} size="small" sx={{

@@ -1,28 +1,33 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  Box, Typography, Breadcrumbs, Link, Chip, Avatar, Tooltip, IconButton,
+  Box, Typography, Breadcrumbs, Link, Avatar, Tooltip, IconButton,
 } from '@mui/material';
 import {
   NavigateNext as NavNextIcon,
   Home as HomeIcon,
-  AccessTime as ClockIcon,
   Notifications as BellIcon,
-  AccountCircle as UserIcon,
   Menu as MenuIcon,
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
 } from '@mui/icons-material';
 
+// ── Palette ──────────────────────────────────────────────────────────────────
+const NAV = '#05077E';   // Navy
+const IND = '#0241FB';   // Bright Indigo
+const ROY = '#4470ED';   // Royal Blue
+const PER = '#B4B7D3';   // Periwinkle
+const WHT = '#FDFDFC';   // White
 const goldAccent = '#d4a843';
+// ─────────────────────────────────────────────────────────────────────────────
 
 const routeMap = {
   '/home': { crumbs: ['Home'] },
   '/hr/dashboard': { crumbs: ['HR', 'Dashboard'] },
-  '/hr/applicants': { crumbs: ['HR', 'Employee Management', 'Applicants'] },
-  '/hr/employees/list': { crumbs: ['HR', 'Employee Management', 'Employee List'] },
+  '/hr/onboarding/add-employee': { crumbs: ['HR', 'Onboarding', 'Add Employee'] },
+  '/hr/onboarding/approvals': { crumbs: ['HR', 'Onboarding', 'Approval Queue'] },
+  '/hr/onboarding/applicants': { crumbs: ['HR', 'Onboarding', 'Applicant Tracking (ATS)'] },
   '/hr/employees/master-file': { crumbs: ['HR', 'Employee Management', 'Master File'] },
-  '/hr/employees/employment-details': { crumbs: ['HR', 'Employee Management', 'Employment Details'] },
   '/hr/employees/profile': { crumbs: ['HR', 'Employee Management', 'Employee Profile'] },
   '/hr/employees/personal': { crumbs: ['HR', 'Employee Management', 'Personal Information'] },
   '/hr/employees/family': { crumbs: ['HR', 'Employee Management', 'Family Background'] },
@@ -33,27 +38,25 @@ const routeMap = {
   '/hr/payroll/payslips': { crumbs: ['HR', 'Compensation', 'Payslips'] },
   '/hr/payroll/payroll': { crumbs: ['HR', 'Compensation', 'Payroll Run'] },
   '/hr/payroll/register': { crumbs: ['HR', 'Compensation', 'Payroll Register'] },
-  '/hr/payroll/remittances-loans': { crumbs: ['HR', 'Compensation', 'Remittances & Loans'] },
-  '/hr/payroll/statutory-setup': { crumbs: ['HR', 'Compensation', 'Statutory Setup'] },
-  '/hr/payroll/basic-pay-assignment': { crumbs: ['HR', 'Compensation', 'Basic Pay'] },
   '/hr/payroll/salary-adjustment': { crumbs: ['HR', 'Compensation', 'Salary Adjustment'] },
-  '/hr/payroll/allowances': { crumbs: ['HR', 'Compensation', 'Allowances'] },
   '/hr/payroll/salary-history': { crumbs: ['HR', 'Compensation', 'Salary History'] },
-  '/hr/payroll/adjustments': { crumbs: ['HR', 'Compensation', 'Payroll Adjustments'] },
   '/hr/payroll/periods': { crumbs: ['HR', 'Compensation', 'Periods'] },
-  '/hr/payroll/attendance': { crumbs: ['HR', 'Compensation', 'Attendance & DTR'] },
   '/hr/payroll/sil': { crumbs: ['HR', 'Compensation', 'Service Incentive Leave'] },
-  '/hr/payroll/allowances-management': { crumbs: ['HR', 'Compensation', 'Allowances Management'] },
   '/hr/payroll/contributions': { crumbs: ['HR', 'Compensation', 'Gov Contributions'] },
-  '/hr/payroll/deductions': { crumbs: ['HR', 'Compensation', 'Deductions & Compliance'] },
+  '/hr/payroll/overview': { crumbs: ['HR', 'Compensation', 'Payroll Overview'] },
   '/hr/leaves': { crumbs: ['HR', 'Leaves & Sanctions', 'Dashboard'] },
   '/hr/leaves/applications': { crumbs: ['HR', 'Leaves & Sanctions', 'Leave Applications'] },
   '/hr/leaves/credits': { crumbs: ['HR', 'Leaves & Sanctions', 'Leave Credits'] },
+  '/hr/leaves/employee-summary': { crumbs: ['HR', 'Leaves & Sanctions', 'Employee Summary'] },
+  '/hr/leaves/calendar': { crumbs: ['HR', 'Leaves & Sanctions', 'Leave Calendar'] },
   '/hr/tax/alphalist': { crumbs: ['HR', 'Tax & Reporting', 'Alphalist & 2306'] },
+  '/hr/tax/bir-forms': { crumbs: ['HR', 'Tax & Reporting', 'BIR Forms'] },
   '/hr/audit-trail': { crumbs: ['HR', 'Security', 'Audit Trail'] },
   '/exit/dashboard': { crumbs: ['Exit', 'Dashboard'] },
   '/exit/requests': { crumbs: ['Exit', 'Request'] },
+  '/exit/list': { crumbs: ['Exit', 'List of Exit'] },
   '/exit/clearance': { crumbs: ['Exit', 'Clearance'] },
+  '/exit/staff-clearance': { crumbs: ['Exit', 'Staff Clearance'] },
   '/exit/soa': { crumbs: ['Exit', 'SOA'] },
   '/exit/withdrawal': { crumbs: ['Exit', 'Withdrawal'] },
   '/exit/audit-trail': { crumbs: ['Exit', 'Audit Trail'] },
@@ -81,10 +84,20 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
   const crumbs = routeInfo?.crumbs || ['Home'];
   const currentPage = crumbs[crumbs.length - 1];
 
-  const primaryColor = isDark ? '#f8fafc' : '#023DFB';
-  const secondaryColor = isDark ? 'rgba(255, 255, 255, 0.65)' : 'rgba(2, 61, 251, 0.65)';
-  const bgColor = isDark ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)';
-  const borderColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(26, 44, 78, 0.08)';
+  const textPrimary   = isDark ? WHT   : NAV;
+  const textSecondary = isDark ? PER   : ROY;
+
+  // Liquid Glass Apple UI Constants
+  const glassBg = isDark ? `rgba(255, 255, 255, 0.05)` : `rgba(255, 255, 255, 0.55)`;
+  const glassBgHover = isDark ? `rgba(255, 255, 255, 0.1)` : `rgba(255, 255, 255, 0.75)`;
+  const glassBorder = isDark ? `rgba(255,255,255,0.12)` : `rgba(255,255,255,0.7)`;
+  const glassShadowBox = isDark
+    ? `inset 0 1px 1px rgba(255,255,255,0.15), 0 4px 14px rgba(0,0,0,0.3)`
+    : `inset 0 1px 1px rgba(255,255,255,0.9), 0 4px 14px rgba(5,7,126,0.06)`;
+
+  const glassShadowHover = isDark
+    ? `inset 0 1px 1px rgba(255,255,255,0.25), 0 8px 24px rgba(0,0,0,0.4)`
+    : `inset 0 1px 1px rgba(255,255,255,1), 0 8px 24px rgba(5,7,126,0.12)`;
 
   return (
     <Box
@@ -92,18 +105,21 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
         position: 'sticky',
         top: 0,
         zIndex: 100,
-        bgcolor: bgColor,
-        backdropFilter: 'blur(12px)',
-        borderBottom: `1px solid ${borderColor}`,
-        boxShadow: isDark ? '0 4px 20px rgba(0, 0, 0, 0.3)' : '0 4px 20px rgba(26, 44, 78, 0.05)',
+        background: isDark ? `rgba(5, 7, 126, 0.65)` : `rgba(253, 253, 252, 0.70)`,
+        backdropFilter: 'blur(32px) saturate(200%)',
+        WebkitBackdropFilter: 'blur(32px) saturate(200%)',
+        borderBottom: `1px solid ${isDark ? `rgba(255,255,255,0.08)` : `rgba(5,7,126,0.06)`}`,
+        boxShadow: isDark
+          ? `0 4px 32px rgba(0,0,0,0.4)`
+          : `0 4px 32px rgba(5,7,126,0.04)`,
         px: { xs: 2, sm: 3, md: 4 },
-        py: 1.5,
+        py: 1.4,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: 2,
         minHeight: 64,
-        transition: 'background-color 0.3s, border-color 0.3s',
+        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
       {/* Mobile Menu Toggle */}
@@ -111,10 +127,10 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
         <IconButton
           onClick={onMenuClick}
           sx={{
-            mr: 1,
-            color: primaryColor,
-            bgcolor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(2, 61, 251, 0.05)',
-            '&:hover': { bgcolor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(2, 61, 251, 0.1)' }
+            mr: 1, color: textPrimary,
+            background: glassBg, backdropFilter: 'blur(20px)',
+            border: `1px solid ${glassBorder}`, boxShadow: glassShadowBox,
+            '&:hover': { background: glassBgHover, boxShadow: glassShadowHover },
           }}
         >
           <MenuIcon />
@@ -125,26 +141,30 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
       <Box sx={{ minWidth: 0, flex: 1 }}>
         {/* Breadcrumbs */}
         <Breadcrumbs
-          separator={<NavNextIcon sx={{ fontSize: 14, color: isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(2, 61, 251, 0.4)' }} />}
+          separator={
+            <NavNextIcon sx={{ fontSize: 12, color: isDark ? `rgba(255,255,255,0.4)` : `rgba(5,7,126,0.4)` }} />
+          }
           aria-label="breadcrumb"
-          sx={{ 
-            mb: 0.25, 
+          sx={{
+            mb: 0.2,
             '& .MuiBreadcrumbs-ol': { flexWrap: 'nowrap' },
-            display: { xs: 'none', sm: 'block' } // Hide breadcrumbs on very small screens to save space
+            display: { xs: 'none', sm: 'block' },
           }}
         >
           {/* Home icon */}
           <Tooltip title="Go to Home">
             <Link
-              underline="hover"
+              underline="none"
               onClick={() => navigate('/home')}
               sx={{
                 display: 'flex', alignItems: 'center', gap: 0.4,
-                color: primaryColor, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
-                '&:hover': { color: goldAccent },
+                color: textSecondary, fontSize: '0.70rem', fontWeight: 600, cursor: 'pointer',
+                opacity: 0.85,
+                '&:hover': { color: goldAccent, opacity: 1 },
+                transition: 'color 0.2s, opacity 0.2s',
               }}
             >
-              <HomeIcon sx={{ fontSize: 13 }} />
+              <HomeIcon sx={{ fontSize: 12 }} />
               Home
             </Link>
           </Tooltip>
@@ -154,124 +174,138 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
             <Typography
               key={idx}
               variant="caption"
-              sx={{ color: secondaryColor, fontSize: '0.72rem', fontWeight: 600, whiteSpace: 'nowrap' }}
+              sx={{
+                color: textSecondary, fontSize: '0.70rem', fontWeight: 500,
+                whiteSpace: 'nowrap', opacity: 0.75,
+              }}
             >
               {crumb}
             </Typography>
           ))}
 
-          {/* Current page (active) */}
-          <Typography
-            variant="caption"
-            sx={{ 
-              fontSize: '0.72rem', fontWeight: 700, whiteSpace: 'nowrap',
-              background: `linear-gradient(135deg, ${goldAccent}, #e8c96a)`,
-              backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            }}
-          >
+          {/* Active crumb — gold gradient */}
+          <Typography variant="caption" sx={{
+            fontSize: '0.72rem', fontWeight: 800, whiteSpace: 'nowrap', letterSpacing: '0.02em',
+            background: `linear-gradient(135deg, ${goldAccent} 0%, #f0d060 100%)`,
+            backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            filter: `drop-shadow(0 0 6px rgba(212,168,67,0.4))`
+          }}>
             {currentPage}
           </Typography>
         </Breadcrumbs>
 
         {/* Page Title */}
-        <Typography
-          variant="h6"
-          sx={{
-            fontWeight: 700,
-            fontSize: { xs: '0.95rem', sm: '1.05rem' },
-            lineHeight: 1.2,
-            background: `linear-gradient(135deg, ${goldAccent} 0%, #e8c96a 50%, ${goldAccent} 100%)`,
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
+        <Typography variant="h6" sx={{
+          fontWeight: 800,
+          fontSize: { xs: '1rem', sm: '1.2rem' },
+          lineHeight: 1.2,
+          background: isDark
+            ? `linear-gradient(135deg, #a5d6a7 0%, #4caf50 100%)`
+            : `linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)`,
+          backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          letterSpacing: '-0.02em',
+          filter: isDark ? `drop-shadow(0 0 8px rgba(165,214,167,0.2))` : 'none',
+        }}>
           {currentPage}
         </Typography>
       </Box>
 
       {/* Right: Date/time + theme toggle + notifications + user */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, flexShrink: 0 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1.5 }, flexShrink: 0 }}>
 
-        {/* Date & Time */}
+        {/* Date & Time — Liquid Glass card */}
         <Box sx={{
           display: { xs: 'none', md: 'flex' }, flexDirection: 'column', alignItems: 'flex-end',
-          px: 1.5, py: 0.5, borderRadius: 2,
-          bgcolor: isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(2, 61, 251, 0.04)',
-          border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(2, 61, 251, 0.06)'}`,
+          px: 2, py: 0.6, borderRadius: '14px',
+          background: glassBg,
+          backdropFilter: 'blur(20px) saturate(180%)',
+          border: `1px solid ${glassBorder}`,
+          boxShadow: glassShadowBox,
         }}>
-          <Typography variant="caption" sx={{ fontWeight: 700, color: primaryColor, fontSize: '0.8rem', lineHeight: 1.2 }}>
+          <Typography variant="caption" sx={{ fontWeight: 800, color: textPrimary, fontSize: '0.82rem', lineHeight: 1.2 }}>
             {time}
           </Typography>
-          <Typography variant="caption" sx={{ color: secondaryColor, fontSize: '0.65rem', lineHeight: 1.2 }}>
+          <Typography variant="caption" sx={{ color: textSecondary, fontSize: '0.64rem', lineHeight: 1.2, opacity: 0.85, fontWeight: 500 }}>
             {getDate()}
           </Typography>
         </Box>
 
-        {/* Theme Toggle */}
-        <Tooltip title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}>
-          <Box 
+        {/* Theme Toggle - Liquid Glass */}
+        <Tooltip title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+          <Box
             onClick={toggleColorMode}
             sx={{
-              width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              bgcolor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(2, 61, 251, 0.05)', 
-              border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(2, 61, 251, 0.08)'}`,
+              width: 40, height: 40, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: glassBg,
+              backdropFilter: 'blur(20px)',
+              border: `1px solid ${glassBorder}`,
+              boxShadow: glassShadowBox,
               cursor: 'pointer',
-              '&:hover': { bgcolor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(2, 61, 251, 0.1)' },
-              transition: 'background 0.2s, transform 0.2s',
-              '&:active': { transform: 'scale(0.95)' },
+              '&:hover': { background: glassBgHover, transform: 'scale(1.05) translateY(-2px)', boxShadow: glassShadowHover },
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
-            {isDark ? (
-              <LightModeIcon sx={{ fontSize: 18, color: goldAccent }} />
-            ) : (
-              <DarkModeIcon sx={{ fontSize: 18, color: '#023DFB' }} />
-            )}
+            {isDark
+              ? <LightModeIcon sx={{ fontSize: 18, color: goldAccent, filter: `drop-shadow(0 0 6px ${goldAccent})` }} />
+              : <DarkModeIcon sx={{ fontSize: 18, color: '#4caf50', filter: `drop-shadow(0 0 6px rgba(76,175,80,0.6))` }} />
+            }
           </Box>
         </Tooltip>
 
-        {/* Notification bell */}
+        {/* Notification bell - Liquid Glass */}
         <Tooltip title="Notifications">
           <Box sx={{
-            width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            bgcolor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(2, 61, 251, 0.05)', 
-            border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(2, 61, 251, 0.08)'}`,
+            width: 40, height: 40, borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: glassBg,
+            backdropFilter: 'blur(20px)',
+            border: `1px solid ${glassBorder}`,
+            boxShadow: glassShadowBox,
             cursor: 'pointer', position: 'relative',
-            '&:hover': { bgcolor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(2, 61, 251, 0.1)' },
-            transition: 'background 0.2s',
+            '&:hover': { background: glassBgHover, transform: 'scale(1.05) translateY(-2px)', boxShadow: glassShadowHover },
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}>
-            <BellIcon sx={{ fontSize: 18, color: primaryColor }} />
-            {/* badge */}
+            <BellIcon sx={{ fontSize: 19, color: textPrimary, opacity: 0.9 }} />
+            {/* notification dot in bright green */}
             <Box sx={{
-              position: 'absolute', top: 6, right: 6,
+              position: 'absolute', top: 9, right: 9,
               width: 8, height: 8, borderRadius: '50%',
-              background: `linear-gradient(135deg, ${goldAccent}, #e8c96a)`,
-              border: isDark ? '1.5px solid #1e293b' : '1.5px solid rgba(255,255,255,0.9)',
+              background: `linear-gradient(135deg, #a5d6a7, #4caf50)`,
+              border: isDark ? `1.5px solid rgba(5,7,126,0.8)` : `1.5px solid rgba(253,253,252,0.8)`,
+              boxShadow: `0 0 8px #4caf50`,
             }} />
           </Box>
         </Tooltip>
 
-        {/* User avatar */}
+        {/* User profile - Liquid Glass Badge */}
         <Tooltip title="Admin User">
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer',
-            px: 1, py: 0.5, borderRadius: 2,
-            '&:hover': { bgcolor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(2, 61, 251, 0.05)' }, transition: 'background 0.2s' }}>
+          <Box sx={{
+            display: 'flex', alignItems: 'center', gap: 1.2, cursor: 'pointer',
+            px: 1.2, py: 0.6, borderRadius: '20px',
+            background: glassBg,
+            backdropFilter: 'blur(20px)',
+            border: `1px solid ${glassBorder}`,
+            boxShadow: glassShadowBox,
+            '&:hover': { background: glassBgHover, transform: 'translateY(-2px) scale(1.02)', boxShadow: glassShadowHover },
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}>
             <Avatar sx={{
-              width: 34, height: 34,
-              background: isDark ? `linear-gradient(135deg, ${goldAccent}, #b08930)` : `linear-gradient(135deg, #023DFB, #1a3a6b)`,
-              fontSize: '0.75rem', fontWeight: 700, color: '#fff',
-              border: `2px solid ${goldAccent}`,
+              width: 30, height: 30,
+              background: `linear-gradient(135deg, ${goldAccent} 0%, #4caf50 100%)`,
+              fontSize: '0.75rem', fontWeight: 800,
+              color: WHT,
+              border: `1px solid rgba(255,255,255,0.6)`,
+              boxShadow: `0 2px 10px rgba(76,175,80,0.4)`,
             }}>
               AD
             </Avatar>
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: primaryColor, fontSize: '0.78rem', display: 'block', lineHeight: 1.2 }}>
+            <Box sx={{ display: { xs: 'none', sm: 'block' }, pr: 0.5 }}>
+              <Typography variant="caption" sx={{ fontWeight: 800, color: textPrimary, fontSize: '0.78rem', display: 'block', lineHeight: 1.2, letterSpacing: '0.01em' }}>
                 Admin
               </Typography>
-              <Typography variant="caption" sx={{ color: secondaryColor, fontSize: '0.65rem', lineHeight: 1.2 }}>
+              <Typography variant="caption" sx={{ color: textSecondary, fontSize: '0.62rem', lineHeight: 1.2, opacity: 0.9, fontWeight: 500 }}>
                 HR Administrator
               </Typography>
             </Box>
@@ -281,4 +315,3 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
     </Box>
   );
 }
-

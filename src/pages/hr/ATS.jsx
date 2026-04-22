@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Chip, Button, TextField,
@@ -151,8 +151,8 @@ export default function ApplicantTracking() {
       {/* Page Header and Stats */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" sx={{ 
-          fontWeight: 800, color: '#023DFB', 
-          background: 'linear-gradient(90deg, #023DFB, #4a75e6)',
+          fontWeight: 800, color: '#0241FB', 
+          background: 'linear-gradient(90deg, #0241FB, #4470ED)',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           mb: 1 
         }}>
@@ -164,7 +164,7 @@ export default function ApplicantTracking() {
 
         <Grid container spacing={2}>
           {[
-            { label: 'Total Applicants', value: localApplicants.length, color: '#023DFB' },
+            { label: 'Total Applicants', value: localApplicants.length, color: '#0241FB' },
             { label: 'For Interview', value: localApplicants.filter(a => a.status.includes('Interview')).length, color: '#1565c0' },
             { label: 'Job Offers', value: localApplicants.filter(a => a.status.includes('Offer')).length, color: '#e65100' },
             { label: 'Onboarding', value: localApplicants.filter(a => a.status === 'Onboarding').length, color: '#2e7d32' },
@@ -184,7 +184,7 @@ export default function ApplicantTracking() {
       <Grid container spacing={3}>
         {/* Main List */}
         <Grid item xs={12} lg={8}>
-          <Card sx={{ borderRadius: 4, boxShadow: '0 12px 32px rgba(10,22,40,0.05)', overflow: 'hidden' }}>
+          <Card sx={{ borderRadius: 4, borderTop: `3px solid #d4a843`,boxShadow: '0 12px 32px rgba(10,22,40,0.05)', overflow: 'hidden' }}>
             <Box sx={{ p: 3, borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
               <TextField
                 size="small"
@@ -192,7 +192,7 @@ export default function ApplicantTracking() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 InputProps={{
-                  startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#023DFB' }} /></InputAdornment>,
+                  startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#0241FB' }} /></InputAdornment>,
                 }}
                 sx={{ flex: 1, minWidth: 200 }}
               />
@@ -243,10 +243,10 @@ export default function ApplicantTracking() {
                       onClick={() => setSelectedApplicantId(app.id)}
                       sx={{ cursor: 'pointer', '&.Mui-selected': { bgcolor: 'rgba(2, 61, 251, 0.04)' } }}
                     >
-                      <TableCell sx={{ fontWeight: 700, color: '#023DFB' }}>{app.id}</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: '#0241FB' }}>{app.id}</TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                          <Avatar sx={{ width: 32, height: 32, bgcolor: app.status === 'Cancelled Application' ? '#fafafa' : '#023DFB', color: app.status === 'Cancelled Application' ? '#ccc' : '#fff', fontSize: '0.8rem', fontWeight: 700 }}>
+                          <Avatar sx={{ width: 32, height: 32, bgcolor: app.status === 'Cancelled Application' ? '#fafafa' : '#0241FB', color: app.status === 'Cancelled Application' ? '#ccc' : '#fff', fontSize: '0.8rem', fontWeight: 700 }}>
                             {app.name.split(' ').map(n => n[0]).join('')}
                           </Avatar>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>{app.name}</Typography>
@@ -297,7 +297,7 @@ export default function ApplicantTracking() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {selectedApplicant && (
               <Card sx={{ borderRadius: 4, boxShadow: '0 8px 32px rgba(13,27,62,0.1)', overflow: 'hidden' }}>
-                <Box sx={{ p: 3, background: 'linear-gradient(135deg, #023DFB, #4a75e6)', color: '#fff' }}>
+                <Box sx={{ p: 3, background: 'linear-gradient(135deg, #0241FB, #4470ED)', color: '#FDFDFC' }}>
                   <Typography variant="subtitle2" sx={{ opacity: 0.8, fontWeight: 700, mb: 0.5 }}>CANDIDATE PROFILE</Typography>
                   <Typography variant="h6" sx={{ fontWeight: 800 }}>{selectedApplicant.name}</Typography>
                   <Typography variant="caption" sx={{ opacity: 0.9 }}>{selectedApplicant.position}</Typography>
@@ -305,7 +305,7 @@ export default function ApplicantTracking() {
                 <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 4 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Avatar sx={{ bgcolor: 'rgba(2, 61, 251, 0.1)', color: '#023DFB' }}><MailIcon fontSize="small" /></Avatar>
+                      <Avatar sx={{ bgcolor: 'rgba(2, 61, 251, 0.1)', color: '#0241FB' }}><MailIcon fontSize="small" /></Avatar>
                       <Box>
                         <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>Email</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedApplicant.email}</Typography>
@@ -323,7 +323,7 @@ export default function ApplicantTracking() {
                   <Divider sx={{ mb: 3 }} />
                   
                   <Box sx={{ mb: 4 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#023DFB', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0241FB', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                       <PipelineIcon sx={{ fontSize: '1.2rem' }} /> Requirements Checklist
                     </Typography>
                     
@@ -362,8 +362,8 @@ export default function ApplicantTracking() {
                         <Grid item xs={6}>
                           <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>Orientation Status</Typography>
                           <Box sx={{ display: 'flex', gap: 0.5 }}>
-                            <Tooltip title="Orientation 1"><Chip label="O1" size="small" sx={{ height: 18, fontSize: '0.55rem', bgcolor: selectedApplicant.requirements?.training1 ? '#2e7d32' : '#ccc', color: '#fff' }} /></Tooltip>
-                            <Tooltip title="Orientation 2"><Chip label="O2" size="small" sx={{ height: 18, fontSize: '0.55rem', bgcolor: selectedApplicant.requirements?.training2 ? '#2e7d32' : '#ccc', color: '#fff' }} /></Tooltip>
+                            <Tooltip title="Orientation 1"><Chip label="O1" size="small" sx={{ height: 18, fontSize: '0.55rem', bgcolor: selectedApplicant.requirements?.training1 ? '#2e7d32' : '#ccc', color: '#FDFDFC' }} /></Tooltip>
+                            <Tooltip title="Orientation 2"><Chip label="O2" size="small" sx={{ height: 18, fontSize: '0.55rem', bgcolor: selectedApplicant.requirements?.training2 ? '#2e7d32' : '#ccc', color: '#FDFDFC' }} /></Tooltip>
                           </Box>
                         </Grid>
                       </Grid>
@@ -372,7 +372,7 @@ export default function ApplicantTracking() {
 
                   <Divider sx={{ mb: 3 }} />
                   
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#023DFB', mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0241FB', mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <PipelineIcon sx={{ fontSize: '1.2rem' }} /> Hiring Pipeline
                   </Typography>
 
@@ -392,14 +392,14 @@ export default function ApplicantTracking() {
                             <StepLabel 
                               StepIconProps={{
                                 sx: {
-                                  '&.Mui-active': { color: '#023DFB' },
+                                  '&.Mui-active': { color: '#0241FB' },
                                   '&.Mui-completed': { color: '#2e7d32' },
                                 }
                               }}
                             >
                               <Typography variant="caption" sx={{ 
                                 fontWeight: isCurrent ? 800 : 600, 
-                                color: isCurrent ? '#023DFB' : (isCompleted ? '#2e7d32' : 'text.secondary'),
+                                color: isCurrent ? '#0241FB' : (isCompleted ? '#2e7d32' : 'text.secondary'),
                                 fontSize: '0.75rem' 
                               }}>
                                 {label}
@@ -412,7 +412,7 @@ export default function ApplicantTracking() {
                   )}
 
                   <Box sx={{ mt: 3, display: 'flex', gap: 1 }}>
-                    <Button variant="contained" fullWidth size="small" sx={{ bgcolor: '#023DFB', fontWeight: 700, borderRadius: 2 }}>
+                    <Button variant="contained" fullWidth size="small" sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)', fontWeight: 700, borderRadius: 2 }}>
                       Move to Next
                     </Button>
                     <Button variant="outlined" color="error" fullWidth size="small" sx={{ fontWeight: 700, borderRadius: 2 }}>

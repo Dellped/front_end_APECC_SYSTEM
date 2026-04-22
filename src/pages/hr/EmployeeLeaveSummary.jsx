@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Chip, Avatar, Button,
@@ -12,7 +12,8 @@ import {
 import { employees, leaveRecords, leaveBalances, sanctions } from '../../data/mockData';
 import LeaveApplicationForm from './LeaveApplicationForm';
 
-const logoBlue = '#023DFB';
+const logoBlue = '#0241FB';
+const goldAccent = '#d4a843';
 
 export default function EmployeeLeaveSummary() {
   const initialId = employees && employees.length > 0 ? employees[0].id : null;
@@ -26,7 +27,7 @@ export default function EmployeeLeaveSummary() {
 
   const headerStyle = {
     bgcolor: logoBlue,
-    color: '#fff',
+    color: '#FDFDFC',
     fontWeight: 700,
     fontSize: '0.75rem',
   };
@@ -90,7 +91,7 @@ export default function EmployeeLeaveSummary() {
                                 left: '50%', 
                                 transform: 'translateX(-50%)',
                                 bgcolor: '#2e7d32', 
-                                color: '#fff',
+                                color: '#FDFDFC',
                                 fontWeight: 800,
                                 fontSize: '0.6rem',
                                 border: '2px solid #fff'
@@ -149,7 +150,7 @@ export default function EmployeeLeaveSummary() {
           {/* Summary Cards */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid item xs={12} sm={4}>
-                <Card sx={{ borderRadius: 3, background: 'linear-gradient(135deg, #023DFB 0%, #4a75e6 100%)', color: '#fff' }}>
+                <Card sx={{ borderRadius: 3, background: 'linear-gradient(135deg, #05077E 0%, #4470ED 100%)', color: '#FDFDFC' }}>
                     <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Box>
                             <Typography variant="body2" sx={{ opacity: 0.8 }}>Pending Applications</Typography>
@@ -160,7 +161,7 @@ export default function EmployeeLeaveSummary() {
                 </Card>
             </Grid>
             <Grid item xs={12} sm={4}>
-                <Card sx={{ borderRadius: 3, background: 'linear-gradient(135deg, #2e7d32 0%, #4caf50 100%)', color: '#fff' }}>
+                <Card sx={{ borderRadius: 3, background: 'linear-gradient(135deg, #2e7d32 0%, #4caf50 100%)', color: '#FDFDFC' }}>
                     <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Box>
                             <Typography variant="body2" sx={{ opacity: 0.8 }}>Remaining Credits</Typography>
@@ -171,7 +172,7 @@ export default function EmployeeLeaveSummary() {
                 </Card>
             </Grid>
             <Grid item xs={12} sm={4}>
-                <Card sx={{ borderRadius: 3, background: 'linear-gradient(135deg, #c62828 0%, #ef5350 100%)', color: '#fff' }}>
+                <Card sx={{ borderRadius: 3, background: 'linear-gradient(135deg, #c62828 0%, #ef5350 100%)', color: '#FDFDFC' }}>
                     <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Box>
                             <Typography variant="body2" sx={{ opacity: 0.8 }}>Active Sanctions</Typography>

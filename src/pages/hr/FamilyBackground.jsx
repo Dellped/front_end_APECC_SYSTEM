@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, TextField, Button, Divider,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, IconButton, Avatar, Autocomplete,
@@ -95,12 +95,12 @@ export default function FamilyBackground() {
           sx={{
             '& .MuiOutlinedInput-root': {
               borderRadius: 3,
-              bgcolor: '#fff',
+              bgcolor: '#FDFDFC',
               boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
               transition: 'all 0.3s ease',
               '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' },
               '&:hover fieldset': { borderColor: goldAccent },
-              '&.Mui-focused fieldset': { borderColor: '#023DFB', boxShadow: '0 4px 20px rgba(2,61,251,0.15)' }
+              '&.Mui-focused fieldset': { borderColor: '#0241FB', boxShadow: '0 4px 20px rgba(2,61,251,0.15)' }
             }
           }}
           renderInput={(params) => (
@@ -135,14 +135,14 @@ export default function FamilyBackground() {
         boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
       }}>
         <CardContent sx={{ py: 2, '&:last-child': { pb: 2 }, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar sx={{ bgcolor: '#023DFB', width: 45, height: 45, fontWeight: 700 }}>
+          <Avatar sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)', width: 45, height: 45, fontWeight: 700 }}>
             {employees[selectedEmp].firstName[0]}
           </Avatar>
           <Box>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
               Currently Viewing
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: '#023DFB', lineHeight: 1.2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: '#0241FB', lineHeight: 1.2 }}>
               {employees[selectedEmp].firstName} {employees[selectedEmp].lastName}
             </Typography>
           </Box>
@@ -158,7 +158,7 @@ export default function FamilyBackground() {
         <CardContent sx={{ p: 4 }}>
 
           {/* Spouse */}
-          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#023DFB', mb: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#0241FB', mb: 2 }}>
             Spouse Information
           </Typography>
           {familyData.spouse ? (
@@ -194,7 +194,7 @@ export default function FamilyBackground() {
           <Divider sx={{ my: 2.5 }} />
 
           {/* Parents */}
-          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#023DFB', mb: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#0241FB', mb: 2 }}>
             Parents Information
           </Typography>
           
@@ -238,10 +238,10 @@ export default function FamilyBackground() {
 
           {/* Children */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#023DFB' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#0241FB' }}>
               Children
             </Typography>
-            <Button size="small" startIcon={<AddIcon />} onClick={handleOpenAddChild} sx={{ color: '#023DFB', fontWeight: 600 }}>
+            <Button size="small" startIcon={<AddIcon />} onClick={handleOpenAddChild} sx={{ color: '#0241FB', fontWeight: 600 }}>
               Add Child
             </Button>
           </Box>
@@ -280,7 +280,7 @@ export default function FamilyBackground() {
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 1.5 }}>
             <Button variant="outlined" sx={{ borderColor: 'rgba(0,0,0,0.15)' }}>Cancel</Button>
-            <Button variant="contained" startIcon={<SaveIcon />} sx={{ background: 'linear-gradient(135deg, #023DFB 0%, #1a3a6b 100%)' }}>
+            <Button variant="contained" startIcon={<SaveIcon />} sx={{ background: 'linear-gradient(135deg, #05077E 0%, #05077E 100%)' }}>
               Save Changes
             </Button>
           </Box>
@@ -289,7 +289,7 @@ export default function FamilyBackground() {
 
       {/* Add Child Dialog */}
       <Dialog open={isAddChildOpen} onClose={() => setIsAddChildOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, color: '#023DFB' }}>Add Child</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, color: '#0241FB' }}>Add Child</DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
             <Grid item xs={12}>
@@ -321,7 +321,7 @@ export default function FamilyBackground() {
         </DialogContent>
         <DialogActions sx={{ p: 1.5, px: 2 }}>
           <Button onClick={() => setIsAddChildOpen(false)} sx={{ color: 'text.secondary' }}>Cancel</Button>
-          <Button onClick={handleSaveChild} variant="contained" sx={{ bgcolor: '#023DFB' }}>Add</Button>
+          <Button onClick={handleSaveChild} variant="contained" sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)' }}>Add</Button>
         </DialogActions>
       </Dialog>
 

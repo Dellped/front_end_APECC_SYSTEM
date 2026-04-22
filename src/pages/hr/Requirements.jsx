@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   Box, Card, CardContent, Typography, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Chip, Avatar, Autocomplete, TextField, createFilterOptions
@@ -56,12 +56,12 @@ export default function Requirements() {
           sx={{
             '& .MuiOutlinedInput-root': {
               borderRadius: 3,
-              bgcolor: '#fff',
+              bgcolor: '#FDFDFC',
               boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
               transition: 'all 0.3s ease',
               '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' },
               '&:hover fieldset': { borderColor: goldAccent },
-              '&.Mui-focused fieldset': { borderColor: '#023DFB', boxShadow: '0 4px 20px rgba(2,61,251,0.15)' }
+              '&.Mui-focused fieldset': { borderColor: '#0241FB', boxShadow: '0 4px 20px rgba(2,61,251,0.15)' }
             }
           }}
           renderInput={(params) => (
@@ -96,14 +96,14 @@ export default function Requirements() {
         boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
       }}>
         <CardContent sx={{ py: 2, '&:last-child': { pb: 2 }, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar sx={{ bgcolor: '#023DFB', width: 45, height: 45, fontWeight: 700 }}>
+          <Avatar sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)', width: 45, height: 45, fontWeight: 700 }}>
             {employees[selectedEmp].firstName[0]}
           </Avatar>
           <Box>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
               Currently Viewing
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: '#023DFB', lineHeight: 1.2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: '#0241FB', lineHeight: 1.2 }}>
               {employees[selectedEmp].firstName} {employees[selectedEmp].lastName}
             </Typography>
           </Box>
@@ -117,7 +117,7 @@ export default function Requirements() {
         boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
       }}>
         <CardContent sx={{ p: 4 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#023DFB', mb: 2.5 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#0241FB', mb: 2.5 }}>
             List of Requirements
           </Typography>
           <TableContainer>

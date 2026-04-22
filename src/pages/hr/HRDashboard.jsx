@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, Grid, Card, CardContent, Typography, Chip, Avatar,
@@ -19,6 +19,10 @@ import {
 import { employees, departmentStats, leaveRecords } from '../../data/mockData';
 
 const goldAccent = '#d4a843';
+const NAV = '#05077E';
+const IND = '#0241FB';
+const ROY = '#4470ED';
+const PER = '#B4B7D3';
 
 export default function HRDashboard() {
   const navigate = useNavigate();
@@ -29,7 +33,7 @@ export default function HRDashboard() {
       value: employees.length,
       subtitle: 'Across all departments',
       icon: <PeopleIcon />,
-      gradient: 'linear-gradient(135deg, #023DFB 0%, #4a75e6 50%, #89B1D5 100%)',
+      gradient: `linear-gradient(135deg, ${NAV} 0%, ${IND} 55%, ${ROY} 100%)`,
       navigateTo: '/hr/employees',
     },
     {
@@ -37,7 +41,7 @@ export default function HRDashboard() {
       value: employees.filter((e) => e.status === 'Active').length,
       subtitle: 'Currently employed',
       icon: <PersonAddIcon />,
-      gradient: 'linear-gradient(135deg, #023DFB 0%, #2156a5 50%, #2979cc 100%)',
+      gradient: `linear-gradient(135deg, ${NAV} 0%, #1a2cb0 50%, ${IND} 100%)`,
       navigateTo: '/hr/employees?filter=Active',
     },
     {
@@ -69,7 +73,7 @@ export default function HRDashboard() {
       value: employees.filter((e) => e.employmentType === 'Regular').length,
       subtitle: 'Permanently employed',
       icon: <RegularIcon />,
-      gradient: 'linear-gradient(135deg, #1a5276 0%, #1f618d 50%, #2e86c1 100%)',
+      gradient: `linear-gradient(135deg, ${NAV} 0%, #0241FB 50%, ${IND} 100%)`,
       navigateTo: '/hr/employees?employmentType=Regular',
     },
     {
@@ -113,22 +117,22 @@ export default function HRDashboard() {
                 overflow: 'visible',
                 border: 'none',
                 background: card.gradient,
-                boxShadow: '0 4px 20px rgba(13,27,62,0.22)',
+                boxShadow: '0 4px 20px rgba(5,7,126,0.22)',
                 cursor: 'pointer',
                 transition: 'transform 0.18s ease, box-shadow 0.18s ease',
                 '&:hover': {
                   transform: 'translateY(-4px)',
-                  boxShadow: '0 10px 30px rgba(13,27,62,0.38)',
+                  boxShadow: '0 10px 30px rgba(5,7,126,0.38)',
                 },
               }}
             >
               <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
                   <Box>
-                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.75)', fontWeight: 500, fontSize: '0.78rem', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ color: 'rgba(253,253,252,0.78)', fontWeight: 500, fontSize: '0.78rem', mb: 0.5 }}>
                       {card.title}
                     </Typography>
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#fff', lineHeight: 1 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#FDFDFC', lineHeight: 1 }}>
                       {card.value}
                     </Typography>
                   </Box>
@@ -136,17 +140,17 @@ export default function HRDashboard() {
                     sx={{
                       width: 44,
                       height: 44,
-                      background: 'rgba(255,255,255,0.15)',
+                      background: 'rgba(253,253,252,0.15)',
                       backdropFilter: 'blur(8px)',
-                      border: '1px solid rgba(255,255,255,0.2)',
+                      border: '1px solid rgba(253,253,252,0.22)',
                       boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
-                      color: '#fff',
+                      color: '#FDFDFC',
                     }}
                   >
                     {card.icon}
                   </Avatar>
                 </Box>
-                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.72rem' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(253,253,252,0.65)', fontSize: '0.72rem' }}>
                   {card.subtitle}
                 </Typography>
               </CardContent>
@@ -162,10 +166,10 @@ export default function HRDashboard() {
           <Card sx={{
             height: '100%',
             borderRadius: 3,
-            background: 'linear-gradient(160deg, #023DFB 0%, #4a75e6 50%, #89B1D5 100%)',
-            boxShadow: '0 4px 24px rgba(26, 44, 78, 0.4)',
+            background: `linear-gradient(160deg, ${NAV} 0%, ${IND} 55%, ${ROY} 80%, ${PER} 100%)`,
+            boxShadow: '0 4px 24px rgba(5,7,126,0.35)',
             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 32px rgba(13,27,62,0.4)' },
+            '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 32px rgba(5,7,126,0.4)' },
           }}>
             <CardContent sx={{ p: 2.5 }}>
               <Typography variant="h6" sx={{
@@ -178,7 +182,7 @@ export default function HRDashboard() {
               {departmentStats.map((dept, i) => (
                 <Box key={i} sx={{ mb: 1.8 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.82rem', color: 'rgba(255,255,255,0.92)' }}>{dept.name}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.82rem', color: 'rgba(253,253,252,0.92)' }}>{dept.name}</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 600, color: goldAccent, fontSize: '0.82rem' }}>{dept.count}</Typography>
                   </Box>
                   <LinearProgress
@@ -187,7 +191,7 @@ export default function HRDashboard() {
                     sx={{
                       height: 6,
                       borderRadius: 3,
-                      backgroundColor: 'rgba(255,255,255,0.08)',
+                      backgroundColor: 'rgba(253,253,252,0.08)',
                       '& .MuiLinearProgress-bar': {
                         borderRadius: 3,
                         background: `linear-gradient(90deg, ${goldAccent}, #e8c96a)`,
@@ -204,28 +208,28 @@ export default function HRDashboard() {
         <Grid item xs={12} md={4}>
           <Card sx={{
             borderRadius: 3, height: '100%',
-            background: 'linear-gradient(160deg, #023DFB 0%, #4a75e6 60%, #89B1D5 100%)',
-            boxShadow: '0 4px 20px rgba(13,27,62,0.25)',
+            background: `linear-gradient(160deg, ${NAV} 0%, ${IND} 60%, ${ROY} 100%)`,
+            boxShadow: '0 4px 20px rgba(5,7,126,0.25)',
             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 32px rgba(13,27,62,0.4)' },
+            '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 32px rgba(5,7,126,0.4)' },
           }}>
             <CardContent sx={{ p: 2.5 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                 <TrendingIcon sx={{ color: goldAccent, fontSize: '1.2rem' }} />
-                <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem', color: '#fff' }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem', color: '#FDFDFC' }}>
                   Recent Hires
                 </Typography>
               </Box>
               {recentHires.map((emp, i) => (
-                <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, pb: 2, borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.08)' : 'none' }}>
-                  <Avatar sx={{ width: 38, height: 38, background: `linear-gradient(135deg, ${goldAccent}, #e8c96a)`, color: '#023DFB', fontSize: '0.82rem', fontWeight: 700 }}>
+                <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, pb: 2, borderBottom: i < 2 ? '1px solid rgba(253,253,252,0.08)' : 'none' }}>
+                  <Avatar sx={{ width: 38, height: 38, background: `linear-gradient(135deg, ${goldAccent}, #e8c96a)`, color: NAV, fontSize: '0.82rem', fontWeight: 700 }}>
                     {emp.firstName[0]}{emp.lastName[0]}
                   </Avatar>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.82rem', lineHeight: 1.3, color: '#fff' }} noWrap>
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.82rem', lineHeight: 1.3, color: '#FDFDFC' }} noWrap>
                       {emp.firstName} {emp.lastName}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.72rem' }}>
+                    <Typography variant="caption" sx={{ color: 'rgba(253,253,252,0.6)', fontSize: '0.72rem' }}>
                       {emp.designation}
                     </Typography>
                   </Box>
@@ -256,8 +260,8 @@ export default function HRDashboard() {
         <Grid item xs={12} md={4}>
           <Card sx={{
             borderRadius: 3, height: '100%',
-            background: `linear-gradient(160deg, #023DFB 0%, #4a75e6 40%, #89B1D5 70%, #d4a843 140%)`,
-            boxShadow: '0 4px 20px rgba(13,27,62,0.25)',
+            background: `linear-gradient(160deg, ${NAV} 0%, ${IND} 45%, ${ROY} 75%, ${PER} 140%)`,
+            boxShadow: '0 4px 20px rgba(5,7,126,0.25)',
             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
             '&:hover': { transform: 'translateY(-3px)', boxShadow: `0 8px 32px rgba(212,168,67,0.2)` },
           }}>
@@ -276,14 +280,14 @@ export default function HRDashboard() {
                 const bd = new Date(emp.personal.birthdate);
                 return (
                   <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, pb: 2, borderBottom: i < 2 ? `1px solid rgba(212,168,67,0.15)` : 'none' }}>
-                    <Avatar sx={{ width: 38, height: 38, background: `linear-gradient(135deg, ${goldAccent}, #e8c96a)`, color: '#023DFB', fontSize: '0.82rem', fontWeight: 700 }}>
+                    <Avatar sx={{ width: 38, height: 38, background: `linear-gradient(135deg, ${goldAccent}, #e8c96a)`, color: NAV, fontSize: '0.82rem', fontWeight: 700 }}>
                       {emp.firstName[0]}{emp.lastName[0]}
                     </Avatar>
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.82rem', lineHeight: 1.3, color: '#fff' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.82rem', lineHeight: 1.3, color: '#FDFDFC' }}>
                         {emp.firstName} {emp.lastName}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.72rem' }}>
+                      <Typography variant="caption" sx={{ color: 'rgba(253,253,252,0.6)', fontSize: '0.72rem' }}>
                         {bd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
                       </Typography>
                     </Box>
@@ -298,10 +302,10 @@ export default function HRDashboard() {
         <Grid item xs={12}>
           <Card sx={{
             borderRadius: 3,
-            background: 'linear-gradient(160deg, #023DFB 0%, #4a75e6 50%, #89B1D5 100%)',
-            boxShadow: '0 4px 24px rgba(26, 44, 78, 0.4)',
+            background: `linear-gradient(160deg, ${NAV} 0%, ${IND} 50%, ${ROY} 80%, ${PER} 100%)`,
+            boxShadow: '0 4px 24px rgba(5,7,126,0.35)',
             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 32px rgba(13,27,62,0.4)' },
+            '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 32px rgba(5,7,126,0.4)' },
           }}>
             <CardContent sx={{ p: 2.5 }}>
               <Typography variant="h6" sx={{
@@ -311,7 +315,7 @@ export default function HRDashboard() {
               }}>
                 Recent Leave Activity
               </Typography>
-              <TableContainer sx={{ overflowX: 'auto',  backgroundColor: 'transparent'  }}>
+              <TableContainer sx={{ overflowX: 'auto', backgroundColor: 'transparent' }}>
                 <Table size="small" sx={{ minWidth: 800 }}>
                   <TableHead>
                     <TableRow sx={{ '& th': { background: 'rgba(212,168,67,0.18)', color: goldAccent, fontWeight: 700, fontSize: '0.78rem', letterSpacing: '0.04em', borderBottom: `1px solid rgba(212,168,67,0.2)` } }}>
@@ -327,8 +331,8 @@ export default function HRDashboard() {
                     {leaveRecords.map((leave) => {
                       const emp = employees.find((e) => e.id === leave.employeeId);
                       return (
-                        <TableRow key={leave.id} sx={{ '&:hover': { background: 'rgba(255,255,255,0.04)' }, '& td': { color: 'rgba(255,255,255,0.92)', borderBottom: '1px solid rgba(255,255,255,0.09)', fontSize: '0.82rem' } }}>
-                          <TableCell sx={{ fontWeight: 600, color: '#fff !important' }}>{emp ? `${emp.firstName} ${emp.lastName}` : leave.employeeId}</TableCell>
+                        <TableRow key={leave.id} sx={{ '&:hover': { background: 'rgba(253,253,252,0.04)' }, '& td': { color: 'rgba(253,253,252,0.92)', borderBottom: '1px solid rgba(253,253,252,0.09)', fontSize: '0.82rem' } }}>
+                          <TableCell sx={{ fontWeight: 600, color: '#FDFDFC !important' }}>{emp ? `${emp.firstName} ${emp.lastName}` : leave.employeeId}</TableCell>
                           <TableCell>{leave.type}</TableCell>
                           <TableCell>{leave.startDate}</TableCell>
                           <TableCell>{leave.endDate}</TableCell>

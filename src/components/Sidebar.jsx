@@ -38,12 +38,27 @@ import {
   Assessment as ReportsIcon,
   Settings as SettingsIcon,
   AssignmentTurnedIn as AssignmentTurnedInIcon,
+  PersonAdd as PersonAddIcon,
+  Layers as LayersIcon,
 } from '@mui/icons-material';
 
 const DRAWER_WIDTH = 275;
 const DRAWER_COLLAPSED = 72;
 
-const sidebarGradient = 'linear-gradient(180deg, #023DFB 0%, #3065e8 35%, #5c8ddd 70%, #89B1D5 100%)';
+// ── Palette ──────────────────────────────────────────────────────────────────
+const NAV = '#05077E';   // Navy
+const IND = '#0241FB';   // Bright Indigo
+const ROY = '#4470ED';   // Royal Blue
+const PER = '#B4B7D3';   // Periwinkle
+const WHT = '#FDFDFC';   // White
+const goldAccent = '#d4a843';
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Deep Navy → Indigo with subtle Periwinkle shimmer — elegant & not "all blue"
+const sidebarGradient = `linear-gradient(175deg, ${NAV} 0%, #08097a 25%, #0b0e9a 55%, #1230d4 80%, ${ROY} 100%)`;
+
+const activeBg = 'rgba(212,168,67,0.14)';
+const hoverBg  = 'rgba(253,253,252,0.07)';
 
 const menuConfig = [
   { id: 'home', label: 'Home Dashboard', icon: <DashboardIcon />, path: '/home' },
@@ -54,46 +69,43 @@ const menuConfig = [
     children: [
       { id: 'hr-dashboard', label: 'Dashboard', icon: <DashboardIcon />, path: '/hr/dashboard' },
       {
+        id: 'hr-onboarding',
+        label: 'Onboarding',
+        icon: <PersonAddIcon />,
+        children: [
+          { id: 'hr-onboarding-add', label: 'Add Employee', icon: <PersonAddIcon />, path: '/hr/onboarding/add-employee' },
+          { id: 'hr-onboarding-approvals', label: 'Approval Queue', icon: <AssignmentTurnedInIcon />, path: '/hr/onboarding/approvals' },
+          { id: 'hr-emp-ats', label: 'Applicant Tracking (ATS)', icon: <PeopleIcon />, path: '/hr/onboarding/applicants' },
+        ],
+      },
+      {
         id: 'hr-employee',
-        label: 'Employee Management',
+        label: 'Employment Management',
         icon: <PeopleIcon />,
         children: [
-          { id: 'hr-emp-ats', label: 'Applicant Tracking (ATS)', icon: <PeopleIcon />, path: '/hr/applicants' },
-          { id: 'hr-emp-list', label: 'Employee List', icon: <BadgeIcon />, path: '/hr/employees/list' },
           { id: 'hr-emp-master', label: 'Employee Master File', icon: <AssignmentIndIcon />, path: '/hr/employees/master-file' },
-          { id: 'hr-emp-details', label: 'Employment Details', icon: <WorkHistoryIcon />, path: '/hr/employees/employment-details' },
-          { id: 'hr-emp-profile', label: 'Employee Profile / 201', icon: <PersonIcon />, path: '/hr/employees/profile' },
+          { id: 'hr-emp-profile', label: 'Profile 201', icon: <PersonIcon />, path: '/hr/employees/profile' },
           { id: 'hr-emp-personal', label: 'Personal Information', icon: <PersonIcon />, path: '/hr/employees/personal' },
           { id: 'hr-emp-family', label: 'Family Background', icon: <FamilyIcon />, path: '/hr/employees/family' },
           { id: 'hr-emp-education', label: 'Educational Attainment', icon: <SchoolIcon />, path: '/hr/employees/education' },
           { id: 'hr-emp-work', label: 'Work Experience', icon: <WorkIcon />, path: '/hr/employees/work-experience' },
           { id: 'hr-emp-requirements', label: 'List of Requirements', icon: <AlphalistIcon />, path: '/hr/employees/requirements' },
+          { id: 'hr-emp-job-levels', label: 'Job Levels / Ranks', icon: <LayersIcon />, path: '/hr/employees/job-levels' },
         ],
       },
       {
         id: 'hr-payroll',
-        label: 'Payroll & Compensation',
+        label: 'Payroll & Compens...',
         icon: <PaymentsIcon />,
         children: [
           { id: 'hr-pay-history', label: 'Payroll History', icon: <ReceiptIcon />, path: '/hr/payroll/history' },
-          { id: 'hr-pay-overview', label: 'Payroll Overview', icon: <WalletIcon />, path: '/hr/payroll/overview' },
           { id: 'hr-pay-payslips', label: 'Payslips', icon: <ReceiptIcon />, path: '/hr/payroll/payslips' },
           { id: 'hr-pay-register', label: 'Payroll Register', icon: <ReportsIcon />, path: '/hr/payroll/register' },
-          { id: 'hr-pay-remittances', label: 'Remittances & Loans', icon: <PaymentsIcon />, path: '/hr/payroll/remittances-loans' },
-          { id: 'hr-pay-basic-pay', label: 'Basic Pay Assignment', icon: <PaymentsIcon />, path: '/hr/payroll/basic-pay-assignment' },
           { id: 'hr-pay-salary-adj', label: 'Salary Adjustment', icon: <AdjustmentIcon />, path: '/hr/payroll/salary-adjustment' },
-          { id: 'hr-pay-allowances-specific', label: 'Allowances', icon: <PaymentsIcon />, path: '/hr/payroll/allowances' },
           { id: 'hr-pay-salary-history', label: 'Salary History', icon: <HistoryIcon />, path: '/hr/payroll/salary-history' },
-          { id: 'hr-pay-statutory-setup', label: 'Statutory Contributions Setup', icon: <SettingsIcon />, path: '/hr/payroll/statutory-setup' },
-          { id: 'hr-pay-attendance', label: 'Attendance & DTR', icon: <LeavesIcon />, path: '/hr/payroll/attendance' },
           { id: 'hr-pay-sil', label: 'Service Incentive Leave', icon: <LeavesIcon />, path: '/hr/payroll/sil' },
-          { id: 'hr-pay-allowances', label: 'Earnings & Allowances', icon: <PaymentsIcon />, path: '/hr/payroll/allowances-management' },
           { id: 'hr-pay-contributions', label: 'Gov Contributions', icon: <TaxIcon />, path: '/hr/payroll/contributions' },
           { id: 'hr-pay-payroll', label: 'Payroll Run', icon: <PaymentsIcon />, path: '/hr/payroll/payroll' },
-          { id: 'hr-pay-adjustments', label: 'Payroll Adjustments', icon: <AdjustmentIcon />, path: '/hr/payroll/adjustments' },
-          { id: 'hr-pay-special-earnings', label: 'Special Earnings', icon: <PaymentsIcon />, path: '/hr/payroll/special-earnings' },
-          { id: 'hr-pay-reports', label: 'Payroll Reports', icon: <ReportsIcon />, path: '/hr/payroll/reports' },
-          { id: 'hr-pay-deductions', label: 'Deductions & Compliance', icon: <DeductionsIcon />, path: '/hr/payroll/deductions' },
         ],
       },
       {
@@ -102,7 +114,6 @@ const menuConfig = [
         icon: <LeavesIcon />,
         children: [
           { id: 'hr-leaves-main', label: 'Records & Summary', icon: <WorkHistoryIcon />, path: '/hr/leaves' },
-          { id: 'hr-leaves-employee-summary', label: 'Employee Summary', icon: <PersonIcon />, path: '/hr/leaves/employee-summary' },
           { id: 'hr-leaves-applications', label: 'Leave Applications', icon: <LeavesIcon />, path: '/hr/leaves/applications' },
           { id: 'hr-leaves-calendar', label: 'Leave Calendar', icon: <PeriodIcon />, path: '/hr/leaves/calendar' },
           { id: 'hr-leaves-credits', label: 'Leave Credits', icon: <LeavesIcon />, path: '/hr/leaves/credits' },
@@ -122,7 +133,7 @@ const menuConfig = [
   },
   {
     id: 'exit',
-    label: 'Exit Member',
+    label: 'Offboarding',
     icon: <ExitIcon />,
     children: [
       { id: 'exit-dashboard', label: 'Dashboard', icon: <DashboardIcon />, path: '/exit/dashboard' },
@@ -136,11 +147,6 @@ const menuConfig = [
     ],
   },
 ];
-
-// Gold accent and active styles
-const goldAccent = '#d4a843';
-const activeBg = 'rgba(212, 168, 67, 0.12)';
-const hoverBg = 'rgba(139, 26, 26, 0.08)';
 
 export default function Sidebar({ open, onToggle, isMobile }) {
   const [expanded, setExpanded] = useState({ hr: true, exit: false });
@@ -173,36 +179,42 @@ export default function Sidebar({ open, onToggle, isMobile }) {
             if (!open) onToggle();
           } else if (item.path) {
             navigate(item.path);
-            if (isMobile) onToggle(); // Close drawer on navigation (mobile)
+            if (isMobile) onToggle();
           }
         }}
         sx={{
           pl: open ? 2 + depth * 2 : 2,
-          py: depth === 0 ? 1.2 : 0.85,
-          mx: open ? 1 : 0.5,
-          mb: 0.3,
-          borderRadius: open ? '10px' : '12px',
+          py: depth === 0 ? 1.1 : 0.75,
+          mx: open ? 0.8 : 0.4,
+          mb: 0.25,
+          borderRadius: '10px',
           position: 'relative',
-          background: active ? activeBg : 'transparent',
-          color: active ? goldAccent : '#ffffff',
-          textShadow: active ? 'none' : '0 1px 3px rgba(0,0,0,0.35)',
-          transition: 'all 0.2s ease',
+          background: active
+            ? 'linear-gradient(90deg, rgba(255,255,255,0.1) 0%, transparent 100%)'
+            : 'transparent',
+          border: active ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid transparent',
+          boxShadow: 'none',
+          color: active ? goldAccent : `rgba(${PER},0.85)`,
+          transition: 'background 0.2s, color 0.2s',
           '&:hover': {
-            background: active ? activeBg : hoverBg,
-            color: '#ffffff',
-            textShadow: '0 1px 4px rgba(0,0,0,0.5)',
+            background: active
+              ? 'linear-gradient(90deg, rgba(255,255,255,0.16) 0%, transparent 100%)'
+              : `rgba(255, 255, 255, 0.08)`,
+            boxShadow: 'none',
+            color: active ? goldAccent : WHT,
+            transform: 'none',
           },
           ...(active && item.path && {
-            boxShadow: `0 0 18px rgba(212, 168, 67, 0.15)`,
             '&::after': {
               content: '""',
               position: 'absolute',
-              right: 0,
-              top: '15%',
-              height: '70%',
-              width: '3px',
-              borderRadius: '3px 0 0 3px',
+              right: 2,
+              top: '20%',
+              height: '60%',
+              width: '4px',
+              borderRadius: '4px 0 0 4px',
               background: `linear-gradient(180deg, ${goldAccent}, #e8c96a)`,
+              boxShadow: `0 0 10px ${goldAccent}80`,
             },
           }),
           ...(depth === 0 && {
@@ -214,20 +226,22 @@ export default function Sidebar({ open, onToggle, isMobile }) {
               height: '60%',
               width: '3px',
               borderRadius: '0 3px 3px 0',
-              background: goldAccent,
+              background: `linear-gradient(180deg, #e8c96a, ${goldAccent})`,
+              boxShadow: `0 0 8px ${goldAccent}50`,
             } : {},
           }),
         }}
       >
         <ListItemIcon
           sx={{
-            color: active ? goldAccent : 'rgba(255,255,255,0.95)',
-            filter: active ? 'none' : 'drop-shadow(0 1px 3px rgba(0,0,0,0.4))',
-            minWidth: open ? 38 : 'auto',
+            color: active ? goldAccent : `rgba(180,183,211,0.85)`,
+            minWidth: open ? 36 : 'auto',
             mr: open ? 1 : 'auto',
             justifyContent: 'center',
+            transition: 'color 0.2s',
             '& .MuiSvgIcon-root': {
-              fontSize: depth === 0 ? '1.3rem' : '1.1rem',
+              fontSize: depth === 0 ? '1.25rem' : '1.05rem',
+              filter: active ? `drop-shadow(0 0 4px ${goldAccent}60)` : 'none',
             },
           }}
         >
@@ -238,13 +252,17 @@ export default function Sidebar({ open, onToggle, isMobile }) {
             <ListItemText
               primary={item.label}
               primaryTypographyProps={{
-                fontSize: depth === 0 ? '0.875rem' : '0.82rem',
-                fontWeight: active ? 600 : (depth === 0 ? 500 : 400),
+                fontSize: depth === 0 ? '0.86rem' : '0.80rem',
+                fontWeight: active ? 700 : (depth === 0 ? 500 : 400),
                 letterSpacing: depth === 0 ? '0.01em' : '0',
                 noWrap: true,
+                color: active ? goldAccent : (depth === 0 ? WHT : `rgba(180,183,211,0.88)`),
               }}
             />
-            {hasChildren && (expanded[item.id] ? <ExpandLess sx={{ fontSize: '1.1rem', opacity: 0.7 }} /> : <ExpandMore sx={{ fontSize: '1.1rem', opacity: 0.7 }} />)}
+            {hasChildren && (expanded[item.id]
+              ? <ExpandLess sx={{ fontSize: '1rem', opacity: 0.6, color: PER }} />
+              : <ExpandMore sx={{ fontSize: '1rem', opacity: 0.6, color: PER }} />
+            )}
           </>
         )}
       </ListItemButton>
@@ -291,22 +309,22 @@ export default function Sidebar({ open, onToggle, isMobile }) {
           overflowX: 'hidden',
           background: sidebarGradient,
           borderRight: 'none',
-          boxShadow: isMobile && !open ? 'none' : '4px 0 24px rgba(10, 22, 40, 0.35)',
+          boxShadow: isMobile && !open ? 'none' : `6px 0 32px rgba(5,7,126,0.45)`,
           visibility: isMobile && !open ? 'hidden' : 'visible',
-          // Gold right-edge accent
+          // Periwinkle right-edge shimmer
           '&::after': {
             content: '""',
             position: 'absolute',
             right: 0,
             top: 0,
             bottom: 0,
-            width: '3px',
-            background: `linear-gradient(180deg, transparent 0%, ${goldAccent}40 20%, ${goldAccent} 50%, ${goldAccent}40 80%, transparent 100%)`,
+            width: '2px',
+            background: `linear-gradient(180deg, transparent 0%, ${PER}50 20%, ${ROY}80 50%, ${PER}50 80%, transparent 100%)`,
           },
         },
       }}
     >
-      {/* Header */}
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <Box
         sx={{
           display: 'flex',
@@ -314,17 +332,17 @@ export default function Sidebar({ open, onToggle, isMobile }) {
           justifyContent: open ? 'space-between' : 'center',
           px: open ? 2 : 1,
           py: 1.8,
-          background: 'linear-gradient(135deg, rgba(13,27,62,0.5) 0%, rgba(26,58,107,0.3) 50%, rgba(192,57,43,0.08) 100%)',
-          borderBottom: `1px solid rgba(212,168,67,0.18)`,
+          background: `linear-gradient(135deg, rgba(5,7,126,0.6) 0%, rgba(2,65,251,0.25) 60%, rgba(68,112,237,0.1) 100%)`,
+          borderBottom: `1px solid rgba(180,183,211,0.15)`,
           position: 'relative',
           '&::after': {
             content: '""',
             position: 'absolute',
             bottom: 0,
-            left: '10%',
-            right: '10%',
+            left: '8%',
+            right: '8%',
             height: '1px',
-            background: `linear-gradient(90deg, transparent, ${goldAccent}60, transparent)`,
+            background: `linear-gradient(90deg, transparent, ${goldAccent}55, ${ROY}40, transparent)`,
           },
         }}
       >
@@ -332,60 +350,29 @@ export default function Sidebar({ open, onToggle, isMobile }) {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Box
               sx={{
-                width: 42,
-                height: 42,
-                borderRadius: '50%',
-                overflow: 'hidden',
-                background: '#ffffff',
-                boxShadow: `0 0 16px rgba(212,168,67,0.35), 0 0 4px rgba(212,168,67,0.2)`,
-                border: `2px solid rgba(212,168,67,0.4)`,
-                flexShrink: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                width: 42, height: 42, borderRadius: '50%', overflow: 'hidden',
+                background: WHT,
+                boxShadow: `0 0 0 2px ${goldAccent}60, 0 4px 16px rgba(5,7,126,0.4)`,
+                border: `2px solid rgba(212,168,67,0.5)`,
+                flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >
-              <Box
-                component="img"
-                src={apeccLogo}
-                alt="APECC Logo"
-                sx={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                }}
-              />
+              <Box component="img" src={apeccLogo} alt="APECC Logo"
+                sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </Box>
             <Box>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  fontWeight: 800,
-                  fontSize: '1.15rem',
-                  letterSpacing: '0.06em',
-                  lineHeight: 1.2,
-                  background: `linear-gradient(135deg, ${goldAccent} 0%, #e8c96a 30%, #ffffff 60%, #e8c96a 80%, ${goldAccent} 100%)`,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  filter: 'drop-shadow(0 0 6px rgba(212,168,67,0.4))',
-                }}
-              >
+              <Typography variant="subtitle2" sx={{
+                fontWeight: 800, fontSize: '1.12rem', letterSpacing: '0.07em', lineHeight: 1.2,
+                background: `linear-gradient(135deg, ${goldAccent} 0%, #f0d060 35%, ${WHT} 60%, #e8c96a 80%, ${goldAccent} 100%)`,
+                backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                filter: `drop-shadow(0 0 6px rgba(212,168,67,0.45))`,
+              }}>
                 APECC
               </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  fontWeight: 600,
-                  fontSize: '0.65rem',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  background: `linear-gradient(90deg, ${goldAccent}, #e8c96a)`,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
+              <Typography variant="caption" sx={{
+                fontWeight: 600, fontSize: '0.62rem', letterSpacing: '0.12em', textTransform: 'uppercase',
+                color: PER, opacity: 0.9,
+              }}>
                 Management System
               </Typography>
             </Box>
@@ -393,31 +380,16 @@ export default function Sidebar({ open, onToggle, isMobile }) {
         ) : (
           <Box
             sx={{
-              width: 36,
-              height: 36,
-              borderRadius: '50%',
-              overflow: 'hidden',
-              background: '#ffffff',
-              boxShadow: `0 0 12px rgba(212,168,67,0.3)`,
-              border: `2px solid rgba(212,168,67,0.35)`,
-              flexShrink: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
+              width: 36, height: 36, borderRadius: '50%', overflow: 'hidden',
+              background: WHT,
+              boxShadow: `0 0 0 2px ${goldAccent}55, 0 4px 12px rgba(5,7,126,0.4)`,
+              border: `2px solid rgba(212,168,67,0.4)`,
+              flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
             }}
             onClick={toggleDrawer}
           >
-            <Box
-              component="img"
-              src={apeccLogo}
-              alt="APECC Logo"
-              sx={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-              }}
-            />
+            <Box component="img" src={apeccLogo} alt="APECC Logo"
+              sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </Box>
         )}
         {open && (
@@ -425,15 +397,12 @@ export default function Sidebar({ open, onToggle, isMobile }) {
             onClick={toggleDrawer}
             size="small"
             sx={{
-              color: 'rgba(255,255,255,0.7)',
-              background: 'rgba(255,255,255,0.05)',
+              color: PER,
+              background: `rgba(180,183,211,0.08)`,
               borderRadius: '8px',
-              width: 34,
-              height: 34,
-              '&:hover': {
-                background: 'rgba(255,255,255,0.1)',
-                color: '#ffffff',
-              },
+              width: 32, height: 32,
+              border: `1px solid rgba(180,183,211,0.12)`,
+              '&:hover': { background: `rgba(180,183,211,0.15)`, color: WHT },
             }}
           >
             <ChevronLeftIcon fontSize="small" />
@@ -441,75 +410,77 @@ export default function Sidebar({ open, onToggle, isMobile }) {
         )}
       </Box>
 
-      {/* Navigation */}
-      <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', py: 1.5 }}>
+      {/* ── Navigation ─────────────────────────────────────────────────────── */}
+      <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', py: 1.5,
+        '&::-webkit-scrollbar': { width: '4px' },
+        '&::-webkit-scrollbar-thumb': { background: `rgba(180,183,211,0.25)`, borderRadius: '4px' },
+        '&::-webkit-scrollbar-track': { background: 'transparent' },
+      }}>
         {menuConfig.map((section, idx) => (
           <React.Fragment key={section.id}>
             {idx > 0 && (
-              <Divider
-                sx={{
-                  borderColor: 'rgba(255,255,255,0.06)',
-                  my: 1.5,
-                  mx: open ? 2 : 1,
-                }}
-              />
+              <Box sx={{ mx: open ? 2 : 1, my: 1 }}>
+                <Divider sx={{
+                  borderColor: 'transparent',
+                  background: `linear-gradient(90deg, transparent, ${PER}30, ${ROY}40, ${PER}30, transparent)`,
+                  height: '1px', border: 'none',
+                }} />
+              </Box>
             )}
             {open && section.children && (
-              <Typography
-                variant="overline"
-                sx={{
-                  fontSize: '0.67rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.12em',
-                  px: 3,
-                  pt: idx === 0 ? 0.5 : 1,
-                  pb: 0.5,
-                  display: 'block',
-                  color: '#ffffff',
-                  textShadow: '0 1px 4px rgba(0,0,0,0.35)',
-                }}
-              >
-                {section.label}
-              </Typography>
+              <Box sx={{ px: 3, pt: idx === 0 ? 0.5 : 1, pb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                {/* Section dot accent */}
+                <Box sx={{
+                  width: 6, height: 6, borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${goldAccent}, #e8c96a)`,
+                  boxShadow: `0 0 6px ${goldAccent}60`,
+                  flexShrink: 0,
+                }} />
+                <Typography variant="overline" sx={{
+                  fontSize: '0.64rem', fontWeight: 800, letterSpacing: '0.14em',
+                  color: PER, opacity: 0.82, textTransform: 'uppercase',
+                }}>
+                  {section.label}
+                </Typography>
+              </Box>
             )}
             <List component="nav" disablePadding>
-              {section.children ? section.children.map((item) => renderMenuItem(item, 0)) : renderMenuItem(section, 0)}
+              {section.children
+                ? section.children.map((item) => renderMenuItem(item, 0))
+                : renderMenuItem(section, 0)
+              }
             </List>
           </React.Fragment>
         ))}
       </Box>
 
-      {/* Footer */}
+      {/* ── Footer ─────────────────────────────────────────────────────────── */}
       <Box
         sx={{
-          borderTop: '1px solid rgba(10,22,40,0.15)',
-          px: open ? 2.5 : 1,
-          py: 1.5,
+          borderTop: `1px solid rgba(180,183,211,0.12)`,
+          background: `linear-gradient(135deg, rgba(5,7,126,0.5) 0%, rgba(2,65,251,0.15) 100%)`,
+          px: open ? 2 : 1,
+          py: 1.4,
           display: 'flex',
           alignItems: 'center',
           justifyContent: open ? 'flex-start' : 'center',
           gap: 1.5,
         }}
       >
-        <Avatar
-          sx={{
-            width: 32,
-            height: 32,
-            fontSize: '0.85rem',
-            fontWeight: 800,
-            background: 'linear-gradient(135deg, #f1c40f 0%, #d4a843 100%)',
-            color: '#0a1628',
-            boxShadow: '0 2px 8px rgba(212,168,67,0.4)',
-          }}
-        >
+        <Avatar sx={{
+          width: 34, height: 34, fontSize: '0.83rem', fontWeight: 800,
+          background: `linear-gradient(135deg, ${goldAccent} 0%, #e8c96a 100%)`,
+          color: NAV,
+          boxShadow: `0 2px 10px rgba(212,168,67,0.45), 0 0 0 2px rgba(212,168,67,0.2)`,
+        }}>
           AD
         </Avatar>
         {open && (
           <Box>
-            <Typography variant="body2" sx={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', lineHeight: 1.2, textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}>
+            <Typography variant="body2" sx={{ color: WHT, fontWeight: 700, fontSize: '0.83rem', lineHeight: 1.3 }}>
               Admin User
             </Typography>
-            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600, fontSize: '0.7rem', textShadow: '0 1px 3px rgba(0,0,0,0.25)' }}>
+            <Typography variant="caption" sx={{ color: PER, fontWeight: 500, fontSize: '0.68rem', opacity: 0.85 }}>
               System Administrator
             </Typography>
           </Box>

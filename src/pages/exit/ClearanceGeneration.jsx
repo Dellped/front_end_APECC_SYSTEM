@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Chip, Button, TextField, InputAdornment,
@@ -48,14 +48,14 @@ export default function ClearanceGeneration() {
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { padding: 40px; color: #1a1a2e; }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #023DFB; padding-bottom: 15px; }
-        .header h1 { color: #023DFB; font-size: 1.4rem; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #0241FB; padding-bottom: 15px; }
+        .header h1 { color: #0241FB; font-size: 1.4rem; }
         .header p { color: #546e7a; font-size: 0.85rem; }
         .info { margin-bottom: 20px; }
         .info-row { display: flex; margin-bottom: 6px; font-size: 0.85rem; }
         .info-label { width: 150px; font-weight: 600; color: #546e7a; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { background: #023DFB; color: white; padding: 8px 12px; text-align: left; font-size: 0.8rem; }
+        th { background: #0241FB; color: white; padding: 8px 12px; text-align: left; font-size: 0.8rem; }
         td { padding: 8px 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
         .signatures { margin-top: 60px; display: flex; justify-content: space-between; }
         .sig-block { text-align: center; width: 200px; }
@@ -75,7 +75,7 @@ export default function ClearanceGeneration() {
         <Grid item xs={12} md={4}>
           <Card sx={{
             borderRadius: 3,
-            background: 'linear-gradient(160deg, #023DFB 0%, #4a75e6 50%, #89B1D5 100%)',
+            background: 'linear-gradient(160deg, #05077E 0%, #4470ED 50%, #B4B7D3 100%)',
             boxShadow: '0 8px 32px rgba(13,27,62,0.35)',
           }}>
             <CardContent sx={{ p: 3 }}>
@@ -107,10 +107,10 @@ export default function ClearanceGeneration() {
                     bgcolor: 'rgba(255,255,255,0.1)',
                     borderRadius: 1,
                     '& .MuiOutlinedInput-root': {
-                      color: '#fff',
+                      color: '#FDFDFC',
                       '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
                       '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                      '&.Mui-focused fieldset': { borderColor: '#fff' }
+                      '&.Mui-focused fieldset': { bordercolor: '#FDFDFC' }
                     },
                     '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
                     '& .MuiSvgIcon-root': { color: 'rgba(255,255,255,0.7)' }
@@ -120,7 +120,7 @@ export default function ClearanceGeneration() {
               {member ? (
                 <>
                   <Box sx={{ mb: 2 }}>
-                    <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700 }}>{member.memberName}</Typography>
+                    <Typography variant="h6" sx={{ color: '#FDFDFC', fontWeight: 700 }}>{member.memberName}</Typography>
                     <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>Exit Member Profile</Typography>
                   </Box>
                   <Divider sx={{ mb: 2, borderColor: 'rgba(255,255,255,0.1)' }} />
@@ -133,7 +133,7 @@ export default function ClearanceGeneration() {
                   ].map(([label, value]) => (
                     <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.82rem' }}>{label}</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.82rem', color: '#fff' }}>{value}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.82rem', color: '#FDFDFC' }}>{value}</Typography>
                     </Box>
                   ))}
 
@@ -156,7 +156,7 @@ export default function ClearanceGeneration() {
                         width: `${(Object.values(checkedItems).filter(Boolean).length / clearanceItems.length) * 100}%`,
                         background: allChecked
                           ? 'linear-gradient(90deg, #2e7d32, #4caf50)'
-                          : `linear-gradient(90deg, #023DFB, ${goldAccent})`,
+                          : `linear-gradient(90deg, #0241FB, ${goldAccent})`,
                         transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                       }} />
                     </Box>
@@ -176,7 +176,7 @@ export default function ClearanceGeneration() {
         <Grid item xs={12} md={8}>
           <Card sx={{
             borderRadius: 3,
-            background: 'linear-gradient(160deg, #023DFB 0%, #1a3a6b 60%, #2156a5 100%)',
+            background: 'linear-gradient(160deg, #05077E 0%, #05077E 60%, #0241FB 100%)',
             boxShadow: '0 8px 32px rgba(13,27,62,0.35)',
           }}>
             <CardContent sx={{ p: 3 }}>
@@ -212,7 +212,7 @@ export default function ClearanceGeneration() {
                       textTransform: 'none',
                       fontWeight: 700,
                       px: 3,
-                      background: allChecked ? 'linear-gradient(135deg, #023DFB, #1a3a6b)' : 'rgba(255,255,255,0.05)',
+                      background: allChecked ? 'linear-gradient(135deg, #0241FB, #05077E)' : 'rgba(255,255,255,0.05)',
                       color: allChecked ? goldAccent : 'rgba(255,255,255,0.3)',
                       border: `1px solid ${allChecked ? 'rgba(212,168,67,0.4)' : 'rgba(255,255,255,0.1)'}`,
                       boxShadow: allChecked ? `0 4px 15px rgba(2, 61, 251, 0.4)` : 'none',

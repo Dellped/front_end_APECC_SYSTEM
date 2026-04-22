@@ -3,19 +3,163 @@ import {
   Box, Card, CardContent, Typography, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Chip, TextField, InputAdornment,
   Avatar, Tooltip, IconButton, MenuItem,
+  Dialog, DialogTitle, DialogContent, DialogActions, Button, Divider, Grid,
 } from '@mui/material';
-import { 
-  Search as SearchIcon, 
+import {
+  Search as SearchIcon,
   FileDownload as CsvIcon,
+  Visibility as ViewIcon,
+  Close as CloseIcon,
+  Work as WorkIcon,
 } from '@mui/icons-material';
 import { employees } from '../../data/mockData';
 import { exportToCSV } from '../../utils/exportUtils';
 
 const goldAccent = '#d4a843';
+const NAV = '#05077E';
+const IND = '#0241FB';
 
+// ── Employment Details Dialog ─────────────────────────────────────────────────
+function EmploymentDetailsDialog({ open, onClose, emp }) {
+  if (!emp) return null;
+
+  const DetailRow = ({ label, value }) => (
+    <Grid item xs={12} sm={6} md={4}>
+      <Box sx={{ mb: 1.5 }}>
+        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.62rem', letterSpacing: '0.08em' }}>
+          {label}
+        </Typography>
+        <Typography variant="body2" sx={{ fontWeight: 600, color: value ? 'text.primary' : 'text.disabled', mt: 0.2 }}>
+          {value || '—'}
+        </Typography>
+      </Box>
+    </Grid>
+  );
+
+  const typeColor = {
+    Regular:      { bg: '#e8f5e9', color: '#2e7d32', border: '#2e7d32' },
+    Probationary: { bg: '#e3f2fd', color: IND,       border: IND       },
+    Contractual:  { bg: '#fff3e0', color: '#ef6c00', border: '#ef6c00' },
+  }[emp.employmentType] || { bg: '#f5f5f5', color: '#616161', border: '#9e9e9e' };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          borderTop: `4px solid ${goldAccent}`,
+          boxShadow: '0 24px 80px rgba(5,7,126,0.18)',
+        }
+      }}
+    >
+      {/* Header */}
+      <DialogTitle sx={{ pb: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{
+              width: 38, height: 38, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: `linear-gradient(135deg, ${NAV} 0%, ${IND} 100%)`,
+            }}>
+              <WorkIcon sx={{ color: '#fff', fontSize: '1.1rem' }} />
+            </Box>
+            <Box>
+              <Typography sx={{ fontWeight: 800, color: IND, fontSize: '0.95rem', lineHeight: 1.2 }}>
+                EMPLOYMENT DETAILS
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                {emp.firstName} {emp.middleName ? emp.middleName[0] + '. ' : ''}{emp.lastName} &nbsp;·&nbsp; {emp.id}
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip
+              label={emp.employmentType}
+              size="small"
+              sx={{
+                fontWeight: 700, fontSize: '0.7rem',
+                bgcolor: typeColor.bg, color: typeColor.color,
+                border: `1px solid ${typeColor.border}`,
+              }}
+            />
+            <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary' }}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </Box>
+      </DialogTitle>
+
+      <Divider />
+
+      <DialogContent sx={{ pt: 2.5, pb: 2 }}>
+        {/* Position Info */}
+        <Typography variant="overline" sx={{ fontWeight: 800, color: NAV, fontSize: '0.65rem', letterSpacing: '0.12em', mb: 1, display: 'block' }}>
+          Position & Organization
+        </Typography>
+        <Grid container spacing={1} sx={{ mb: 2 }}>
+          <DetailRow label="Position / Designation" value={emp.designation} />
+          <DetailRow label="Division" value={emp.employmentDetails?.division || 'APECC'} />
+          <DetailRow label="Department" value={emp.department} />
+          <DetailRow label="Job Level / Rank" value={emp.employmentDetails?.jobLevel || 'Rank & File'} />
+          <DetailRow label="Work Location" value={emp.payrollLocation} />
+          <DetailRow label="Supervisor" value={emp.employmentDetails?.supervisor} />
+        </Grid>
+
+        <Divider sx={{ mb: 2 }} />
+
+        {/* Dates */}
+        <Typography variant="overline" sx={{ fontWeight: 800, color: NAV, fontSize: '0.65rem', letterSpacing: '0.12em', mb: 1, display: 'block' }}>
+          Employment Dates
+        </Typography>
+        <Grid container spacing={1} sx={{ mb: 2 }}>
+          <DetailRow label="Date Hired" value={emp.employmentDate} />
+          <DetailRow label="End Date" value={emp.employmentDetails?.endDate} />
+          <DetailRow label="Regularization Date" value={emp.employmentDetails?.regularizationDate} />
+        </Grid>
+
+        <Divider sx={{ mb: 2 }} />
+
+        {/* Schedule */}
+        <Typography variant="overline" sx={{ fontWeight: 800, color: NAV, fontSize: '0.65rem', letterSpacing: '0.12em', mb: 1, display: 'block' }}>
+          Schedule & Payroll
+        </Typography>
+        <Grid container spacing={1} sx={{ mb: 1 }}>
+          <DetailRow label="Shift" value={emp.employmentDetails?.shift || 'Day'} />
+          <DetailRow label="Time In" value={emp.employmentDetails?.timeIn || '08:00 AM'} />
+          <DetailRow label="Time Out" value={emp.employmentDetails?.timeOut || '05:00 PM'} />
+          <DetailRow label="Basic Salary" value={emp.payrollProfile?.basicSalary ? `₱${emp.payrollProfile.basicSalary.toLocaleString()}` : null} />
+          <DetailRow label="Salary Type" value={emp.payrollProfile?.salaryType} />
+          <DetailRow label="Pay Frequency" value={emp.payrollProfile?.payrollFrequency} />
+          <DetailRow label="Tax Status" value={emp.payrollProfile?.taxStatus} />
+          <DetailRow label="Bank Account" value={emp.payrollProfile?.bankAccountNumber} />
+        </Grid>
+      </DialogContent>
+
+      <Divider />
+      <DialogActions sx={{ px: 3, py: 1.5 }}>
+        <Button onClick={onClose} variant="contained" size="small"
+          sx={{
+            borderRadius: 2, textTransform: 'none', fontWeight: 700,
+            background: `linear-gradient(135deg, ${NAV} 0%, ${IND} 100%)`,
+            boxShadow: 'none',
+            '&:hover': { boxShadow: '0 4px 12px rgba(2,65,251,0.3)' }
+          }}>
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
 export default function EmployeeMasterFile() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [selectedEmp, setSelectedEmp] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const filtered = employees.filter((emp) => {
     const matchSearch = `${emp.firstName} ${emp.lastName} ${emp.id}`
@@ -25,9 +169,9 @@ export default function EmployeeMasterFile() {
     return matchSearch && matchStatus;
   });
 
-  const handleExport = (format) => {
-    console.log(`Exporting Master File to ${format.toUpperCase()}...`);
-    alert(`Success: Master File ${format.toUpperCase()} export initiated.`);
+  const handleViewDetails = (emp) => {
+    setSelectedEmp(emp);
+    setDialogOpen(true);
   };
 
   return (
@@ -39,10 +183,10 @@ export default function EmployeeMasterFile() {
       }}>
         <CardContent sx={{ p: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 800, color: '#023DFB', letterSpacing: '0.02em' }}>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: IND, letterSpacing: '0.02em' }}>
               EMPLOYEE MASTER FILE
             </Typography>
-            
+
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <TextField
                 size="small"
@@ -52,16 +196,13 @@ export default function EmployeeMasterFile() {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchIcon sx={{ color: '#023DFB', fontSize: '1.1rem' }} />
+                      <SearchIcon sx={{ color: IND, fontSize: '1.1rem' }} />
                     </InputAdornment>
                   ),
                 }}
                 sx={{
                   minWidth: 250,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    bgcolor: 'rgba(0,0,0,0.02)',
-                  }
+                  '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'rgba(0,0,0,0.02)' }
                 }}
               />
               <TextField
@@ -72,25 +213,22 @@ export default function EmployeeMasterFile() {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 sx={{
                   minWidth: 150,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    bgcolor: 'rgba(0,0,0,0.02)',
-                  }
+                  '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'rgba(0,0,0,0.02)' }
                 }}
               >
-                <MenuItem value="All">All Statuses</MenuItem>
+                <MenuItem value="All">Status</MenuItem>
                 <MenuItem value="Active">Active</MenuItem>
                 <MenuItem value="Suspended">Suspended</MenuItem>
                 <MenuItem value="AWOL">AWOL</MenuItem>
                 <MenuItem value="Resigned/Exit">Resigned/Exit</MenuItem>
               </TextField>
               <Tooltip title="Export to CSV">
-                <IconButton 
+                <IconButton
                   onClick={() => exportToCSV(
                     ['Employee ID', 'Last Name', 'First Name', 'Middle Name', 'Suffix', 'Gender', 'Civil Status', 'Date of Birth', 'Place of Birth', 'Nationality', 'Religion', 'Contact Number', 'Personal Email', 'Company Email', 'Current Address', 'Permanent Address', 'Emergency Contact', 'Number', 'Relationship', 'Status'],
                     filtered.map(emp => [emp.id, emp.lastName, emp.firstName, emp.middleName || '', emp.suffix || '', emp.personal?.gender, emp.personal?.civilStatus, emp.personal?.birthdate, emp.personal?.birthplace, emp.personal?.citizenship, emp.personal?.religion, emp.personal?.contactNumbers?.[0], emp.personal?.emailAddresses?.[1] || '', emp.personal?.emailAddresses?.[0], emp.personal?.presentAddress, emp.personal?.permanentAddress, emp.personal?.emergencyContact?.name || '', emp.personal?.emergencyContact?.number || '', emp.personal?.emergencyContact?.relationship || '', emp.status]),
                     'employee_master_file'
-                  )} 
+                  )}
                   sx={{ color: '#2e7d32', bgcolor: 'rgba(46, 125, 50, 0.05)' }}
                 >
                   <CsvIcon />
@@ -99,18 +237,17 @@ export default function EmployeeMasterFile() {
             </Box>
           </Box>
 
-          <TableContainer sx={{ 
-            borderRadius: 2, 
+          <TableContainer sx={{
+            borderRadius: 2,
             border: '1px solid rgba(0,0,0,0.08)',
             maxHeight: 'calc(100vh - 250px)',
             '&::-webkit-scrollbar': { height: 10, width: 10, display: 'block' },
             '&::-webkit-scrollbar-track': { bgcolor: 'rgba(0,0,0,0.05)', borderRadius: 10 },
-            '&::-webkit-scrollbar-thumb': { 
-              bgcolor: 'rgba(0,0,0,0.2)', 
-              borderRadius: 10, 
+            '&::-webkit-scrollbar-thumb': {
+              bgcolor: 'rgba(0,0,0,0.2)',
+              borderRadius: 10,
               border: '2px solid transparent',
               backgroundClip: 'padding-box',
-              '&:hover': { bgcolor: 'rgba(0,0,0,0.3)' } 
             },
             overflowX: 'auto',
           }}>
@@ -118,15 +255,15 @@ export default function EmployeeMasterFile() {
               <TableHead>
                 <TableRow>
                   {[
-                    'Employee ID', 'Last Name', 'First Name', 'Middle Name', 'Suffix', 'Photo',
+                    'Actions', 'Employee ID', 'Last Name', 'First Name', 'Middle Name', 'Suffix', 'Photo',
                     'Gender', 'Civil Status', 'Date of Birth', 'Place of Birth', 'Nationality',
                     'Religion', 'Contact Number', 'Personal Email', 'Company Email',
                     'Current Address', 'Permanent Address', 'Emergency Contact', 'Number', 'Relationship', 'Status'
                   ].map((h) => (
-                    <TableCell key={h} sx={{ 
-                      bgcolor: '#023DFB', 
-                      color: '#fff', 
-                      fontWeight: 700, 
+                    <TableCell key={h} sx={{
+                      background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)',
+                      color: '#FDFDFC',
+                      fontWeight: 700,
                       fontSize: '0.7rem',
                       whiteSpace: 'nowrap',
                       textTransform: 'uppercase',
@@ -140,7 +277,31 @@ export default function EmployeeMasterFile() {
               <TableBody>
                 {filtered.map((emp) => (
                   <TableRow key={emp.id} hover sx={{ '&:nth-of-type(even)': { bgcolor: 'rgba(0,0,0,0.01)' } }}>
-                    <TableCell sx={{ fontWeight: 700, color: '#023DFB' }}>{emp.id}</TableCell>
+                    {/* ── View Button ── */}
+                    <TableCell align="center">
+                      <Tooltip title="View Employment Details">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleViewDetails(emp)}
+                          sx={{
+                            color: IND,
+                            bgcolor: 'rgba(2,65,251,0.07)',
+                            border: '1px solid rgba(2,65,251,0.15)',
+                            borderRadius: '8px',
+                            width: 28, height: 28,
+                            '&:hover': {
+                              bgcolor: IND,
+                              color: '#fff',
+                              boxShadow: '0 4px 12px rgba(2,65,251,0.3)',
+                            },
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          <ViewIcon sx={{ fontSize: '0.95rem' }} />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: IND }}>{emp.id}</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>{emp.lastName}</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>{emp.firstName}</TableCell>
                     <TableCell>{emp.middleName || '—'}</TableCell>
@@ -163,15 +324,15 @@ export default function EmployeeMasterFile() {
                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{emp.personal?.emergencyContact?.number || '—'}</TableCell>
                     <TableCell>{emp.personal?.emergencyContact?.relationship || '—'}</TableCell>
                     <TableCell>
-                      <Chip label={emp.status} size="small" sx={{ 
+                      <Chip label={emp.status} size="small" sx={{
                         fontWeight: 700, fontSize: '0.65rem', height: 20,
-                        bgcolor: 
-                          emp.status === 'Active' ? '#e8f5e9' : 
+                        bgcolor:
+                          emp.status === 'Active' ? '#e8f5e9' :
                           emp.status === 'Suspended' ? '#fff3e0' :
                           emp.status === 'AWOL' ? '#ffebee' :
                           emp.status === 'Resigned/Exit' ? '#fafafa' : '#f5f5f5',
-                        color: 
-                          emp.status === 'Active' ? '#2e7d32' : 
+                        color:
+                          emp.status === 'Active' ? '#2e7d32' :
                           emp.status === 'Suspended' ? '#ef6c00' :
                           emp.status === 'AWOL' ? '#c62828' :
                           emp.status === 'Resigned/Exit' ? '#9e9e9e' : '#616161',
@@ -183,7 +344,7 @@ export default function EmployeeMasterFile() {
               </TableBody>
             </Table>
           </TableContainer>
-          
+
           <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
               Showing {filtered.length} Employees
@@ -191,6 +352,13 @@ export default function EmployeeMasterFile() {
           </Box>
         </CardContent>
       </Card>
+
+      {/* Employment Details Dialog */}
+      <EmploymentDetailsDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        emp={selectedEmp}
+      />
     </Box>
   );
 }

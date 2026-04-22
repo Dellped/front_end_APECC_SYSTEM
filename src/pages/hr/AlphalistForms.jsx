@@ -1,171 +1,235 @@
-import React from 'react';
+import React, { useState, useMemo } from "react";
 import {
-  Box, Card, CardContent, Typography, Grid, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Button, Chip, Avatar, TextField,
-  InputAdornment, Paper
-} from '@mui/material';
-import { Download as DownloadIcon, Description as FormIcon, Print as PrintIcon, PictureAsPdf as PdfIcon, Search as SearchIcon, FileDownload as CsvIcon } from '@mui/icons-material';
+  Box,
+  Card,
+  CardContent,
+  Tabs,
+  Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
+  Typography,
+  Paper,
+  Button,
+  TextField,
+  InputAdornment,
+  Grid
+} from "@mui/material";
+import {
+  Search as SearchIcon,
+  FileDownload as DownloadIcon
+} from "@mui/icons-material";
+
+// Import mock data to represent employees array
 import { employees, payrollRecords } from '../../data/mockData';
-import { exportToCSV, printTable, exportToPDF, exportToExcel } from '../../utils/exportUtils';
 
 const goldAccent = '#d4a843';
-const formatCurrency = (val) => `₱${val.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
-
-const headerStyle = {
-  bgcolor: '#023DFB',
-  color: '#fff',
-  fontWeight: 700,
-  fontSize: '0.65rem',
-  padding: '4px 2px',
-  textAlign: 'center',
-  border: '1px solid rgba(255,255,255,0.2)',
-  whiteSpace: 'normal',
-  lineHeight: 1.2
-};
-
-const cellStyle = {
-  fontSize: '0.7rem',
-  padding: '4px 2px',
-  border: '1px solid #eee'
-};
 
 export default function AlphalistForms() {
-  const [search, setSearch] = React.useState('');
-  
-  const activeEmps = employees.filter((e) => {
-    const isActive = e.status === 'Active';
-    const matchesSearch = `${e.firstName} ${e.lastName} ${e.id}`.toLowerCase().includes(search.toLowerCase());
-    return isActive && matchesSearch;
+  const [tab, setTab] = useState("ALL");
+  const [search, setSearch] = useState("");
+
+  const handleChange = (_, newValue) => {
+    setTab(newValue);
+  };
+
+  // Compute alphalist metrics for employees using mock payroll data
+  const baseEmployees = useMemo(() => {
+    return employees.filter(e => e.status === 'Active').map(emp => {
+      // Find 2024 payroll records for this employee
+      const records = payrollRecords.filter((r) => r.employeeId === emp.id && r.year === 2024);
+      
+      const totalGross = records.reduce((s, r) => s + (r.basicPay || 0) + (r.overtimePay || 0) + (r.allowances || 0), 0);
+      const totalSSS = records.reduce((s, r) => s + (r.sssEE || 0), 0);
+      const totalPhilHealth = records.reduce((s, r) => s + (r.phEE || 0), 0);
+      const totalPagIbig = records.reduce((s, r) => s + (r.hdmfEE || 0), 0);
+      const withholdingTax = records.reduce((s, r) => s + (r.tax || 0), 0);
+      const deminimis = records.reduce((s, r) => s + (r.deminimis || 0), 0);
+
+      // Simple mock approximation for tax categories
+      const nonTaxableIncome = totalSSS + totalPhilHealth + totalPagIbig + deminimis; 
+      const taxableIncome = totalGross > nonTaxableIncome ? totalGross - nonTaxableIncome : 0;
+      
+      // Simulate MWE based on basic salary (<= 16k a month approx)
+      const isMWE = emp.payrollProfile?.basicSalary <= 16000;
+
+      return {
+        ...emp,
+        tin: emp.requirements?.tinNo || "000-000-000-000",
+        taxableIncome: isMWE ? 0 : taxableIncome,
+        nonTaxableIncome: isMWE ? totalGross : nonTaxableIncome,
+        withholdingTax: isMWE ? 0 : withholdingTax,
+        isMWE
+      };
+    });
+  }, []);
+
+  // Filter by Search Bar (Name or ID)
+  const searchedEmployees = baseEmployees.filter((emp) => {
+    const query = search.toLowerCase();
+    const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase();
+    return fullName.includes(query) || emp.id.toLowerCase().includes(query) || emp.tin.includes(query);
   });
 
-  const alphalistData = activeEmps.map((emp) => {
-    const records = payrollRecords.filter((r) => r.employeeId === emp.id && r.year === 2024);
-    const totalGross = records.reduce((s, r) => s + r.basicPay, 0);
-    const totalSSS = records.reduce((s, r) => s + (r.sssEE || 0), 0);
-    const totalPhilHealth = records.reduce((s, r) => s + (r.phEE || 0), 0);
-    const totalPagIbig = records.reduce((s, r) => s + (r.hdmfEE || 0), 0);
-    const totalTax = records.reduce((s, r) => s + r.tax, 0);
-    const totalNet = records.reduce((s, r) => s + r.netPay, 0);
-    return { ...emp, totalGross, totalSSS, totalPhilHealth, totalPagIbig, totalTax, totalNet };
+  // Filter based on Tabs
+  const filteredEmployees = searchedEmployees.filter((emp) => {
+    if (tab === "TAXABLE") return !emp.isMWE && emp.taxableIncome > 0;
+    if (tab === "NON_TAXABLE") return !emp.isMWE && emp.withholdingTax === 0 && emp.taxableIncome === 0;
+    if (tab === "MWE") return emp.isMWE;
+    return true; // "ALL"
   });
+
+  // Summary Metrics (based on base employees so they don't change on search, only represent true DB state)
+  const totalEmployees = baseEmployees.length;
+  const taxableCount = baseEmployees.filter(e => !e.isMWE && e.taxableIncome > 0).length;
+  const nonTaxableCount = baseEmployees.filter(e => !e.isMWE && e.withholdingTax === 0 && e.taxableIncome === 0).length;
+  const mweCount = baseEmployees.filter(e => e.isMWE).length;
+
+  const getTypeChip = (emp) => {
+    if (emp.isMWE) return <Chip label="MWE" color="warning" size="small" sx={{ fontWeight: 600 }} />;
+    if (emp.taxableIncome > 0 && emp.nonTaxableIncome > 0)
+      return <Chip label="Mixed" color="info" size="small" sx={{ fontWeight: 600 }} />;
+    if (emp.taxableIncome > 0)
+      return <Chip label="Taxable" color="primary" size="small" sx={{ fontWeight: 600 }} />;
+    return <Chip label="Non-Taxable" color="success" size="small" sx={{ fontWeight: 600 }} />;
+  };
+
+  const handleGenerateDAT = () => {
+    alert("BIR DAT File generated successfully.");
+  };
 
   return (
-    <Box className="page-container">
-
-
-      {/* Quick Actions & Search */}
-      <Grid container spacing={2.5} sx={{ mb: 4 }}>
-        {[
-          { 
-            title: 'Generate Alphalist', 
-            desc: 'Annual list of employees with compensation and tax data', 
-            icon: <FormIcon />, 
-            gradient: 'linear-gradient(135deg, #023DFB, #4a75e6)',
-            onClick: () => exportToExcel(['#','Employee Name','Annual Gross','SSS','PhilHealth','Pag-IBIG','Tax Withheld','Net Compensation'], alphalistData.map((e, i) => [i+1, `${e.lastName}, ${e.firstName}`, e.totalGross, e.totalSSS, e.totalPhilHealth, e.totalPagIbig, e.totalTax, e.totalNet]), 'alphalist_forms')
-          },
-          { 
-            title: 'BIR Form 2306', 
-            desc: 'Certificate of Creditable Tax Withheld at Source', 
-            icon: <FormIcon />, 
-            gradient: 'linear-gradient(135deg, #8b1a1a, #c0392b)',
-            onClick: () => exportToPDF('BIR Alphalist Forms', ['#','Employee Name','Annual Gross','SSS','PhilHealth','Pag-IBIG','Tax Withheld','Net Compensation'], alphalistData.map((e, i) => [i+1, `${e.lastName}, ${e.firstName}`, e.totalGross, e.totalSSS, e.totalPhilHealth, e.totalPagIbig, e.totalTax, e.totalNet]))
-          },
-        ].map((action, i) => (
-          <Grid item xs={12} sm={6} key={i}>
-            <Card onClick={action.onClick} className="stat-card" sx={{ borderRadius: 3, cursor: 'pointer', background: action.gradient, boxShadow: '0 4px 20px rgba(13,27,62,0.25)', '&:hover': { opacity: 0.9, transform: 'translateY(-2px)', transition: 'all 0.2s' } }}>
-              <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 }, display: 'flex', gap: 2, alignItems: 'center' }}>
-                <Avatar sx={{ width: 48, height: 48, bgcolor: 'rgba(255,255,255,0.15)', color: '#fff', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)' }}>
-                  {action.icon}
-                </Avatar>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#fff' }}>{action.title}</Typography>
-                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.72rem' }}>{action.desc}</Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-
-
-      </Grid>
-
-      {/* Alphalist Table */}
-      <Card sx={{
-        borderRadius: 3,
-        boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-      }}>
+    <Box className="page-container" sx={{ p: 3 }}>
+      <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: `1px solid ${goldAccent}` }}>
         <CardContent sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3.5, flexWrap: 'wrap', gap: 2 }}>
+          
+          {/* Header & Export Button */}
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
             <Box>
-              <Typography variant="h6" sx={{
-                fontWeight: 700, fontSize: '1.1rem', color: '#023DFB',
-              }}>
-                BIR Alphalist Forms
+              <Typography variant="h5" sx={{ fontWeight: 800, color: '#05077E' }}>
+                Alphalist of Employees
               </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              <Typography variant="body2" color="text.secondary">
                 Generate and Export BIR-compliant reports for fiscal year {new Date().getFullYear()}
               </Typography>
             </Box>
-            
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-              <TextField
-                size="small"
-                placeholder="Search employee name or ID..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ minWidth: 260 }}
-              />
-              <Button size="small" variant="outlined" startIcon={<CsvIcon />}
-                onClick={() => exportToCSV(['#','Employee Name','Annual Gross','SSS','PhilHealth','Pag-IBIG','Tax Withheld','Net Compensation'], alphalistData.map((e, i) => [i+1, `${e.lastName}, ${e.firstName}`, e.totalGross, e.totalSSS, e.totalPhilHealth, e.totalPagIbig, e.totalTax, e.totalNet]), 'alphalist_forms')}
-                sx={{ height: 40 }}>CSV</Button>
-              <Button size="small" variant="outlined" startIcon={<PrintIcon />}
-                onClick={() => printTable('BIR Alphalist Forms', ['#','Employee Name','Annual Gross','SSS','PhilHealth','Pag-IBIG','Tax Withheld','Net Compensation'], alphalistData.map((e, i) => [i+1, `${e.lastName}, ${e.firstName}`, e.totalGross, e.totalSSS, e.totalPhilHealth, e.totalPagIbig, e.totalTax, e.totalNet]))}
-                sx={{ height: 40 }}>Print</Button>
-              <Button size="small" variant="contained" startIcon={<PdfIcon />}
-                onClick={() => exportToPDF('BIR Alphalist Forms', ['#','Employee Name','Annual Gross','SSS','PhilHealth','Pag-IBIG','Tax Withheld','Net Compensation'], alphalistData.map((e, i) => [i+1, `${e.lastName}, ${e.firstName}`, e.totalGross, e.totalSSS, e.totalPhilHealth, e.totalPagIbig, e.totalTax, e.totalNet]))}
-                sx={{ bgcolor: '#023DFB', color: '#fff', fontWeight: 700, height: 40 }}>Download PDF</Button>
-            </Box>
+            <Button 
+              variant="contained" 
+              startIcon={<DownloadIcon />} 
+              onClick={handleGenerateDAT}
+              sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 100%)', color: '#fff', fontWeight: 700 }}
+            >
+              Generate BIR DAT File
+            </Button>
           </Box>
-          <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 10px 30px rgba(0,0,0,0.08)', overflowX: 'auto' }}>
-            <Table stickyHeader size="small" sx={{ minWidth: 800 }}>
-              <TableHead>
+
+          {/* Summary Header */}
+          <Grid container spacing={2} sx={{ mb: 4 }}>
+            {[
+              { label: "Total Employees", value: totalEmployees, color: "#05077E", bg: "rgba(5,7,126,0.05)" },
+              { label: "Taxable", value: taxableCount, color: "#1976d2", bg: "rgba(25,118,210,0.05)" },
+              { label: "Non-Taxable", value: nonTaxableCount, color: "#2e7d32", bg: "rgba(46,125,50,0.05)" },
+              { label: "MWE", value: mweCount, color: "#ed6c02", bg: "rgba(237,108,2,0.05)" },
+            ].map((stat, idx) => (
+              <Grid item xs={6} sm={3} key={idx}>
+                <Paper elevation={0} sx={{ p: 2, borderRadius: 2, backgroundColor: stat.bg, border: `1px solid ${stat.bg.replace('0.05', '0.15')}` }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase' }}>
+                    {stat.label}
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 800, color: stat.color, mt: 0.5 }}>
+                    {stat.value}
+                  </Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+
+          {/* Search and Tabs */}
+          <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2} mb={2}>
+            <Tabs
+              value={tab}
+              onChange={handleChange}
+              sx={{
+                '& .MuiTabs-indicator': { backgroundColor: '#d4a843' },
+                '& .MuiTab-root': { fontWeight: 600, color: 'text.secondary' },
+                '& .Mui-selected': { color: '#d4a843 !important' }
+              }}
+            >
+              <Tab label="All Employees" value="ALL" />
+              <Tab label="Taxable" value="TAXABLE" />
+              <Tab label="Non-Taxable" value="NON_TAXABLE" />
+              <Tab label="MWE" value="MWE" />
+            </Tabs>
+            
+            <TextField
+              size="small"
+              placeholder="Filter by name / employee ID"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ minWidth: 280 }}
+            />
+          </Box>
+
+          {/* Table */}
+          <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, border: '1px solid #eee' , borderTop: `3px solid ${goldAccent}`}}>
+            <Table size="small">
+              <TableHead sx={{ backgroundColor: "#f8f9fa" }}>
                 <TableRow>
-                  <TableCell sx={headerStyle}>#</TableCell>
-                  <TableCell sx={headerStyle} align="left">Employee Name</TableCell>
-                  <TableCell sx={{ ...headerStyle, textAlign: 'right' }}>Annual Gross</TableCell>
-                  <TableCell sx={{ ...headerStyle, textAlign: 'right' }}>SSS</TableCell>
-                  <TableCell sx={{ ...headerStyle, textAlign: 'right' }}>PhilHealth</TableCell>
-                  <TableCell sx={{ ...headerStyle, textAlign: 'right' }}>Pag-IBIG</TableCell>
-                  <TableCell sx={{ ...headerStyle, textAlign: 'right' }}>Tax Withheld</TableCell>
-                  <TableCell sx={{ ...headerStyle, textAlign: 'right' }}>Net Compensation</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#05077E' }}>Employee ID</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#05077E' }}>TIN</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#05077E' }}>Employee Name</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#05077E' }}>Non-Taxable</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#05077E' }}>Taxable</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#05077E' }}>Withholding Tax</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#05077E' }}>Type</TableCell>
                 </TableRow>
               </TableHead>
+
               <TableBody>
-                {alphalistData.map((e, i) => (
-                  <TableRow key={e.id} hover>
-                    <TableCell sx={{ ...cellStyle, textAlign: 'center' }}>{i + 1}</TableCell>
-                    <TableCell sx={{ ...cellStyle, fontWeight: 700 }}>{e.lastName}, {e.firstName} {e.middleName ? e.middleName[0] + '.' : ''}</TableCell>
-                    <TableCell sx={{ ...cellStyle, textAlign: 'right' }}>{formatCurrency(e.totalGross)}</TableCell>
-                    <TableCell sx={{ ...cellStyle, textAlign: 'right' }}>{formatCurrency(e.totalSSS)}</TableCell>
-                    <TableCell sx={{ ...cellStyle, textAlign: 'right' }}>{formatCurrency(e.totalPhilHealth)}</TableCell>
-                    <TableCell sx={{ ...cellStyle, textAlign: 'right' }}>{formatCurrency(e.totalPagIbig)}</TableCell>
-                    <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f', fontWeight: 600 }}>{formatCurrency(e.totalTax)}</TableCell>
-                    <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#023DFB', fontWeight: 800 }}>{formatCurrency(e.totalNet)}</TableCell>
+                {filteredEmployees.length === 0 ? (
+                  <TableRow>
+                     <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                       <Typography variant="body2" color="text.secondary">No employees matched your criteria.</Typography>
+                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  filteredEmployees.map((emp) => (
+                    <TableRow key={emp.id} hover>
+                      <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>{emp.id}</TableCell>
+                      <TableCell sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>{emp.tin}</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>
+                        {emp.lastName}, {emp.firstName}
+                      </TableCell>
+                      <TableCell>
+                        {emp.nonTaxableIncome?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell>
+                        {emp.taxableIncome?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell sx={{ color: emp.withholdingTax > 0 ? '#d32f2f' : 'inherit', fontWeight: emp.withholdingTax > 0 ? 600 : 400 }}>
+                        {emp.withholdingTax?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell>{getTypeChip(emp)}</TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </TableContainer>
+
         </CardContent>
       </Card>
-
     </Box>
   );
 }

@@ -6,9 +6,11 @@ import {
 import { Search as SearchIcon, FileDownload as CsvIcon, Print as PrintIcon } from '@mui/icons-material';
 import { exportToCSV, printTable } from '../../utils/exportUtils';
 
+const goldAccent = '#d4a843';
+
 const headerStyle = {
-  bgcolor: '#023DFB',
-  color: '#fff',
+  background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)',
+  color: '#FDFDFC',
   fontWeight: 700,
   fontSize: '0.75rem',
   padding: '12px 16px',
@@ -22,9 +24,9 @@ const cellStyle = {
 };
 
 const mockSILData = [
-  { id: 1, empId: 'E0041', name: 'Federio, Norman Aspera', designation: 'Clerk- Liason Officer', basicPay: '24,000', dailyRate: '920', remainingVL: '1', silAmount: '920' },
-  { id: 2, empId: 'E0212', name: 'Saez Arvin  Donyell Aranda', designation: 'Clerk-SL Field', basicPay: '19,000', dailyRate: '728.50', remainingVL: '4', silAmount: '2,914' },
-  { id: 3, empId: 'E0222', name: 'Bueza Raymond Alfon', designation: 'Clerk-SW Field', basicPay: '19000', dailyRate: '1,278', remainingVL: '3', silAmount: '3,834' }
+  { id: 1, empId: '0041', name: 'Federio, Norman Aspera', designation: 'Clerk- Liason Officer', basicPay: '24,000', dailyRate: '920', remainingVL: '1', silAmount: '920' },
+  { id: 2, empId: '0212', name: 'Saez Arvin  Donyell Aranda', designation: 'Clerk-SL Field', basicPay: '19,000', dailyRate: '728.50', remainingVL: '4', silAmount: '2,914' },
+  { id: 3, empId: '0222', name: 'Bueza Raymond Alfon', designation: 'Clerk-SW Field', basicPay: '19000', dailyRate: '1,278', remainingVL: '3', silAmount: '3,834' }
 ];
 
 export default function ServiceIncentiveLeave() {
@@ -39,7 +41,7 @@ export default function ServiceIncentiveLeave() {
     <Box className="page-container">
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: '#023DFB', mb: 1 }}>Service Incentive Leave (SIL)</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: '#0241FB', mb: 1 }}>Service Incentive Leave (SIL)</Typography>
           <Typography variant="body2" color="text.secondary">Management of monetized unused leave credits</Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
@@ -48,20 +50,36 @@ export default function ServiceIncentiveLeave() {
         </Box>
       </Box>
 
-      <Card sx={{ borderRadius: 3, mb: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+      <Card sx={{ 
+        borderRadius: 3, 
+        mb: 4, 
+        boxShadow: '0 8px 32px rgba(5,7,126,0.22)',
+        background: 'linear-gradient(160deg, #05077E 0%, #0241FB 55%, #4470ED 80%, #B4B7D3 100%)',
+        borderTop: '3px solid #d4a843',
+        color: '#ffffff'
+      }}>
         <CardContent sx={{ p: 3 }}>
           <TextField
             fullWidth size="small"
             placeholder="Search employee by name or ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> }}
-            sx={{ maxWidth: 400 }}
+            InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#FDFDFC', opacity: 0.8 }} /></InputAdornment> }}
+            sx={{ 
+              maxWidth: 400,
+              '& .MuiOutlinedInput-root': {
+                bgcolor: 'rgba(253,253,252,0.1)', color: '#FDFDFC', borderRadius: 2,
+                '& fieldset': { borderColor: 'rgba(253,253,252,0.3)' },
+                '&:hover fieldset': { borderColor: '#FDFDFC' },
+                '&.Mui-focused fieldset': { borderColor: '#d4a843', borderWidth: '2px' },
+              },
+              '& .MuiInputBase-input::placeholder': { color: 'rgba(253,253,252,0.6)', opacity: 1 },
+            }}
           />
         </CardContent>
       </Card>
 
-      <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}>
+      <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 10px 30px rgba(0,0,0,0.08)', borderTop: `3px solid ${goldAccent}` }}>
         <Table stickyHeader>
           <TableHead>
             <TableRow>
@@ -84,7 +102,7 @@ export default function ServiceIncentiveLeave() {
                 <TableCell sx={cellStyle}>{row.designation}</TableCell>
                 <TableCell sx={{ ...cellStyle, textAlign: 'right' }}>{row.basicPay}</TableCell>
                 <TableCell sx={{ ...cellStyle, textAlign: 'right', fontWeight: 600 }}>{row.dailyRate}</TableCell>
-                <TableCell sx={{ ...cellStyle, textAlign: 'center', color: '#023DFB', fontWeight: 700 }}>{row.remainingVL}</TableCell>
+                <TableCell sx={{ ...cellStyle, textAlign: 'center', color: '#0241FB', fontWeight: 700 }}>{row.remainingVL}</TableCell>
                 <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f', fontWeight: 800 }}>{row.silAmount}</TableCell>
               </TableRow>
             ))}

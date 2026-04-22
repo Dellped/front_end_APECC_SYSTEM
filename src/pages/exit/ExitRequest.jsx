@@ -55,8 +55,8 @@ export default function ExitRequest() {
       {/* Page Header and Stats */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" sx={{ 
-          fontWeight: 800, color: '#023DFB', 
-          background: 'linear-gradient(90deg, #023DFB, #4a75e6)',
+          fontWeight: 800, color: '#0241FB', 
+          background: 'linear-gradient(90deg, #0241FB, #4470ED)',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           mb: 1 
         }}>
@@ -68,7 +68,7 @@ export default function ExitRequest() {
 
         <Grid container spacing={2}>
           {[
-            { label: 'Total Requests', value: exitRequests.length, color: '#023DFB' },
+            { label: 'Total Requests', value: exitRequests.length, color: '#0241FB' },
             { label: 'Under Review', value: exitRequests.filter(r => r.status === 'HR Review & Approval').length, color: '#e65100' },
             { label: 'In Clearance', value: exitRequests.filter(r => r.status === 'Clearance Process').length, color: '#1565c0' },
             { label: 'Completed', value: exitRequests.filter(r => r.status === 'Final Approval').length, color: '#2e7d32' },
@@ -88,7 +88,7 @@ export default function ExitRequest() {
       <Grid container spacing={3}>
         {/* Main List */}
         <Grid item xs={12} lg={8}>
-          <Card sx={{ borderRadius: 4, boxShadow: '0 12px 32px rgba(10,22,40,0.05)', overflow: 'hidden' }}>
+          <Card sx={{ borderRadius: 4, borderTop: `3px solid #0241FB`,boxShadow: '0 12px 32px rgba(10,22,40,0.05)', overflow: 'hidden' }}>
             <Box sx={{ p: 3, borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
               <TextField
                 size="small"
@@ -96,7 +96,7 @@ export default function ExitRequest() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 InputProps={{
-                  startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#023DFB' }} /></InputAdornment>,
+                  startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#0241FB' }} /></InputAdornment>,
                 }}
                 sx={{ flex: 1, minWidth: 200 }}
               />
@@ -147,7 +147,7 @@ export default function ExitRequest() {
                     >
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                          <Avatar sx={{ width: 32, height: 32, bgcolor: req.status === 'Rejected' ? '#fafafa' : '#023DFB', color: req.status === 'Rejected' ? '#ccc' : '#fff', fontSize: '0.8rem', fontWeight: 700 }}>
+                          <Avatar sx={{ width: 32, height: 32, bgcolor: req.status === 'Rejected' ? '#fafafa' : '#0241FB', color: req.status === 'Rejected' ? '#ccc' : '#fff', fontSize: '0.8rem', fontWeight: 700 }}>
                             {req.name.split(' ').map(n => n[0]).join('').substring(0,2)}
                           </Avatar>
                           <Box>
@@ -187,7 +187,7 @@ export default function ExitRequest() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {selectedRequest && (
               <Card sx={{ borderRadius: 4, boxShadow: '0 8px 32px rgba(13,27,62,0.1)', overflow: 'hidden' }}>
-                <Box sx={{ p: 3, background: 'linear-gradient(135deg, #023DFB, #4a75e6)', color: '#fff' }}>
+                <Box sx={{ p: 3, background: 'linear-gradient(135deg, #0241FB, #4470ED)', color: '#FDFDFC' }}>
                   <Typography variant="subtitle2" sx={{ opacity: 0.8, fontWeight: 700, mb: 0.5 }}>EXIT TRACKER</Typography>
                   <Typography variant="h6" sx={{ fontWeight: 800 }}>{selectedRequest.name}</Typography>
                   <Typography variant="caption" sx={{ opacity: 0.9 }}>{selectedRequest.memberId} • {selectedRequest.roleType}</Typography>
@@ -200,7 +200,7 @@ export default function ExitRequest() {
 
                   <Divider sx={{ mb: 3 }} />
                   
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#023DFB', mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0241FB', mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <PipelineIcon sx={{ fontSize: '1.2rem' }} /> Exit Process Pipeline
                   </Typography>
 
@@ -220,14 +220,14 @@ export default function ExitRequest() {
                             <StepLabel 
                               StepIconProps={{
                                 sx: {
-                                  '&.Mui-active': { color: '#023DFB' },
+                                  '&.Mui-active': { color: '#0241FB' },
                                   '&.Mui-completed': { color: '#2e7d32' },
                                 }
                               }}
                             >
                               <Typography variant="caption" sx={{ 
                                 fontWeight: isCurrent ? 800 : 600, 
-                                color: isCurrent ? '#023DFB' : (isCompleted ? '#2e7d32' : 'text.secondary'),
+                                color: isCurrent ? '#0241FB' : (isCompleted ? '#2e7d32' : 'text.secondary'),
                                 fontSize: '0.75rem' 
                               }}>
                                 {label}
@@ -241,7 +241,7 @@ export default function ExitRequest() {
 
                   {selectedRequest.status !== 'Final Approval' && selectedRequest.status !== 'Rejected' && (
                      <Box sx={{ mt: 3, display: 'flex', gap: 1 }}>
-                       <Button variant="contained" fullWidth size="small" sx={{ bgcolor: '#023DFB', fontWeight: 700, borderRadius: 2 }}>
+                       <Button variant="contained" fullWidth size="small" sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)', fontWeight: 700, borderRadius: 2 }}>
                          Move to Next
                        </Button>
                        <Button variant="outlined" color="error" fullWidth size="small" sx={{ fontWeight: 700, borderRadius: 2 }}>

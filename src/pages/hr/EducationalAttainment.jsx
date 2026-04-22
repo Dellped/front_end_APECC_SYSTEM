@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   Box, Card, CardContent, Typography, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Chip, Button, IconButton, Avatar, Autocomplete, TextField, createFilterOptions
@@ -42,12 +42,12 @@ export default function EducationalAttainment() {
           sx={{
             '& .MuiOutlinedInput-root': {
               borderRadius: 3,
-              bgcolor: '#fff',
+              bgcolor: '#FDFDFC',
               boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
               transition: 'all 0.3s ease',
               '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' },
               '&:hover fieldset': { borderColor: goldAccent },
-              '&.Mui-focused fieldset': { borderColor: '#023DFB', boxShadow: '0 4px 20px rgba(2,61,251,0.15)' }
+              '&.Mui-focused fieldset': { borderColor: '#0241FB', boxShadow: '0 4px 20px rgba(2,61,251,0.15)' }
             }
           }}
           renderInput={(params) => (
@@ -82,14 +82,14 @@ export default function EducationalAttainment() {
         boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
       }}>
         <CardContent sx={{ py: 2, '&:last-child': { pb: 2 }, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar sx={{ bgcolor: '#023DFB', width: 45, height: 45, fontWeight: 700 }}>
+          <Avatar sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)', width: 45, height: 45, fontWeight: 700 }}>
             {employees[selectedEmp].firstName[0]}
           </Avatar>
           <Box>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
               Currently Viewing
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: '#023DFB', lineHeight: 1.2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: '#0241FB', lineHeight: 1.2 }}>
               {employees[selectedEmp].firstName} {employees[selectedEmp].lastName}
             </Typography>
           </Box>
@@ -105,11 +105,11 @@ export default function EducationalAttainment() {
         <CardContent sx={{ p: 4 }}>
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#023DFB' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#0241FB' }}>
               Education Records
             </Typography>
             <Button size="small" variant="contained" startIcon={<AddIcon />}
-              sx={{ background: 'linear-gradient(135deg, #023DFB 0%, #4a75e6 100%)', fontWeight: 600 }}>
+              sx={{ background: 'linear-gradient(135deg, #05077E 0%, #4470ED 100%)', fontWeight: 600 }}>
               Add Record
             </Button>
           </Box>
@@ -130,7 +130,7 @@ export default function EducationalAttainment() {
                   <TableCell>Distinction</TableCell>
                   <TableCell>Units</TableCell>
                   <TableCell>From</TableCell>
-                  <TableCell>Till</TableCell>
+                  <TableCell>To</TableCell>
                   <TableCell width={100} align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -154,7 +154,7 @@ export default function EducationalAttainment() {
                     <TableCell>{ed.from || '—'}</TableCell>
                     <TableCell>{ed.till || '—'}</TableCell>
                     <TableCell align="center">
-                      <IconButton size="small" sx={{ color: '#1a3a6b' }}><EditIcon fontSize="small" /></IconButton>
+                      <IconButton size="small" sx={{ color: '#05077E' }}><EditIcon fontSize="small" /></IconButton>
                       <IconButton size="small" color="error"><DeleteIcon fontSize="small" /></IconButton>
                     </TableCell>
                   </TableRow>

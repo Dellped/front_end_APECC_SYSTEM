@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Tabs, Tab,
@@ -102,8 +102,8 @@ export default function GovernmentContributions() {
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4" sx={{ 
-            fontWeight: 800, color: '#023DFB', 
-            background: 'linear-gradient(90deg, #023DFB, #4a75e6)',
+            fontWeight: 800, color: '#0241FB', 
+            background: 'linear-gradient(90deg, #0241FB, #4470ED)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             mb: 0.5 
           }}>
@@ -122,7 +122,7 @@ export default function GovernmentContributions() {
         </Button>
       </Box>
 
-      <Card sx={{ borderRadius: 4, overflow: 'hidden', boxShadow: '0 12px 32px rgba(0,0,0,0.05)' }}>
+      <Card sx={{ borderRadius: 4, overflow: 'hidden', boxShadow: '0 12px 32px rgba(0,0,0,0.05)', borderTop: `3px solid ${goldAccent}` }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'rgba(2, 61, 251, 0.02)' }}>
           <Tabs 
             value={tab} 
@@ -207,7 +207,7 @@ export default function GovernmentContributions() {
                           />
                         ) : `₱${row.eeShare.toLocaleString()}`}
                       </TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 700, color: '#023DFB' }}>
+                      <TableCell align="right" sx={{ fontWeight: 700, color: '#0241FB' }}>
                         ₱{row.total.toLocaleString()}
                       </TableCell>
                     </TableRow>
@@ -354,7 +354,7 @@ export default function GovernmentContributions() {
                           <TextField fullWidth size="small" value={row.er} onChange={(e) => handlePagIbigChange(i, 'er', e.target.value)} />
                         ) : row.er}
                       </TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 700, color: '#023DFB' }}>
+                      <TableCell align="right" sx={{ fontWeight: 700, color: '#0241FB' }}>
                         {isEditingPagIbig ? (
                           <TextField fullWidth size="small" value={row.total} onChange={(e) => handlePagIbigChange(i, 'total', e.target.value)} />
                         ) : row.total}
@@ -443,7 +443,7 @@ export default function GovernmentContributions() {
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 1, borderTop: '1px dashed #ccc' }}>
                 <Typography variant="body1" sx={{ fontWeight: 800 }}>Total Employer Liability</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 800, color: '#023DFB' }}>₱20,650.00</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 800, color: '#0241FB' }}>₱20,650.00</Typography>
               </Box>
             </CardContent>
           </Card>

@@ -4,7 +4,7 @@ import {
   TableContainer, TableHead, TableRow, IconButton, Grid, TextField,
   Button, Paper, Stack, MenuItem, Select, FormControl, InputLabel,
   InputAdornment, Chip, Divider, Tooltip, Avatar,
-  Dialog, DialogTitle, DialogContent, DialogActions
+  Dialog, DialogTitle, DialogContent, DialogActions, Autocomplete
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -17,12 +17,14 @@ import {
 import { exportToCSV, printTable, exportToPDF } from '../../utils/exportUtils';
 import * as XLSX from 'xlsx';
 import { CloudUpload as UploadIcon } from '@mui/icons-material';
+import { JOB_LEVELS, EMPLOYMENT_STATUSES, employees } from '../../data/mockData';
 
-const apeccBlue = '#023DFB';
+const apeccBlue = '#0241FB';
+const goldAccent = '#d4a843';
 
 const headerStyle = {
   bgcolor: apeccBlue,
-  color: '#fff',
+  color: '#FDFDFC',
   fontWeight: 700,
   fontSize: '0.75rem',
   padding: '12px 16px',
@@ -30,8 +32,8 @@ const headerStyle = {
 };
 
 const mockAdjustments = [
-  { id: 1, empId: 'EMP001', name: 'Juan Dela Cruz', currentSalary: 25000, type: 'Increase', newSalary: 27000, date: '2026-03-01' },
-  { id: 2, empId: 'EMP002', name: 'Maria Santos', currentSalary: 28000, type: 'Promotion', newSalary: 32000, date: '2026-02-01' },
+  { id: 1, empId: '0001', name: 'Juan Dela Cruz', currentSalary: 25000, type: 'Increase', newSalary: 27000, date: '2026-03-01' },
+  { id: 2, empId: '0002', name: 'Maria Santos', currentSalary: 28000, type: 'Promotion', newSalary: 32000, date: '2026-02-01' },
 ];
 
 export default function SalaryAdjustment() {
@@ -40,10 +42,17 @@ export default function SalaryAdjustment() {
   const [selectedAdjustment, setSelectedAdjustment] = useState(null);
   const [openViewDialog, setOpenViewDialog] = useState(false);
   const [formData, setFormData] = useState({
+    empId: '',
     name: 'Juan Dela Cruz',
     currentSalary: 25000,
+    currentJobLevel: 'Level 1 - Probationary',
+    currentEmploymentType: 'Probationary',
     type: 'Increase',
     amount: '',
+    newJobLevel: 'Level 1 - Probationary',
+    newEmploymentType: 'Probationary',
+    currentDeminimis: 0,
+    newDeminimis: '',
     reason: '',
     date: ''
   });
@@ -81,7 +90,7 @@ export default function SalaryAdjustment() {
   const computeNewSalary = () => {
     const amount = parseFloat(formData.amount) || 0;
     const current = formData.currentSalary;
-    if (formData.type === 'Increase' || formData.type === 'Promotion') {
+    if (formData.type === 'Increase' || formData.type === 'Promotion' || formData.type === 'DOLE changes') {
       return current + amount;
     } else if (formData.type === 'Decrease') {
       return current - amount;
@@ -109,10 +118,207 @@ export default function SalaryAdjustment() {
         </Typography>
       </Box>
 
-      <Grid container spacing={4}>
+      <Stack spacing={4}>
+        {/* Adjustment Form (Landscape Layout) */}
+        <Card sx={{ borderRadius: 3, boxShadow: '0 10px 40px rgba(0,0,0,0.1)', border: `1px solid ${apeccBlue}15`, width: '100%', borderTop: `3px solid ${goldAccent}` }}>
+            <CardContent sx={{ p: 4 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+                <Avatar sx={{ bgcolor: 'rgba(2, 61, 251, 0.1)', color: apeccBlue }}><AdjustmentIcon /></Avatar>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>Adjustment / Promotion Form</Typography>
+              </Box>
+              
+              <Box sx={{  p: 2.5, bgcolor: 'rgba(2, 61, 251, 0.03)', border: '1px solid rgba(2, 61, 251, 0.1)', borderRadius: 2, mb: 3 }}>
+                <Grid container spacing={3} alignItems="center">
+                  <Grid item xs={12} md={6}>
+                    <Autocomplete
+                      size="small"
+                      forcePopupIcon={false}
+                      options={employees}
+                      getOptionLabel={(option) => `${option.firstName} ${option.lastName} (${option.id})`}
+                      onChange={(e, newValue) => {
+                        if (newValue) {
+                          setFormData({
+                            ...formData,
+                            empId: newValue.id,
+                            name: `${newValue.firstName} ${newValue.lastName}`,
+                            currentSalary: newValue.payrollProfile?.basicSalary || 0,
+                            currentJobLevel: newValue.employmentDetails?.jobLevel || '',
+                            currentEmploymentType: newValue.employmentType || '',
+                            newJobLevel: newValue.employmentDetails?.jobLevel || '',
+                            newEmploymentType: newValue.employmentType || '',
+                            currentDeminimis: newValue.payrollProfile?.deminimis || 0,
+                          });
+                        }
+                      }}
+                      renderInput={(params) => (
+                        <TextField 
+                          {...params} 
+                          label="Search Employee *" 
+                          placeholder="Type name or ID..."
+                          InputLabelProps={{ shrink: true, sx: { fontWeight: 600 } }}
+                          InputProps={{
+                            ...params.InputProps,
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <SearchIcon fontSize="small" sx={{ ml: 0.5, color: 'text.secondary' }} />
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel sx={{ fontWeight: 600 }}>Nature of Action *</InputLabel>
+                      <Select 
+                        value={formData.type} 
+                        label="Nature of Action *"
+                        onChange={(e) => setFormData({...formData, type: e.target.value})}
+                        sx={{ fontWeight: 700, color: apeccBlue }}
+                      >
+                        <MenuItem value="Increase">Salary Increase</MenuItem>
+                        <MenuItem value="Promotion">Promotion</MenuItem>
+                        <MenuItem value="DOLE changes">DOLE changes</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <TextField 
+                      size="small" label="Effective Date *" 
+                      type="date" fullWidth
+                      value={formData.date}
+                      onChange={(e) => setFormData({...formData, date: e.target.value})}
+                      InputLabelProps={{ shrink: true, sx: { fontWeight: 600 } }}
+                      sx={{ '& .MuiInputBase-input': { fontWeight: 700 } }}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+
+              <Grid container spacing={4}>
+                {/* Current Status Column */}
+                <Grid item xs={12} md={6}>
+                  <Box sx={{ px: 1 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1, mb: 2, borderBottom: '2px solid #eee', pb: 1 }}>
+                      Current Status
+                    </Typography>
+                    
+                    <Stack spacing={3}>
+                      <TextField 
+                        size="small" select label="Current Job Level" 
+                        fullWidth value={formData.currentJobLevel}
+                        onChange={(e) => setFormData({...formData, currentJobLevel: e.target.value})}
+                      >
+                        {JOB_LEVELS.map(l => <MenuItem key={l} value={l}>{l}</MenuItem>)}
+                      </TextField>
+                      
+                      <TextField 
+                        size="small" select label="Current Employment Type" 
+                        fullWidth value={formData.currentEmploymentType}
+                        onChange={(e) => setFormData({...formData, currentEmploymentType: e.target.value})}
+                      >
+                        {EMPLOYMENT_STATUSES.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+                      </TextField>
+                      
+                      <Box sx={{ p: 2, bgcolor: '#f4f7fe', borderRadius: 2, border: '1px solid #e2e8f0' }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase' }}>Current Basic Salary</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, color: '#475569' }}>₱{formData.currentSalary.toLocaleString()}</Typography>
+
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', mt: 2, display: 'block' }}>Current Deminimis</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 800, mt: 0.5, color: '#475569' }}>₱{(formData.currentDeminimis || 0).toLocaleString()}</Typography>
+                      </Box>
+                    </Stack>
+                  </Box>
+                </Grid>
+
+                {/* Proposed Status Column */}
+                <Grid item xs={12} md={6}>
+                  <Box sx={{ px: 1 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: apeccBlue, textTransform: 'uppercase', letterSpacing: 1, mb: 2, borderBottom: `2px solid ${apeccBlue}40`, pb: 1 }}>
+                      Proposed Action / New Status
+                    </Typography>
+                    
+                    <Stack spacing={3}>
+                      <TextField 
+                        size="small" select label="New Job Level" 
+                        fullWidth value={formData.newJobLevel}
+                        onChange={(e) => setFormData({...formData, newJobLevel: e.target.value})}
+                      >
+                        {JOB_LEVELS.map(l => <MenuItem key={"new-" + l} value={l}>{l}</MenuItem>)}
+                      </TextField>
+
+                      <TextField 
+                        size="small" select label="New Employment Type" 
+                        fullWidth value={formData.newEmploymentType}
+                        onChange={(e) => setFormData({...formData, newEmploymentType: e.target.value})}
+                      >
+                        {EMPLOYMENT_STATUSES.map(s => <MenuItem key={"new-" + s} value={s}>{s}</MenuItem>)}
+                      </TextField>
+
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <TextField 
+                            size="small" label="Salary Adjustment Amount" 
+                            fullWidth 
+                            value={formData.amount}
+                            onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                            InputProps={{ startAdornment: <InputAdornment position="start">₱</InputAdornment> }}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField 
+                            size="small" label="New Deminimis" 
+                            fullWidth 
+                            value={formData.newDeminimis}
+                            onChange={(e) => setFormData({...formData, newDeminimis: e.target.value})}
+                            InputProps={{ startAdornment: <InputAdornment position="start">₱</InputAdornment> }}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Box sx={{ p: 1.5, bgcolor: 'rgba(76, 175, 80, 0.05)', borderRadius: 2, border: '1px solid rgba(76, 175, 80, 0.3)', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                            <Typography variant="caption" sx={{ color: '#2e7d32', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1 }}>Computed New Salary</Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 800, color: '#1b5e20', mt: 0.5 }}>₱{newSalaryComputed.toLocaleString()}</Typography>
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    </Stack>
+                  </Box>
+                </Grid>
+              </Grid>
+
+              <Divider sx={{ my: 4 }} />
+
+              <Box sx={{ px: 1 }}>
+                 <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1, mb: 2 }}>
+                    Justification / Remarks
+                 </Typography>
+                 <TextField 
+                    size="small" placeholder="Enter formal justification for the promotion or salary adjustment..." 
+                    fullWidth multiline rows={3}
+                    value={formData.reason}
+                    onChange={(e) => setFormData({...formData, reason: e.target.value})}
+                    sx={{ bgcolor: '#fafafa' }}
+                 />
+              </Box>
+
+              <Box sx={{ textAlign: 'right', mt: 4, px: 1 }}>
+                  <Button variant="outlined" sx={{ mr: 2, fontWeight: 700, borderRadius: 2, px: 4, color: 'text.secondary', borderColor: '#ccc' }}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="contained" 
+                    size="large" 
+                    sx={{ bgcolor: apeccBlue, fontWeight: 700, borderRadius: 2, px: 6, py: 1.2, boxShadow: '0 4px 14px rgba(2, 61, 251, 0.3)' }}
+                  >
+                    Submit
+                  </Button>
+              </Box>
+            </CardContent>
+        </Card>
+
         {/* Adjustment Table */}
-        <Grid item xs={12} lg={7}>
-          <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', mb: 4 }}>
+        <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', mb: 4, width: '100%', borderTop: `3px solid ${goldAccent}` }}>
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <TextField 
@@ -120,7 +326,7 @@ export default function SalaryAdjustment() {
                 placeholder="Search Employee..." 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                sx={{ mb: 0, mr: 2 }}
+                sx={{ mb: 0, mr: 2, maxWidth: 400 }}
                 InputProps={{ startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} /> }}
               />
               <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
@@ -195,83 +401,7 @@ export default function SalaryAdjustment() {
               </TableContainer>
             </CardContent>
           </Card>
-        </Grid>
-
-        {/* Adjustment Form */}
-        <Grid item xs={12} lg={5}>
-          <Card sx={{ borderRadius: 3, boxShadow: '0 10px 40px rgba(0,0,0,0.1)', border: `1px solid ${apeccBlue}15` }}>
-            <CardContent sx={{ p: 4 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-                <Avatar sx={{ bgcolor: 'rgba(2, 61, 251, 0.1)', color: apeccBlue }}><AdjustmentIcon /></Avatar>
-                <Typography variant="h6" sx={{ fontWeight: 800 }}>Adjustment Form</Typography>
-              </Box>
-              
-              <Stack spacing={3}>
-                <Box>
-                  <Typography variant="body2" color="text.secondary">Selected Employee</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{formData.name}</Typography>
-                </Box>
-                
-                <Box sx={{ p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
-                  <Typography variant="body2" color="text.secondary">Current Salary</Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 800, color: apeccBlue }}>₱{formData.currentSalary.toLocaleString()}</Typography>
-                </Box>
-
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Adjustment Type</InputLabel>
-                  <Select 
-                    value={formData.type} 
-                    label="Adjustment Type"
-                    onChange={(e) => setFormData({...formData, type: e.target.value})}
-                  >
-                    <MenuItem value="Increase">Salary Increase</MenuItem>
-                    <MenuItem value="Promotion">Promotion</MenuItem>
-                    <MenuItem value="Decrease">Salary Decrease</MenuItem>
-                  </Select>
-                </FormControl>
-
-                <TextField 
-                  label="Adjustment Amount" 
-                  fullWidth 
-                  value={formData.amount}
-                  onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                  InputProps={{ startAdornment: <InputAdornment position="start">₱</InputAdornment> }}
-                />
-
-                <Box sx={{ p: 2, bgcolor: 'rgba(2, 61, 251, 0.05)', borderRadius: 2, border: `1px dashed ${apeccBlue}40` }}>
-                  <Typography variant="body2" color="text.secondary">Computed New Salary</Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 800, color: apeccBlue }}>₱{newSalaryComputed.toLocaleString()}</Typography>
-                </Box>
-
-                <TextField 
-                  label="Reason / Remarks" 
-                  fullWidth multiline rows={2}
-                  value={formData.reason}
-                  onChange={(e) => setFormData({...formData, reason: e.target.value})}
-                />
-
-                <TextField 
-                  label="Effective Date" 
-                  type="date" 
-                  fullWidth 
-                  value={formData.date}
-                  onChange={(e) => setFormData({...formData, date: e.target.value})}
-                  InputLabelProps={{ shrink: true }}
-                />
-
-                <Button 
-                  variant="contained" 
-                  size="large" 
-                  fullWidth
-                  sx={{ bgcolor: apeccBlue, py: 1.5, fontWeight: 700, borderRadius: 2 }}
-                >
-                  Submit Adjustment
-                </Button>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      </Stack>
 
       {/* View Details Dialog */}
       <Dialog 
