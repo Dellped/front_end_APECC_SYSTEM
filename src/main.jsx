@@ -4,11 +4,11 @@ import { HashRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 
-const basename = import.meta.env.PROD ? "/front_end_APECC_SYSTEM/" : "/";
+//const basename = import.meta.env.PROD ? "/front_end_APECC_SYSTEM/" : "/";
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <HashRouter basename={basename}>
+    <HashRouter>
       <App />
     </HashRouter>
   </React.StrictMode>
