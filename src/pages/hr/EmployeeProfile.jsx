@@ -66,6 +66,7 @@ export default function EmployeeProfile() {
   const historyYears = Array.from({ length: currentYear - 2017 }, (_, i) => currentYear - i);
   const [historyMonth, setHistoryMonth] = useState(new Date().getMonth());
   const [historyYear, setHistoryYear] = useState(currentYear);
+  const [expandedLeaveRow, setExpandedLeaveRow] = useState(null);
 
   const handleExitFormSubmit = (data) => {
     setExitInterviewData(data);
@@ -911,47 +912,129 @@ export default function EmployeeProfile() {
 
                 {/* History + Sidebar */}
                 <Grid container spacing={2.5}>
-                  {/* Leave History */}
+                  {/* Leave Application Monitoring */}
                   <Grid item xs={12} md={8}>
                     <Card sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.06)' }}>
-                      <CardContent>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>Leave Application History</Typography>
-                        <TableContainer sx={{ maxHeight: 380, '&::-webkit-scrollbar': { width: 6 }, '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(0,0,0,0.1)', borderRadius: 3 } }}>
-                          <Table stickyHeader size="small">
-                            <TableHead>
-                              <TableRow>
-                                {['Type', 'Start Date', 'End Date', 'Days', 'Status'].map(h => (
-                                  <TableCell key={h} sx={{ fontWeight: 700, bgcolor: '#0241FB', color: '#FDFDFC', fontSize: '0.75rem' }}>{h}</TableCell>
-                                ))}
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {employeeLeaves.length > 0 ? employeeLeaves.map((l, i) => (
-                                <TableRow key={i} hover>
-                                  <TableCell sx={{ fontWeight: 600 }}>{l.type}</TableCell>
-                                  <TableCell>{l.startDate}</TableCell>
-                                  <TableCell>{l.endDate}</TableCell>
-                                  <TableCell>{l.days}</TableCell>
-                                  <TableCell>
-                                    <Chip
-                                      label={l.status}
-                                      size="small"
-                                      sx={{
-                                        fontWeight: 700, fontSize: '0.7rem',
-                                        bgcolor: l.status === 'Approved' ? 'rgba(46,125,50,0.1)' : 'rgba(230,81,0,0.1)',
-                                        color: l.status === 'Approved' ? '#2e7d32' : '#ed6c02'
-                                      }}
-                                    />
-                                  </TableCell>
-                                </TableRow>
-                              )) : (
-                                <TableRow>
-                                  <TableCell colSpan={5} align="center" sx={{ py: 4, color: 'text.secondary' }}>No leave records found.</TableCell>
-                                </TableRow>
-                              )}
-                            </TableBody>
-                          </Table>
-                        </TableContainer>
+                      <CardContent sx={{ p: 0 }}>
+                        <Box sx={{ px: 2.5, pt: 2.5, pb: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0241FB' }}>Leave Application Tracker</Typography>
+                          <Typography variant="caption" color="text.secondary">Click a row to view approval chain</Typography>
+                        </Box>
+                        {(() => {
+                          // Merge static leaveRecords + submitted ones from onboardingRecords
+                          const submittedLeaves = onboardingRecords
+                            .filter(r => r.type === 'Leave' && r.employeeData?.id === emp?.id)
+                            .map(r => ({
+                              id: r.id,
+                              type: r.employeeData?.leaveDetails?.designation || 'Leave',
+                              startDate: r.employeeData?.leaveDetails?.startDate || r.submittedDate,
+                              endDate: r.employeeData?.leaveDetails?.endDate || r.submittedDate,
+                              days: r.employeeData?.leaveDetails?.days || '—',
+                              reason: r.employeeData?.leaveDetails?.reason || '—',
+                              status: r.status,
+                              approvalChain: r.approvalChain,
+                              submittedDate: r.submittedDate,
+                              _isQueued: true,
+                            }));
+
+                          const staticLeaves = employeeLeaves.map(l => ({
+                            ...l,
+                            approvalChain: [
+                              { role: 'HR Officer', status: l.status === 'Approved' ? 'Approved' : l.status === 'Declined' ? 'Declined' : 'Pending', date: l.startDate, remarks: '' },
+                              { role: 'Unit Manager', status: l.status === 'Approved' ? 'Approved' : 'Pending', date: '', remarks: '' },
+                            ],
+                            _isQueued: false,
+                          }));
+
+                          const allLeaves = [...submittedLeaves, ...staticLeaves];
+
+                          const statusColor = (s) => {
+                            if (!s) return { bg: 'rgba(0,0,0,0.06)', color: '#555' };
+                            const sl = s.toLowerCase();
+                            if (sl.includes('approved') || sl === 'paid') return { bg: 'rgba(46,125,50,0.1)', color: '#2e7d32' };
+                            if (sl.includes('declined') || sl.includes('reject')) return { bg: 'rgba(211,47,47,0.1)', color: '#d32f2f' };
+                            if (sl.includes('pending') || sl.includes('officer')) return { bg: 'rgba(237,108,2,0.1)', color: '#ed6c02' };
+                            if (sl.includes('manager') || sl.includes('unit')) return { bg: 'rgba(2,65,251,0.08)', color: '#0241FB' };
+                            return { bg: 'rgba(0,0,0,0.06)', color: '#555' };
+                          };
+
+                          if (allLeaves.length === 0) return (
+                            <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
+                              <LeavesIcon sx={{ fontSize: 44, opacity: 0.2, mb: 1 }} />
+                              <Typography variant="body2">No leave applications found.</Typography>
+                            </Box>
+                          );
+
+                          return (
+                            <TableContainer sx={{ maxHeight: 420, '&::-webkit-scrollbar': { width: 5 }, '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(0,0,0,0.1)', borderRadius: 3 } }}>
+                              <Table stickyHeader size="small">
+                                <TableHead>
+                                  <TableRow>
+                                    {['Leave Type', 'Start', 'End', 'Days', 'Reason', 'Status', ''].map(h => (
+                                      <TableCell key={h} sx={{ fontWeight: 700, bgcolor: '#0241FB', color: '#FDFDFC', fontSize: '0.72rem', whiteSpace: 'nowrap', py: 1 }}>{h}</TableCell>
+                                    ))}
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {allLeaves.map((l, i) => {
+                                    const isExpanded = expandedLeaveRow === i;
+                                    const sc = statusColor(l.status);
+                                    return (
+                                      <React.Fragment key={i}>
+                                        <TableRow
+                                          hover
+                                          onClick={() => setExpandedLeaveRow(isExpanded ? null : i)}
+                                          sx={{ cursor: 'pointer', bgcolor: isExpanded ? 'rgba(2,65,251,0.03)' : 'inherit', '&:hover': { bgcolor: 'rgba(2,65,251,0.04)' } }}
+                                        >
+                                          <TableCell sx={{ fontWeight: 700, fontSize: '0.78rem' }}>{l.type}</TableCell>
+                                          <TableCell sx={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{l.startDate}</TableCell>
+                                          <TableCell sx={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{l.endDate}</TableCell>
+                                          <TableCell sx={{ fontSize: '0.75rem', textAlign: 'center' }}>{l.days}</TableCell>
+                                          <TableCell sx={{ fontSize: '0.75rem', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={l.reason}>{l.reason || '—'}</TableCell>
+                                          <TableCell>
+                                            <Chip label={l.status} size="small" sx={{ fontWeight: 700, fontSize: '0.65rem', bgcolor: sc.bg, color: sc.color }} />
+                                          </TableCell>
+                                          <TableCell sx={{ textAlign: 'center', color: '#0241FB', fontSize: '0.7rem', fontWeight: 700 }}>
+                                            {isExpanded ? '▲' : '▼'}
+                                          </TableCell>
+                                        </TableRow>
+                                        {isExpanded && (
+                                          <TableRow>
+                                            <TableCell colSpan={7} sx={{ py: 0, px: 2, bgcolor: 'rgba(2,65,251,0.02)', borderBottom: '2px solid rgba(2,65,251,0.1)' }}>
+                                              <Box sx={{ py: 2 }}>
+                                                <Typography variant="caption" sx={{ fontWeight: 800, color: '#0241FB', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', mb: 1.5 }}>
+                                                  Approval Chain Progress
+                                                </Typography>
+                                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                                  {(l.approvalChain || []).filter(s => s.role !== 'Employee Action').map((step, si) => {
+                                                    const ssc = statusColor(step.status);
+                                                    return (
+                                                      <Box key={si} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                        <Box sx={{ p: 1.5, borderRadius: 2, border: `1px solid ${ssc.color}22`, bgcolor: ssc.bg, minWidth: 120 }}>
+                                                          <Typography variant="caption" sx={{ fontWeight: 800, color: ssc.color, display: 'block' }}>{step.role}</Typography>
+                                                          <Chip label={step.status || 'Pending'} size="small" sx={{ mt: 0.5, fontWeight: 700, fontSize: '0.6rem', bgcolor: ssc.bg, color: ssc.color, border: `1px solid ${ssc.color}44` }} />
+                                                          {step.date && <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', mt: 0.5, fontSize: '0.62rem' }}>{step.date}</Typography>}
+                                                          {step.remarks && <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', fontSize: '0.62rem', fontStyle: 'italic' }}>{step.remarks}</Typography>}
+                                                        </Box>
+                                                        {si < (l.approvalChain || []).filter(s => s.role !== 'Employee Action').length - 1 && (
+                                                          <Typography sx={{ color: 'text.disabled', fontWeight: 800, fontSize: '1rem' }}>→</Typography>
+                                                        )}
+                                                      </Box>
+                                                    );
+                                                  })}
+                                                </Box>
+                                              </Box>
+                                            </TableCell>
+                                          </TableRow>
+                                        )}
+                                      </React.Fragment>
+                                    );
+                                  })}
+                                </TableBody>
+                              </Table>
+                            </TableContainer>
+                          );
+                        })()}
                       </CardContent>
                     </Card>
                   </Grid>

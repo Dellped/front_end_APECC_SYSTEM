@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Paper, TextField, InputAdornment, Button, Chip
@@ -50,13 +50,13 @@ export default function LeaveApplications() {
   const exportHeaders = [
     'Date Filed', 'Employee ID', 'Name of Employee', 'Position', 'Department', 
     'Type of Leave', 'Start Date', 'End Date', 'No. of Days', 'Remaining Leave', 
-    'Reason', 'Remarks', "Dont's delete this column"
+    'Reason', 'Remarks'
   ];
 
   const exportRows = filteredData.map(r => [
     r.dateFiled, r.empId, r.name, r.position, r.dept,
     r.type, r.startDate, r.endDate, r.days, r.remaining,
-    r.reason, r.remarks, r.systemId
+    r.reason, r.remarks
   ]);
 
   return (
@@ -89,7 +89,7 @@ export default function LeaveApplications() {
       </Card>
 
       <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: '0 10px 30px rgba(0,0,0,0.08)', overflowX: 'auto', maxHeight: '65vh' , border: `1px solid ${goldAccent}`}}>
-        <Table stickyHeader size="small" sx={{ minWidth: 1600 }}>
+        <Table stickyHeader size="small" sx={{ minWidth: 1400 }}>
           <TableHead>
             <TableRow>
               <TableCell sx={headerStyle}>Date Filed</TableCell>
@@ -104,7 +104,6 @@ export default function LeaveApplications() {
               <TableCell sx={headerStyle}>Remaining Leave</TableCell>
               <TableCell sx={headerStyle}>Reason</TableCell>
               <TableCell sx={headerStyle}>Remarks</TableCell>
-              <TableCell sx={{ ...headerStyle, bgcolor: '#f5f5f5', color: '#666', fontSize: '0.6rem' }}>Dont's delete this column</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -128,12 +127,11 @@ export default function LeaveApplications() {
                       color: row.remarks === 'Approved' ? '#2e7d32' : '#ed6c02',
                    }} />
                 </TableCell>
-                <TableCell sx={{ ...cellStyle, bgcolor: '#fafafa', color: '#999', fontSize: '0.65rem' }}>{row.systemId}</TableCell>
               </TableRow>
             ))}
             {filteredData.length === 0 && (
               <TableRow>
-                <TableCell colSpan={13} align="center" sx={{ py: 4 }}>No data found.</TableCell>
+                <TableCell colSpan={12} align="center" sx={{ py: 4 }}>No data found.</TableCell>
               </TableRow>
             )}
           </TableBody>
