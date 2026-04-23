@@ -608,6 +608,20 @@ export const leaveRecords = [
   { id: 'LV-003', employeeId: '0003', type: 'Emergency Leave', startDate: '2025-02-03', endDate: '2025-02-03', days: 1, status: 'Approved', reason: 'Family emergency' },
   { id: 'LV-004', employeeId: '0004', type: 'Vacation Leave', startDate: '2025-02-14', endDate: '2025-02-14', days: 1, status: 'Pending', reason: "Valentine's Day" },
   { id: 'LV-005', employeeId: '0001', type: 'Sick Leave', startDate: '2025-02-20', endDate: '2025-02-21', days: 2, status: 'Approved', reason: 'Flu' },
+  { id: 'LV-006', employeeId: '0006', type: 'Vacation Leave', startDate: '2026-01-12', endDate: '2026-01-14', days: 3, status: 'Approved', reason: 'Personal' },
+  { id: 'LV-007', employeeId: '0001', type: 'Sick Leave', startDate: '2026-02-10', endDate: '2026-02-11', days: 2, status: 'Approved', reason: 'Cold' },
+  { id: 'LV-008', employeeId: '0002', type: 'Vacation Leave', startDate: '2026-03-05', endDate: '2026-03-07', days: 3, status: 'Approved', reason: 'Seminar' },
+  { id: 'LV-009', employeeId: '0003', type: 'Sick Leave', startDate: '2026-03-18', endDate: '2026-03-19', days: 2, status: 'Approved', reason: 'Fever' },
+  { id: 'LV-010', employeeId: '0004', type: 'Emergency Leave', startDate: '2026-03-25', endDate: '2026-03-25', days: 1, status: 'Approved', reason: 'Family emergency' },
+  { id: 'LV-011', employeeId: '0001', type: 'Vacation Leave', startDate: '2026-04-07', endDate: '2026-04-10', days: 4, status: 'Approved', reason: 'Holy Week' },
+  { id: 'LV-012', employeeId: '0002', type: 'Emergency Leave', startDate: '2026-04-15', endDate: '2026-04-15', days: 1, status: 'Approved', reason: 'Bereavement' },
+  { id: 'LV-013', employeeId: '0003', type: 'Vacation Leave', startDate: '2026-04-21', endDate: '2026-04-23', days: 3, status: 'Approved', reason: 'Summer vacation' },
+  { id: 'LV-014', employeeId: '0004', type: 'Sick Leave', startDate: '2026-04-28', endDate: '2026-04-29', days: 2, status: 'Pending', reason: 'Dental procedure' },
+  { id: 'LV-015', employeeId: '0005', type: 'Vacation Leave', startDate: '2026-04-14', endDate: '2026-04-17', days: 4, status: 'Approved', reason: 'Anniversary' },
+  { id: 'LV-016', employeeId: '0006', type: 'Sick Leave', startDate: '2026-04-22', endDate: '2026-04-22', days: 1, status: 'Approved', reason: 'Check-up' },
+  { id: 'LV-017', employeeId: '0001', type: 'Sick Leave', startDate: '2026-05-06', endDate: '2026-05-06', days: 1, status: 'Approved', reason: 'Annual check-up' },
+  { id: 'LV-018', employeeId: '0002', type: 'Vacation Leave', startDate: '2026-05-18', endDate: '2026-05-20', days: 3, status: 'Approved', reason: 'Rest' },
+  { id: 'LV-019', employeeId: '0003', type: 'Emergency Leave', startDate: '2026-05-25', endDate: '2026-05-25', days: 1, status: 'Approved', reason: 'Family emergency' },
 ];
 
 export const leaveBalances = [
