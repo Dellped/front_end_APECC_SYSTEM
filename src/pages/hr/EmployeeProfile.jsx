@@ -58,7 +58,6 @@ export default function EmployeeProfile() {
     forward: { advice: '', improvements: '', workAgain: '', recommend: '', oneThingChange: '', additional: '' }
   });
   const [payrollTabValue, setPayrollTabValue] = useState(0);
-  const [selectedPeriod, setSelectedPeriod] = useState(payrollPeriods[0]?.id || '');
   const [isLeaveFormOpen, setIsLeaveFormOpen] = useState(false);
 
   const historyMonths = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -113,33 +112,36 @@ export default function EmployeeProfile() {
   const employeeBalances = useMemo(() => leaveBalances.filter(lb => lb.employeeId === emp?.id), [emp]);
   const employeeSanctions = useMemo(() => sanctions.filter(s => s.employeeId === emp?.id), [emp]);
 
-  const currentPeriod = useMemo(() => payrollPeriods.find(p => p.id === selectedPeriod), [selectedPeriod]);
-
+  // payrollData: auto-shows the current month/year from payrollRecords (no filter)
   const payrollData = useMemo(() => {
     if (!emp) return null;
-    const basic = emp.payrollProfile?.basicSalary || 0;
-    const isSemiMonthly = currentPeriod?.type?.includes('Semi');
-    const cutoffBasic = isSemiMonthly ? basic / 2 : basic;
-    const att = attendanceRecords.find(a => a.employeeId === emp.id && a.periodId === selectedPeriod) ||
-                { daysWorked: 11, absences: 0, late: 0, otHours: 0, holidayWork: 0 };
-    const otPay = (basic / 26 / 8) * 1.25 * att.otHours;
-    const holidayPay = (basic / 26) * att.holidayWork;
-    const allowances = 2500;
-    const special = specialEarnings
-      .filter(se => se.employeeId === emp.id && se.periodId === selectedPeriod)
-      .reduce((sum, se) => sum + se.amount, 0);
-    const deminimis = 2000;
-    const gross = cutoffBasic + otPay + holidayPay + allowances + special + deminimis;
-    const taxableGross = gross - deminimis - special;
-    const sss = Math.min(gross * 0.045, 1350);
-    const ph = Math.min(gross * 0.025, 900);
-    const hdmf = 100;
-    const tax = Math.max((taxableGross - sss - ph - hdmf - (isSemiMonthly ? 10416 : 20833)) * 0.20, 0);
-    const absencesDed = (basic / 26) * att.absences;
-    const totalDeductions = sss + ph + hdmf + tax + absencesDed;
-    const netPay = gross - totalDeductions;
-    return { cutoffBasic, otPay, holidayPay, allowances, special, deminimis, gross, sss, ph, hdmf, tax, totalDeductions, netPay, attendance: att };
-  }, [emp, selectedPeriod, currentPeriod]);
+    const now = new Date();
+    const record = payrollRecords.find(
+      r => r.employeeId === emp.id && r.year === now.getFullYear() && r.monthIndex === now.getMonth()
+    ) || payrollRecords.filter(r => r.employeeId === emp.id)
+        .sort((a, b) => b.year !== a.year ? b.year - a.year : b.monthIndex - a.monthIndex)[0];
+    if (!record) return null;
+    return {
+      cutoffBasic: record.basicPay,
+      deminimis: record.deminimis || 0,
+      special: record.stl || 0,
+      allowances: 0,
+      gross: record.totalIncome,
+      sss: record.sssEE || 0,
+      ph: record.phEE || 0,
+      hdmf: record.hdmfEE || 0,
+      tax: record.tax || 0,
+      totalDeductions: record.totalDeduction,
+      netPay: record.netPay,
+      savings: record.savings || 0,
+      salaryLoan: record.salaryLoan || 0,
+      housingLoan: record.housingLoan || 0,
+      educLoan: record.educLoan || 0,
+      malasakitLoan: record.malasakitLoan || 0,
+      _month: record.month,
+      _year: record.year,
+    };
+  }, [emp]);
 
   const formatCurrency = (val) => `₱${val.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -590,21 +592,16 @@ export default function EmployeeProfile() {
 
               {/* Payroll Overview */}
               <TabPanel value={tabValue} index={5}>
-                {/* Period Selector */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                  <FormControl size="small" sx={{ minWidth: 280 }}>
-                    <InputLabel>Payroll Period</InputLabel>
-                    <Select
-                      value={selectedPeriod}
-                      label="Payroll Period"
-                      onChange={(e) => setSelectedPeriod(e.target.value)}
-                    >
-                      {payrollPeriods.map(p => (
-                        <MenuItem key={p.id} value={p.id}>{p.startDate} – {p.endDate} ({p.type})</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
+                {/* Current Period Label — no filter */}
+                {payrollData && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
+                    <WalletIcon sx={{ fontSize: '1.1rem', color: '#0241FB' }} />
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#0241FB' }}>
+                      Salary for {payrollData._month} {payrollData._year}
+                    </Typography>
+                    <Chip label="Current" size="small" sx={{ fontSize: '0.65rem', fontWeight: 700, bgcolor: 'rgba(2,65,251,0.08)', color: '#0241FB' }} />
+                  </Box>
+                )}
 
                 {payrollData ? (
                   <Grid container spacing={3}>
@@ -642,8 +639,8 @@ export default function EmployeeProfile() {
                       </Card>
                     </Grid>
 
-                    {/* Breakdown & Sidebar */}
-                    <Grid item xs={12} lg={8}>
+                    {/* Breakdown - full width */}
+                    <Grid item xs={12}>
                       <Card sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.06)' }}>
                         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                           <Tabs
@@ -724,50 +721,6 @@ export default function EmployeeProfile() {
                           )}
                         </CardContent>
                       </Card>
-                    </Grid>
-
-                    {/* Quick Info Sidebar */}
-                    <Grid item xs={12} lg={4}>
-                      <Stack spacing={2.5}>
-                        <Card sx={{ borderRadius: 3, bgcolor: '#f8fafc' }}>
-                          <CardContent sx={{ p: 2.5 }}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <InfoIcon color="primary" fontSize="small" /> Payroll Context
-                            </Typography>
-                            <Stack spacing={1.5}>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <Typography variant="body2" color="text.secondary">Payroll Cycle</Typography>
-                                <Typography variant="body2" sx={{ fontWeight: 700 }}>Semi-Monthly</Typography>
-                              </Box>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <Typography variant="body2" color="text.secondary">Work Comp Plan</Typography>
-                                <Typography variant="body2" sx={{ fontWeight: 700 }}>Regular Full-time</Typography>
-                              </Box>
-                              <Divider />
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <Typography variant="body2" color="text.secondary">Status</Typography>
-                                <Chip label="Verified & Paid" size="small" color="success" />
-                              </Box>
-                            </Stack>
-                          </CardContent>
-                        </Card>
-
-                        <Card sx={{ borderRadius: 3, bgcolor: 'rgba(212,168,67,0.05)', border: `1px solid ${goldAccent}33` }}>
-                          <CardContent sx={{ p: 2.5 }}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 1, color: goldAccent }}>Tax Cap Status</Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                              Non-taxable benefits cumulative limit tracking (₱90k Cap)
-                            </Typography>
-                            <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between' }}>
-                              <Typography variant="caption" sx={{ fontWeight: 700 }}>Current Utilization</Typography>
-                              <Typography variant="caption" sx={{ fontWeight: 700 }}>22%</Typography>
-                            </Box>
-                            <Paper sx={{ height: 8, bgcolor: 'rgba(0,0,0,0.05)', borderRadius: 4, overflow: 'hidden' }}>
-                              <Box sx={{ width: '22%', height: '100%', bgcolor: goldAccent }} />
-                            </Paper>
-                          </CardContent>
-                        </Card>
-                      </Stack>
                     </Grid>
                   </Grid>
                 ) : (
