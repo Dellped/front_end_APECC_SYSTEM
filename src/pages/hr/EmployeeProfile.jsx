@@ -21,7 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   CheckCircle as ApproveIcon 
 } from '@mui/icons-material';
-import { employees, payrollPeriods, attendanceRecords, specialEarnings, leaveRecords, leaveBalances, sanctions, onboardingRecords } from '../../data/mockData';
+import { employees, payrollPeriods, attendanceRecords, specialEarnings, leaveRecords, leaveBalances, sanctions, onboardingRecords, payrollRecords } from '../../data/mockData';
 import LeaveApplicationForm from './LeaveApplicationForm';
 import ExitInterviewForm from '../../components/forms/ExitInterviewForm';
 
@@ -60,6 +60,12 @@ export default function EmployeeProfile() {
   const [payrollTabValue, setPayrollTabValue] = useState(0);
   const [selectedPeriod, setSelectedPeriod] = useState(payrollPeriods[0]?.id || '');
   const [isLeaveFormOpen, setIsLeaveFormOpen] = useState(false);
+
+  const historyMonths = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const currentYear = new Date().getFullYear();
+  const historyYears = Array.from({ length: currentYear - 2017 }, (_, i) => currentYear - i);
+  const [historyMonth, setHistoryMonth] = useState(new Date().getMonth());
+  const [historyYear, setHistoryYear] = useState(currentYear);
 
   const handleExitFormSubmit = (data) => {
     setExitInterviewData(data);
@@ -769,6 +775,99 @@ export default function EmployeeProfile() {
                     <Typography variant="body2">No payroll data available for this period.</Typography>
                   </Box>
                 )}
+
+                {/* ─── Payroll History ─── */}
+                <Box sx={{ mt: 4 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0241FB' }}>
+                      Payroll History
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1.5 }}>
+                      <FormControl size="small" sx={{ minWidth: 140 }}>
+                        <InputLabel>Month</InputLabel>
+                        <Select
+                          value={historyMonth}
+                          label="Month"
+                          onChange={(e) => setHistoryMonth(e.target.value)}
+                        >
+                          {historyMonths.map((m, i) => (
+                            <MenuItem key={i} value={i}>{m}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      <FormControl size="small" sx={{ minWidth: 100 }}>
+                        <InputLabel>Year</InputLabel>
+                        <Select
+                          value={historyYear}
+                          label="Year"
+                          onChange={(e) => setHistoryYear(e.target.value)}
+                        >
+                          {historyYears.map(y => (
+                            <MenuItem key={y} value={y}>{y}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Box>
+                  </Box>
+
+                  {(() => {
+                    const histRecords = payrollRecords.filter(
+                      r => r.employeeId === emp?.id && r.year === historyYear && r.monthIndex === historyMonth
+                    );
+                    if (histRecords.length === 0) {
+                      return (
+                        <Box sx={{ textAlign: 'center', py: 5, color: 'text.secondary', bgcolor: 'rgba(0,0,0,0.02)', borderRadius: 2, border: '1px dashed rgba(0,0,0,0.1)' }}>
+                          <WalletIcon sx={{ fontSize: 40, opacity: 0.25, mb: 1 }} />
+                          <Typography variant="body2">No payroll record for {historyMonths[historyMonth]} {historyYear}.</Typography>
+                        </Box>
+                      );
+                    }
+                    return (
+                      <TableContainer component={Paper} sx={{ borderRadius: 2, border: '1px solid rgba(0,0,0,0.08)', overflowX: 'auto',
+                        '&::-webkit-scrollbar': { height: 6 },
+                        '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(0,0,0,0.12)', borderRadius: 3 }
+                      }}>
+                        <Table size="small" sx={{ minWidth: 1100 }}>
+                          <TableHead>
+                            <TableRow sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)' }}>
+                              {[
+                                'Period', 'Basic Pay', 'De Minimis', 'Total Income',
+                                'SSS (EE)', 'PhilHealth (EE)', 'Pag-IBIG (EE)', 'Tax',
+                                'Savings', 'Salary Loan', 'STL', 'LWOP',
+                                'Total Deductions', 'Net Pay', 'Status'
+                              ].map(h => (
+                                <TableCell key={h} sx={{ color: '#fff', fontWeight: 700, fontSize: '0.68rem', whiteSpace: 'nowrap', py: 1, px: 1.5, border: '1px solid rgba(255,255,255,0.1)' }}>{h}</TableCell>
+                              ))}
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {histRecords.map((r, i) => (
+                              <TableRow key={r.id} hover sx={{ '&:hover': { bgcolor: 'rgba(2,65,251,0.03)' } }}>
+                                <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap', px: 1.5 }}>{r.month} {r.year}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5 }}>₱{r.basicPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#0241FB' }}>₱{(r.deminimis||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, fontWeight: 700, color: '#2e7d32' }}>₱{r.totalIncome.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.sssEE||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.phEE||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.hdmfEE||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.tax||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.savings||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.salaryLoan||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.stl||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.lwop||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, fontWeight: 700, color: '#d32f2f' }}>₱{r.totalDeduction.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, fontWeight: 800, color: '#0241FB' }}>₱{r.netPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell sx={{ px: 1.5 }}>
+                                  <Chip label={r.status || 'Paid'} size="small" sx={{ fontWeight: 700, fontSize: '0.65rem', bgcolor: 'rgba(46,125,50,0.1)', color: '#2e7d32' }} />
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    );
+                  })()}
+                </Box>
               </TabPanel>
 
               {/* Leave Summary */}
