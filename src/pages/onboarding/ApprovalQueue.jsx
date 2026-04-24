@@ -16,7 +16,7 @@ import {
   SupervisorAccount as RoleIcon
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { onboardingRecords, employees, exitMembers } from '../../data/mockData';
+import { onboardingRecords, employees, addExitRequest } from '../../data/mockData';
 import PayrollRegister from '../hr/PayrollRegister';
 import LeaveApplicationForm from '../hr/LeaveApplicationForm';
 import ExitInterviewForm from '../../components/forms/ExitInterviewForm';
@@ -116,15 +116,13 @@ export default function ApprovalQueue() {
         record.status = 'Approved';
         record.approvalChain[4] = { role: 'General Manager', name: 'Simulated GM', status: 'Approved', date: today, remarks: remarks };
         
-        exitMembers.push({
-          id: `EXIT-${String(exitMembers.length + 1).padStart(3, '0')}`,
-          memberId: record.employeeData.id,
-          memberName: `${record.employeeData.firstName} ${record.employeeData.lastName}`,
-          dateExit: record.employeeData.resignationDetails?.date || today,
-          savings: 0, voluntary: 0, shareCapital: 0, patronageRefund: 0, savingsInterest: 0, dividend: 0, rebates: 0, totalAmount: 0,
-          status: 'Pending Review',
-          clearanceStatus: 'Pending',
+        addExitRequest({
+          employeeId: record.employeeData.id,
+          name: `${record.employeeData.firstName} ${record.employeeData.lastName}`,
+          position: record.employeeData.designation,
           reason: record.employeeData.resignationDetails?.reason || 'Resignation',
+          exitDate: record.employeeData.resignationDetails?.date || today,
+          remarks: remarks || 'Approved from Queue'
         });
       } else if (actionType === 'resubmit' && role === 'HR Officer') {
         record.status = 'Pending Unit Manager';

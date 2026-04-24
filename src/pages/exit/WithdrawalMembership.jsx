@@ -10,12 +10,16 @@ import {
   FileDownload as CsvIcon,
   PictureAsPdf as PdfIcon,
 } from '@mui/icons-material';
-import { exitRecords } from '../../data/mockData';
+import { exitRecords, staffClearanceRecords } from '../../data/mockData';
 import { exportToCSV } from '../../utils/exportUtils';
 import logo from '../../../assets/images/apecc-favicon.png';
 
 export default function WithdrawalMembership() {
-  const [selectedMember, setSelectedMember] = useState(exitRecords[0] || null);
+  const approvedRecords = exitRecords.filter(r => 
+    staffClearanceRecords.some(clr => clr.employeeId === r.idNo && clr.status === 'Cleared')
+  );
+  
+  const [selectedMember, setSelectedMember] = useState(approvedRecords[0] || null);
   const printRef = useRef();
 
   // Helper for safe currency formatting
@@ -137,9 +141,9 @@ export default function WithdrawalMembership() {
         <Box sx={{ p: 4 }}>
           <Grid container spacing={3} alignItems="center" justifyContent="space-between">
             <Grid item xs={12} md={5}>
-              <Typography variant="subtitle2" sx={{ color: 'rgba(253,253,252,0.8)', mb: 1, fontWeight: 700 }}>Select Employee</Typography>
+              <Typography variant="subtitle2" sx={{ color: 'rgba(253,253,252,0.8)', mb: 1, fontWeight: 700 }}>Select Approved Member</Typography>
               <Autocomplete
-                options={exitRecords}
+                options={approvedRecords}
                 getOptionLabel={(option) => `${option.name} (${option.idNo})`}
                 value={selectedMember}
                 onChange={(event, newValue) => {

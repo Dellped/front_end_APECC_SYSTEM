@@ -1259,3 +1259,148 @@ export const exitRecords = [
 
 // ===== Onboarding Data =====
 export const onboardingRecords = [];
+
+// ===== Exit Module Functions =====
+export const addExitRequest = (requestData) => {
+  const newId = `ER-${new Date().getFullYear()}-${String(exitRequests.length + 1).padStart(3, '0')}`;
+  
+  const newRequest = {
+    id: newId,
+    name: requestData.name,
+    memberId: requestData.employeeId,
+    roleType: requestData.position,
+    exitType: requestData.reason,
+    dateFiled: new Date().toISOString().split('T')[0],
+    effectiveDate: requestData.exitDate,
+    status: 'Clearance Process', // Skip HR Review for demo
+    remarks: requestData.remarks || '',
+    pipeline: [
+      { step: 'Exit Request', date: new Date().toISOString().split('T')[0], status: 'Completed' },
+      { step: 'HR Review & Approval', date: new Date().toISOString().split('T')[0], status: 'Completed' },
+      { step: 'Clearance Process', date: new Date().toISOString().split('T')[0], status: 'Ongoing' },
+      { step: 'Exit Interview', date: null, status: 'Upcoming' },
+      { step: 'Final Settlement', date: null, status: 'Upcoming' },
+      { step: 'Final Approval', date: null, status: 'Upcoming' }
+    ]
+  };
+
+  exitRequests.push(newRequest);
+
+  // Auto-generate staff clearance record
+  const newClearance = {
+    id: `CLR-${new Date().getFullYear()}-${String(staffClearanceRecords.length + 1).padStart(4, '0')}`,
+    employeeId: requestData.employeeId,
+    dateExit: requestData.exitDate,
+    reason: requestData.reason,
+    cellNo: '',
+    status: 'Pending',
+    sections: {
+      hr: {
+        officer: 'HR Officer', date: '',
+        items: [
+          { code: 'A', label: 'Resignation Letter', status: 'no', remarks: '' },
+          { code: 'B', label: 'Clearance', status: 'no', remarks: '' },
+          { code: 'C', label: 'Employee ID', status: 'no', remarks: '' },
+          { code: 'D', label: 'Final payroll', status: 'no', remarks: '' },
+          { code: 'E', label: 'Exit Interview', status: 'no', remarks: '' },
+          { code: 'F', label: 'Will recommend for Certificate of Employment', status: 'no', remarks: '' },
+          { code: 'G', label: 'Others', status: 'no', remarks: '' }
+        ]
+      },
+      it: {
+        officer: 'IT Admin', date: '',
+        items: [
+          { code: 'B', label: 'Smart Plan', status: 'no', remarks: '' },
+          { code: 'C', label: 'Laptop', status: 'no', remarks: '' },
+          { code: 'D', label: 'PC, Printer', status: 'no', remarks: '' },
+          { code: 'F', label: 'Email accounts', status: 'no', remarks: '' },
+          { code: 'G', label: 'system access', status: 'no', remarks: '' },
+          { code: 'H', label: 'Others', status: 'no', remarks: '' }
+        ]
+      },
+      unitHead: {
+        officer: 'Unit Head', date: '',
+        items: [
+          { label: 'Work- related documents and files', status: 'no', remarks: '' },
+          { label: '(Soft copy and hard copies of docs are secured)', status: 'no', remarks: '' },
+          { label: '(Pending work)', status: 'no', remarks: '' },
+          { label: '(transition/transferring of knowledge, responsibilities and task)', status: 'no', remarks: '' },
+          { label: 'Others', status: 'no', remarks: '' }
+        ]
+      },
+      admin: {
+        officer: 'Admin Officer', date: '',
+        items: [
+          { code: 'A', label: 'Keys (drawer/locker,gate,coop car etc)', status: 'no', remarks: '' },
+          { code: 'B', label: 'Office supplies', status: 'no', remarks: '' },
+          { code: '1', label: 'Calculator', status: 'no', remarks: '' },
+          { code: '2', label: 'Stapler', status: 'no', remarks: '' },
+          { code: '3', label: 'Stamp and stamp pad', status: 'no', remarks: '' },
+          { code: '4', label: 'Puncher', status: 'no', remarks: '' },
+          { code: '5', label: 'Others', status: 'no', remarks: '' }
+        ]
+      },
+      finance: {
+        officer: 'Finance Officer', date: '',
+        items: [
+          { label: 'Liabilities', status: '', remarks: '' },
+          { code: '1', label: 'Cash Advance', status: 'no', remarks: '' },
+          { code: '2', label: 'Salary Loan', status: 'no', remarks: '' },
+          { code: '3', label: 'Housing Loan', status: 'no', remarks: '' },
+          { code: '4', label: 'Short Term Loan', status: 'no', remarks: '' },
+          { code: '5', label: 'Motorcycle Loan/Carloan', status: 'no', remarks: '' },
+          { code: '6', label: '(gadget, education loan)', status: 'no', remarks: '' },
+          { code: '7', label: 'Misappropriation, etc. - with attachement', status: 'no', remarks: '' },
+          { code: '8', label: 'Others', status: 'no', remarks: '' }
+        ]
+      }
+    },
+    acknowledgement: requestData.name,
+    approval: {
+      unitHead: { name: '', date: '' },
+      hrOfficer: { name: '', date: '' },
+      cashier: { name: '', date: '' },
+      hrUnitHead: { name: '', date: '' },
+      financeHead: { name: '', date: '' },
+      adminHead: { name: '', date: '' },
+      generalManager: { status: 'PENDING', remarks: '' },
+    }
+  };
+
+  staffClearanceRecords.push(newClearance);
+  
+  // also add an entry to exitMembers for downstream documents if not exists
+  if (!exitMembers.find(m => m.memberId === requestData.employeeId)) {
+    exitMembers.push({
+      id: `EXIT-${String(exitMembers.length + 1).padStart(3, '0')}`,
+      memberId: requestData.employeeId,
+      memberName: requestData.name,
+      dateExit: requestData.exitDate,
+      savings: 0, voluntary: 0, shareCapital: 0, patronageRefund: 0,
+      savingsInterest: 0, dividend: 0, rebates: 0, totalAmount: 0,
+      status: 'Processing',
+      clearanceStatus: 'Pending',
+      reason: requestData.reason,
+    });
+  }
+};
+
+export const approveExit = (employeeId) => {
+  const request = exitRequests.find(r => r.memberId === employeeId);
+  if (request) {
+     request.status = 'Final Approval';
+     request.pipeline.forEach(p => {
+        p.status = 'Completed';
+        if (!p.date) p.date = new Date().toISOString().split('T')[0];
+     });
+  }
+  const member = exitMembers.find(m => m.memberId === employeeId);
+  if (member) {
+     member.status = 'Completed';
+     member.clearanceStatus = 'Cleared';
+  }
+  const clr = staffClearanceRecords.find(c => c.employeeId === employeeId);
+  if (clr) {
+     clr.status = 'Cleared';
+  }
+};

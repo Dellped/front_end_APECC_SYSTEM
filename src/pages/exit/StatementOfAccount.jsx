@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, Select, MenuItem,
   FormControl, InputLabel, Divider, Button, Avatar, Table,
@@ -17,6 +17,7 @@ export default function StatementOfAccount() {
   const printRef = useRef();
 
   const filteredMembers = exitMembers.filter((m) => {
+    if (m.status !== 'Completed') return false;
     return `${m.memberName} ${m.memberId}`
       .toLowerCase()
       .includes(search.toLowerCase());

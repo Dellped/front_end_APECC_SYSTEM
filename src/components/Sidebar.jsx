@@ -64,7 +64,7 @@ const menuConfig = [
   { id: 'home', label: 'Home Dashboard', icon: <DashboardIcon />, path: '/home' },
   {
     id: 'hr',
-    label: 'HR Module',
+    label: 'HR Management',
     icon: <HRIcon />,
     children: [
       { id: 'hr-dashboard', label: 'Dashboard', icon: <DashboardIcon />, path: '/hr/dashboard' },
@@ -133,7 +133,7 @@ const menuConfig = [
   },
   {
     id: 'exit',
-    label: 'Offboarding',
+    label: 'Exit Management',
     icon: <ExitIcon />,
     children: [
       { id: 'exit-dashboard', label: 'Dashboard', icon: <DashboardIcon />, path: '/exit/dashboard' },

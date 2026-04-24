@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Chip, Button, TextField, InputAdornment,
@@ -26,6 +26,7 @@ export default function ClearanceGeneration() {
   const printRef = useRef();
 
   const filteredMembers = exitMembers.filter((m) => {
+    if (m.status !== 'Completed') return false;
     return `${m.memberName} ${m.memberId}`
       .toLowerCase()
       .includes(search.toLowerCase());

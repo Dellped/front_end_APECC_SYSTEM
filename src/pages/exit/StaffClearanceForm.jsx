@@ -1,21 +1,53 @@
-﻿import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog, DialogContent, Box, Typography, Grid, Divider, Table, 
   TableBody, TableCell, TableContainer, TableHead, TableRow, 
-  Paper, Checkbox, TextField, Button, Avatar, IconButton, Stack
+  Paper, Checkbox, TextField, Button, Avatar, IconButton, Stack,
+  Select, MenuItem, FormControl
 } from '@mui/material';
 import { 
   Close as CloseIcon, 
   Print as PrintIcon, 
-  Download as DownloadIcon 
+  Download as DownloadIcon,
+  CheckCircle as CheckIcon
 } from '@mui/icons-material';
-import { employees } from '../../data/mockData';
+import { employees, approveExit } from '../../data/mockData';
 
 const logoBlue = '#0241FB';
 
-export default function StaffClearanceForm({ open, onClose, clearance }) {
-  const emp = employees.find(e => e.id === clearance.employeeId);
+export default function StaffClearanceForm({ open, onClose, clearance, onApproveSuccess }) {
+  const [formData, setFormData] = useState(null);
+
+  useEffect(() => {
+    if (clearance) setFormData(JSON.parse(JSON.stringify(clearance)));
+  }, [clearance]);
+
+  if (!formData) return null;
+  const emp = employees.find(e => e.id === formData.employeeId);
   if (!emp) return null;
+
+  const handleItemChange = (dept, idx, field, value) => {
+    const newData = { ...formData };
+    newData.sections[dept].items[idx][field] = value;
+    setFormData(newData);
+  };
+
+  const isAllCompleted = () => {
+    if (!formData) return false;
+    for (const dept of Object.keys(formData.sections)) {
+      for (const item of formData.sections[dept].items) {
+        if (item.status !== 'yes') return false;
+      }
+    }
+    return true;
+  };
+
+  const handleApprove = () => {
+    // In a real app we would save the formData changes here first
+    approveExit(formData.employeeId);
+    if (onApproveSuccess) onApproveSuccess();
+    onClose();
+  };
 
   const renderSectionHeader = (title, sub) => (
     <Box sx={{ bgcolor: '#f0f4ff', p: 1, mt: 3, mb: 1, border: '1px solid #ddd' }}>
@@ -24,14 +56,14 @@ export default function StaffClearanceForm({ open, onClose, clearance }) {
     </Box>
   );
 
-  const renderItemsTable = (items, headerLabel = 'STATUS', statusKey = 'status') => (
+  const renderItemsTable = (deptKey, items, headerLabel = 'STATUS') => (
     <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #ddd', borderRadius: 0 }}>
       <Table size="small">
         <TableHead sx={{ bgcolor: '#f8f8f8' }}>
           <TableRow sx={{ height: 30 }}>
             <TableCell sx={{ width: '40px', fontWeight: 800, borderRight: '1px solid #ddd' }}>DEPT</TableCell>
             <TableCell sx={{ fontWeight: 800, borderRight: '1px solid #ddd' }}>ITEM / REQUIREMENT</TableCell>
-            <TableCell sx={{ width: '80px', fontWeight: 800, textAlign: 'center', borderRight: '1px solid #ddd' }}>{headerLabel}</TableCell>
+            <TableCell sx={{ width: '120px', fontWeight: 800, textAlign: 'center', borderRight: '1px solid #ddd' }}>{headerLabel}</TableCell>
             <TableCell sx={{ fontWeight: 800 }}>REMARKS</TableCell>
           </TableRow>
         </TableHead>
@@ -45,17 +77,33 @@ export default function StaffClearanceForm({ open, onClose, clearance }) {
                 {item.label}
               </TableCell>
               <TableCell sx={{ borderRight: '1px solid #ddd', p: 0.5, textAlign: 'center' }}>
-                <Typography sx={{ 
-                  fontSize: '0.75rem', 
-                  fontWeight: 900, 
-                  color: item.status?.toLowerCase() === 'yes' ? '#2e7d32' : '#d32f2f',
-                  textTransform: 'uppercase'
-                }}>
-                  {item.status || '-'}
-                </Typography>
+                <FormControl size="small" fullWidth>
+                  <Select
+                    value={item.status || 'no'}
+                    onChange={(e) => handleItemChange(deptKey, idx, 'status', e.target.value)}
+                    sx={{ 
+                      fontSize: '0.75rem', 
+                      height: 28, 
+                      fontWeight: 800,
+                      color: item.status === 'yes' ? '#2e7d32' : '#d32f2f',
+                      '& .MuiOutlinedInput-notchedOutline': { border: 'none' }
+                    }}
+                  >
+                    <MenuItem value="yes" sx={{ fontSize: '0.75rem', color: '#2e7d32', fontWeight: 800 }}>YES</MenuItem>
+                    <MenuItem value="no" sx={{ fontSize: '0.75rem', color: '#d32f2f', fontWeight: 800 }}>NO</MenuItem>
+                  </Select>
+                </FormControl>
               </TableCell>
-              <TableCell sx={{ p: 0.8, fontSize: '0.75rem', color: 'text.secondary' }}>
-                {item.remarks}
+              <TableCell sx={{ p: 0 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  variant="standard"
+                  InputProps={{ disableUnderline: true, sx: { fontSize: '0.75rem', px: 1, py: 0.5 } }}
+                  value={item.remarks || ''}
+                  onChange={(e) => handleItemChange(deptKey, idx, 'remarks', e.target.value)}
+                  placeholder="Add remarks..."
+                />
               </TableCell>
             </TableRow>
           ))}
@@ -136,7 +184,7 @@ export default function StaffClearanceForm({ open, onClose, clearance }) {
                                 {['Resignation', 'Termination/Dismissal', 'AWOL', 'Others'].map(r => (
                                     <Box key={r} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                         <Box sx={{ width: 14, height: 14, border: '1.5px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            {clearance.reason === r && <Box sx={{ width: 8, height: 8, bgcolor: '#000' }} />}
+                                            {formData.reason === r && <Box sx={{ width: 8, height: 8, bgcolor: '#000' }} />}
                                         </Box>
                                         <Typography sx={{ fontSize: '0.75rem', fontWeight: 700 }}>{r}</Typography>
                                     </Box>
@@ -146,33 +194,55 @@ export default function StaffClearanceForm({ open, onClose, clearance }) {
                     </TableRow>
                     <TableRow>
                         <TableCell sx={{ bgcolor: '#f0f0f0', fontWeight: 800 }}>Date of Exit:</TableCell>
-                        <TableCell colSpan={3} sx={{ fontWeight: 900 }}>{new Date(clearance.dateExit).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</TableCell>
+                        <TableCell colSpan={3} sx={{ fontWeight: 900 }}>{new Date(formData.dateExit).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</TableCell>
                     </TableRow>
                 </TableBody>
             </Table>
           </TableContainer>
 
+          {/* Action Header for interactive form */}
+          <Box sx={{ mb: 3, p: 2, bgcolor: isAllCompleted() ? '#e8f5e9' : '#fff3e0', border: '1px solid', borderColor: isAllCompleted() ? '#a5d6a7' : '#ffcc80', borderRadius: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: isAllCompleted() ? '#2e7d32' : '#e65100' }}>
+                {isAllCompleted() ? 'All Clearances Completed' : 'Pending Clearances'}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                {isAllCompleted() ? 'The employee has been cleared by all departments. You may now approve this exit.' : 'Please ensure all departments complete their checklists.'}
+              </Typography>
+            </Box>
+            <Button 
+              variant="contained" 
+              color="success" 
+              startIcon={<CheckIcon />}
+              disabled={!isAllCompleted() || formData.status === 'Cleared'}
+              onClick={handleApprove}
+              sx={{ fontWeight: 700, borderRadius: 2 }}
+            >
+              {formData.status === 'Cleared' ? 'Approved' : 'Approve Clearance'}
+            </Button>
+          </Box>
+
           {/* Departmental Sections */}
           {renderSectionHeader('Departmental Clearances')}
           <Typography variant="caption" sx={{ display: 'block', mb: 1, fontWeight: 800, color: logoBlue }}>I. HR Department</Typography>
-          {renderItemsTable(clearance.sections.hr.items)}
-          {renderSignOff('HR', clearance.sections.hr.officer, clearance.sections.hr.date)}
+          {renderItemsTable('hr', formData.sections.hr.items)}
+          {renderSignOff('HR', formData.sections.hr.officer, formData.sections.hr.date)}
 
           {renderSectionHeader('II. IT Department', 'RETURNED?')}
-          {renderItemsTable(clearance.sections.it.items)}
-          {renderSignOff('IT', clearance.sections.it.officer, clearance.sections.it.date)}
+          {renderItemsTable('it', formData.sections.it.items)}
+          {renderSignOff('IT', formData.sections.it.officer, formData.sections.it.date)}
 
           {renderSectionHeader('III. UNIT HEAD', 'SUBMITTED? CLEARED? COMPLETED?')}
-          {renderItemsTable(clearance.sections.unitHead.items)}
-          {renderSignOff('Unit Head', clearance.sections.unitHead.officer, clearance.sections.unitHead.date)}
+          {renderItemsTable('unitHead', formData.sections.unitHead.items)}
+          {renderSignOff('Unit Head', formData.sections.unitHead.officer, formData.sections.unitHead.date)}
 
           {renderSectionHeader('IV. Admin Department', 'RETURNED?')}
-          {renderItemsTable(clearance.sections.admin.items)}
-          {renderSignOff('Admin', clearance.sections.admin.officer, clearance.sections.admin.date)}
+          {renderItemsTable('admin', formData.sections.admin.items)}
+          {renderSignOff('Admin', formData.sections.admin.officer, formData.sections.admin.date)}
 
           {renderSectionHeader('V. Finance Department', 'SETTLED?')}
-          {renderItemsTable(clearance.sections.finance.items)}
-          {renderSignOff('Finance', clearance.sections.finance.officer, clearance.sections.finance.date)}
+          {renderItemsTable('finance', formData.sections.finance.items)}
+          {renderSignOff('Finance', formData.sections.finance.officer, formData.sections.finance.date)}
 
           {/* Footer Acknowledgement */}
           <Box sx={{ mt: 5, p: 2, border: '1px solid #eee', bgcolor: '#fafafa' }}>
@@ -184,7 +254,7 @@ export default function StaffClearanceForm({ open, onClose, clearance }) {
              </Typography>
 
              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Typography sx={{ fontWeight: 900, borderBottom: '2px solid #000', width: 250, textAlign: 'center' }}>{clearance.acknowledgement}</Typography>
+                <Typography sx={{ fontWeight: 900, borderBottom: '2px solid #000', width: 250, textAlign: 'center', height: 24 }}>{formData.acknowledgement}</Typography>
                 <Typography variant="caption" sx={{ fontWeight: 800 }}>Employee Name and Signature</Typography>
              </Box>
           </Box>
