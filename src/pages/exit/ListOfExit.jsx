@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import {
   Box, Card, CardContent, Typography, TextField, InputAdornment,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Button, Stack, useTheme
+  Paper, Button, Stack, useTheme, Chip,
+  Select, MenuItem, FormControl, InputLabel
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -16,10 +17,14 @@ import { exportToCSV, printTable, exportToPDF } from '../../utils/exportUtils';
 export default function ListOfExit() {
   const theme = useTheme();
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
 
-  const filteredRecords = exitRecords.filter((rec) =>
-    rec.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredRecords = exitRecords.filter((rec) => {
+    const matchesSearch = rec.name.toLowerCase().includes(search.toLowerCase()) || 
+                          rec.idNo.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter === 'All' || rec.settlementStatus === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const formatEmployeeId = (id) => {
     if (!id) return '';
@@ -33,7 +38,7 @@ export default function ListOfExit() {
     'Dividend', 'Rebates', 'Total', 'Less: STL Loan', 'Less: Salary Loan', 
     'Less: MC Loan', 'Less: Housing Loan', 'Less: Car Loan', 'Less: Educ Loan', 
     'Gadget Loan', 'Malasakit Loan', 'Grand Total', 
-    'Reason', 'variance', 'CLEARANCE', 'SYSTEM', 'Rebates', 'Employee Type'
+    'Reason', 'variance', 'CLEARANCE', 'SYSTEM', 'Rebates', 'Status', 'Employee Type'
   ];
 
   const handleExportCSV = () => {
@@ -43,7 +48,7 @@ export default function ListOfExit() {
       r.dividend, r.rebates, r.total, r.stlLoan, r.salaryLoan, 
       r.motorcycleLoan, r.housingLoan, r.carLoan, r.educationalLoan, 
       r.gadgetLoan, r.malasakitLoan, r.grandTotal, 
-      r.reason, r.variance, r.clearance, r.system, r.rebates2, r.employeeType
+      r.reason, r.variance, r.clearance, r.system, r.rebates2, r.settlementStatus, r.employeeType
     ]);
     exportToCSV(headers, rows, 'list_of_exit');
   };
@@ -55,7 +60,7 @@ export default function ListOfExit() {
       r.dividend, r.rebates, r.total, r.stlLoan, r.salaryLoan, 
       r.motorcycleLoan, r.housingLoan, r.carLoan, r.educationalLoan, 
       r.gadgetLoan, r.malasakitLoan, r.grandTotal, 
-      r.reason, r.variance, r.clearance, r.system, r.rebates2, r.employeeType
+      r.reason, r.variance, r.clearance, r.system, r.rebates2, r.settlementStatus, r.employeeType
     ]);
     exportToPDF('List of Exit', headers, rows, true);
   };
@@ -67,7 +72,7 @@ export default function ListOfExit() {
       r.dividend, r.rebates, r.total, r.stlLoan, r.salaryLoan, 
       r.motorcycleLoan, r.housingLoan, r.carLoan, r.educationalLoan, 
       r.gadgetLoan, r.malasakitLoan, r.grandTotal, 
-      r.reason, r.variance, r.clearance, r.system, r.rebates2, r.employeeType
+      r.reason, r.variance, r.clearance, r.system, r.rebates2, r.settlementStatus, r.employeeType
     ]);
     printTable('List of Exit', headers, rows, true);
   };
@@ -98,8 +103,23 @@ export default function ListOfExit() {
             InputProps={{
               startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#0241FB' }} /></InputAdornment>,
             }}
-            sx={{ flex: 1, maxWidth: 400 }}
+            sx={{ flex: 1, maxWidth: 300 }}
           />
+
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel id="status-filter-label">Status</InputLabel>
+            <Select
+              labelId="status-filter-label"
+              value={statusFilter}
+              label="Status"
+              onChange={(e) => setStatusFilter(e.target.value)}
+              sx={{ borderRadius: 2 }}
+            >
+              <MenuItem value="All">All Status</MenuItem>
+              <MenuItem value="Settled">Settled</MenuItem>
+              <MenuItem value="Not Settled">Not Settled</MenuItem>
+            </Select>
+          </FormControl>
 
           <Stack direction="row" spacing={1}>
             <Button variant="outlined" startIcon={<CsvIcon />} onClick={handleExportCSV} sx={{ borderRadius: 2 }}>Export CSV</Button>
@@ -156,12 +176,25 @@ export default function ListOfExit() {
                   <TableCell sx={{ fontSize: '0.75rem' }}>{row.clearance?.toLocaleString()}</TableCell>
                   <TableCell sx={{ fontSize: '0.75rem' }}>{row.system?.toLocaleString()}</TableCell>
                   <TableCell sx={{ fontSize: '0.75rem' }}>{row.rebates2?.toLocaleString()}</TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={row.settlementStatus} 
+                      size="small"
+                      sx={{ 
+                        fontWeight: 700, 
+                        fontSize: '0.65rem',
+                        bgcolor: row.settlementStatus === 'Settled' ? 'rgba(46, 125, 50, 0.1)' : 'rgba(211, 47, 47, 0.1)',
+                        color: row.settlementStatus === 'Settled' ? '#2e7d32' : '#d32f2f',
+                        borderRadius: 1
+                      }} 
+                    />
+                  </TableCell>
                   <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, color: '#0241FB' }}>{row.employeeType}</TableCell>
                 </TableRow>
               ))}
               {filteredRecords.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={28} align="center" sx={{ py: 6 }}>
+                  <TableCell colSpan={29} align="center" sx={{ py: 6 }}>
                     <Typography variant="body1" color="text.secondary">No exit records found.</Typography>
                   </TableCell>
                 </TableRow>

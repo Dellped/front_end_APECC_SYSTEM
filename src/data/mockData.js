@@ -1221,7 +1221,8 @@ export const exitRecords = [
     clearance: 37273,
     system: 25000,
     rebates2: 25000, // Rabates
-    employeeType: 'Regular'
+    employeeType: 'Regular',
+    settlementStatus: 'Settled'
   },
   {
     no: 2,
@@ -1253,7 +1254,8 @@ export const exitRecords = [
     clearance: 78300,
     system: 5000,
     rebates2: 5000,
-    employeeType: 'Probationary'
+    employeeType: 'Probationary',
+    settlementStatus: 'Not Settled'
   }
 ];
 

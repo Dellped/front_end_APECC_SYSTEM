@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>APECC Employee Clearance Form</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Arial:wght@400;700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 8pt;
+      background: #666;
+      padding: 10px;
+      color: #000;
+    }
+    .page {
+      background: #fff;
+      width: 8.5in;
+      min-height: 11in;
+      margin: 0 auto;
+      padding: 14px 18px 18px 18px;
+      border: 1px solid #000;
+      position: relative;
+    }
+
+    /* ── HEADER ─────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1.5px solid #000;
+      padding: 4px 8px;
+      margin-bottom: 0;
+    }
+    .header img { width: 42px; height: 42px; object-fit: contain; }
+    .header-text { flex: 1; text-align: center; }
+    .header-text .company { font-size: 11pt; font-weight: 900; letter-spacing: 0.5px; }
+    .header-text .address { font-size: 7.5pt; font-weight: 700; }
+    .header-text .email  { font-size: 7pt; font-weight: 600; }
+    .form-title {
+      background: #000;
+      color: #fff;
+      text-align: center;
+      font-size: 11pt;
+      font-weight: 900;
+      letter-spacing: 2px;
+      padding: 4px;
+      margin-bottom: 0;
+    }
+
+    /* ── EMPLOYEE INFO TABLE ─────────────────── */
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1.5px solid #000;
+      margin-bottom: 0;
+    }
+    .info-table td {
+      border: 0.75px solid #666;
+      padding: 2px 5px;
+      vertical-align: middle;
+    }
+    .info-table .lbl {
+      background: #d9d9d9;
+      font-weight: 800;
+      font-size: 7.5pt;
+      white-space: nowrap;
+    }
+    .info-table .val {
+      font-weight: 800;
+      font-size: 8pt;
+    }
+    .apecc-badge {
+      background: #0241FB;
+      color: #fff;
+      font-weight: 900;
+      font-size: 8.5pt;
+      text-align: center;
+      padding: 2px 5px;
+      border: 1.5px solid #000;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      letter-spacing: 1px;
+    }
+    .reason-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 12px;
+      font-size: 7.5pt;
+    }
+    .checkbox-sq {
+      width: 10px; height: 10px;
+      border: 1.5px solid #000;
+      display: inline-block;
+      vertical-align: middle;
+      position: relative;
+    }
+    .checkbox-sq.checked::after {
+      content: '✓';
+      font-size: 8pt;
+      font-weight: 900;
+      position: absolute;
+      top: -3px; left: 0;
+    }
+
+    /* ── SECTION HEADER ─────────────────────── */
+    .section-header {
+      background: #d9d9d9;
+      font-weight: 900;
+      font-size: 8pt;
+      padding: 2px 5px;
+      border: 1px solid #000;
+      margin-top: 4px;
+      margin-bottom: 0;
+    }
+
+    /* ── CLEARANCE TABLE ─────────────────────── */
+    .cl-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #000;
+      margin-bottom: 0;
+    }
+    .cl-table th {
+      background: #e8e8e8;
+      font-weight: 800;
+      font-size: 7pt;
+      border: 0.5px solid #888;
+      padding: 2px 5px;
+      text-align: center;
+    }
+    .cl-table th.item-col { text-align: left; }
+    .cl-table td {
+      border: 0.5px solid #888;
+      padding: 2px 5px;
+      font-size: 7.5pt;
+      vertical-align: middle;
+    }
+    .cl-table td.dept-cell {
+      background: #f0f0f0;
+      font-weight: 800;
+      font-size: 6.5pt;
+      text-align: center;
+      white-space: nowrap;
+      color: #0241FB;
+    }
+    .cl-table td.status-cell {
+      text-align: center;
+      font-weight: 800;
+      font-size: 7.5pt;
+    }
+    .cl-table td.status-cell.yes { color: #1a5c1a; }
+    .cl-table td.status-cell.no  { color: #c0392b; }
+    .cl-table td.remarks-cell {
+      font-style: italic;
+      font-size: 7pt;
+      color: #333;
+    }
+
+    /* ── SIGN-OFF ROW ───────────────────────── */
+    .signoff-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      border: 0.5px solid #aaa;
+      padding: 3px 6px;
+      background: #fafafa;
+      font-size: 7.5pt;
+    }
+    .signoff-row .sf-label { font-weight: 700; min-width: 70px; }
+    .signoff-row .sf-val {
+      flex: 1;
+      border-bottom: 1px solid #000;
+      font-weight: 900;
+      min-width: 120px;
+      padding-bottom: 1px;
+    }
+    .signoff-row .sf-sig {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .signoff-row .sf-sig .sig-line {
+      border-bottom: 1px solid #000;
+      height: 14px;
+    }
+    .signoff-row .sf-date { min-width: 80px; }
+    .signoff-row .sf-date .sig-line { border-bottom: 1px solid #000; height: 14px; }
+
+    /* ── FOOTER ──────────────────────────────── */
+    .footer-note {
+      font-size: 7pt;
+      text-align: justify;
+      font-style: italic;
+      border: 0.75px solid #bbb;
+      padding: 4px 6px;
+      margin-top: 5px;
+      line-height: 1.4;
+    }
+    .acknowledge {
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-align: center;
+      margin-top: 4px;
+    }
+    .emp-sig-line {
+      border-bottom: 1.5px solid #000;
+      text-align: center;
+      font-weight: 900;
+      font-size: 9pt;
+      width: 200px;
+      margin: 4px auto 0 auto;
+      padding-bottom: 1px;
+    }
+    .emp-sig-label { text-align: center; font-size: 7pt; font-weight: 700; margin-top: 1px; }
+
+    .certify-text {
+      font-size: 6.5pt;
+      font-style: italic;
+      text-align: center;
+      margin-top: 6px;
+      line-height: 1.3;
+    }
+
+    .approval-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 20px;
+      margin-top: 5px;
+    }
+    .approval-item {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      font-size: 6.5pt;
+    }
+    .approval-item .al { font-weight: 700; white-space: nowrap; }
+    .approval-item .aline { flex: 1; border-bottom: 1px solid #000; }
+    .approval-item .adate { white-space: nowrap; }
+    .approval-item .adline { width: 60px; border-bottom: 1px solid #000; }
+
+    .gm-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      margin-top: 6px;
+      font-size: 7pt;
+      font-weight: 900;
+      border-top: 1.5px solid #000;
+      padding-top: 3px;
+    }
+    .gm-row .gm-lbl { white-space: nowrap; }
+    .gm-row .gm-line { flex: 1; border-bottom: 1.5px solid #000; }
+    .gm-row .gm-item { white-space: nowrap; }
+
+    .note-final {
+      text-align: center;
+      font-weight: 800;
+      font-size: 6.5pt;
+      color: #c0392b;
+      margin-top: 5px;
+      border-top: 1px solid #ddd;
+      padding-top: 4px;
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .page { width: 100%; border: none; padding: 8px 14px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page" id="clearanceForm">
+
+  <!-- HEADER -->
+  <div class="header">
+    <img src="/front_end_APECC_SYSTEM/BIR-LOGO.png" alt="APECC Logo" onerror="this.style.display='none'"/>
+    <div class="header-text">
+      <div class="company">ASA PHILIPPINES EMPLOYEES CREDIT COOPERATIVE</div>
+      <div class="address">3RD FLOOR, 309 PRESTIGE TOWER, ORTIGAS PASIG CITY</div>
+      <div class="email">Email : asacreditcooperative@gmail.com</div>
+    </div>
+  </div>
+  <div class="form-title">EMPLOYEE CLEARANCE FORM</div>
+
+  <!-- EMPLOYEE INFO -->
+  <table class="info-table">
+    <tbody>
+      <tr>
+        <td rowspan="4" style="width:38px; padding:0;" class="apecc-badge">APECC</td>
+        <td class="lbl" style="width:90px;">Name of Staff:</td>
+        <td class="val" colspan="3" id="empName">De La Cruz, Juan M.</td>
+        <td class="lbl" style="width:50px;">ID No:</td>
+        <td class="val" id="empId">EMP-0016</td>
+      </tr>
+      <tr>
+        <td class="lbl">Branch &amp; Dept:</td>
+        <td class="val" id="empBranch">APECC-Finance Dept</td>
+        <td class="lbl" style="width:60px;">Position:</td>
+        <td class="val" id="empPosition">Cashier</td>
+        <td class="lbl">cell#:</td>
+        <td class="val" id="empCell">0</td>
+      </tr>
+      <tr>
+        <td class="lbl">Reason of Exit:</td>
+        <td colspan="5">
+          <span class="reason-box"><span class="checkbox-sq" id="chkResignation"></span> Resignation</span>
+          <span class="reason-box"><span class="checkbox-sq" id="chkTermination"></span> Termination/Dismissal</span>
+          <span class="reason-box"><span class="checkbox-sq" id="chkAwol"></span> Neglect of Duty (AWOL)</span>
+          <span class="reason-box"><span class="checkbox-sq" id="chkOthers"></span> Others</span>
+        </td>
+      </tr>
+      <tr>
+        <td class="lbl">Date of Exit:</td>
+        <td class="val" colspan="5" id="empDateExit">April 17, 2025</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- DEPARTMENTAL CLEARANCES TITLE -->
+  <div class="section-header">Departmental Clearances</div>
+
+  <!-- I. HR DEPARTMENT -->
+  <table class="cl-table">
+    <thead>
+      <tr>
+        <th colspan="2" class="item-col" style="background:#c8d8ff; font-size:7.5pt; font-weight:900;">I. HR Department</th>
+        <th style="width:80px;">STATUS</th>
+        <th style="width:200px;">REMARKS</th>
+      </tr>
+    </thead>
+    <tbody id="hrRows">
+      <!-- Dynamically populated -->
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4" style="padding:0;">
+          <div class="signoff-row">
+            <span class="sf-label">HR Officer:</span>
+            <span class="sf-val" id="hrOfficer">KYZEEL M. ESTRELLA</span>
+            <span style="font-weight:700;">Signature:</span>
+            <div class="sf-sig"><div class="sig-line"></div></div>
+            <span class="sf-date"><span style="font-weight:700;">Date:</span><div class="sig-line" id="hrDate">20-Apr-25</div></span>
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- II. IT DEPARTMENT -->
+  <table class="cl-table" style="margin-top:3px;">
+    <thead>
+      <tr>
+        <th colspan="2" class="item-col" style="background:#c8d8ff; font-size:7.5pt; font-weight:900;">II. IT Department</th>
+        <th style="width:80px;">RETURNED? / STATUS</th>
+        <th style="width:200px;">REMARKS</th>
+      </tr>
+    </thead>
+    <tbody id="itRows"></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4" style="padding:0;">
+          <div class="signoff-row">
+            <span class="sf-label">IT Officer:</span>
+            <span class="sf-val" id="itOfficer">---</span>
+            <span style="font-weight:700;">Signature:</span>
+            <div class="sf-sig"><div class="sig-line"></div></div>
+            <span class="sf-date"><span style="font-weight:700;">Date:</span><div class="sig-line" id="itDate">---</div></span>
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- III. UNIT HEAD -->
+  <table class="cl-table" style="margin-top:3px;">
+    <thead>
+      <tr>
+        <th colspan="2" class="item-col" style="background:#c8d8ff; font-size:7.5pt; font-weight:900;">III. UNIT HEAD</th>
+        <th style="width:80px;">SUBMITTED? CLEARED? COMPLETED?</th>
+        <th style="width:200px;">REMARKS</th>
+      </tr>
+    </thead>
+    <tbody id="unitHeadRows"></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4" style="padding:0;">
+          <div class="signoff-row">
+            <span class="sf-label">Unit Head:</span>
+            <span class="sf-val" id="unitHeadOfficer">---</span>
+            <span style="font-weight:700;">Signature:</span>
+            <div class="sf-sig"><div class="sig-line"></div></div>
+            <span class="sf-date"><span style="font-weight:700;">Date:</span><div class="sig-line" id="unitHeadDate">---</div></span>
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- IV. ADMIN DEPARTMENT -->
+  <table class="cl-table" style="margin-top:3px;">
+    <thead>
+      <tr>
+        <th colspan="2" class="item-col" style="background:#c8d8ff; font-size:7.5pt; font-weight:900;">IV. Admin Department</th>
+        <th style="width:80px;">RETURNED? / STATUS</th>
+        <th style="width:200px;">REMARKS</th>
+      </tr>
+    </thead>
+    <tbody id="adminRows"></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4" style="padding:0;">
+          <div class="signoff-row">
+            <span class="sf-label">Admin Head:</span>
+            <span class="sf-val" id="adminOfficer">---</span>
+            <span style="font-weight:700;">Signature:</span>
+            <div class="sf-sig"><div class="sig-line"></div></div>
+            <span class="sf-date"><span style="font-weight:700;">Date:</span><div class="sig-line" id="adminDate">---</div></span>
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- V. FINANCE DEPARTMENT -->
+  <table class="cl-table" style="margin-top:3px;">
+    <thead>
+      <tr>
+        <th colspan="2" class="item-col" style="background:#c8d8ff; font-size:7.5pt; font-weight:900;">V. Finance Department</th>
+        <th style="width:80px;">SETTLED? / STATUS</th>
+        <th style="width:200px;">REMARKS</th>
+      </tr>
+    </thead>
+    <tbody id="financeRows"></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4" style="padding:0;">
+          <div class="signoff-row">
+            <span class="sf-label">Finance Head:</span>
+            <span class="sf-val" id="financeOfficer">---</span>
+            <span style="font-weight:700;">Signature:</span>
+            <div class="sf-sig"><div class="sig-line"></div></div>
+            <span class="sf-date"><span style="font-weight:700;">Date:</span><div class="sig-line" id="financeDate">---</div></span>
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- FOOTER ACKNOWLEDGEMENT -->
+  <div class="footer-note">
+    Thank you for the service and contributions you have made as a valued member of the APECC family. Please complete the following steps as part of your Exit process. Each step is vital and mandatory so that security and confidentiality is safeguarded for you and all APECC employees and members.
+  </div>
+  <div class="acknowledge">
+    I acknowledge that all my dues have been cleared and all company properties have been returned as stated above.
+  </div>
+  <div style="display:flex; flex-direction:column; align-items:center; margin-top:4px;">
+    <div class="emp-sig-line" id="empAcknowledge">&nbsp;</div>
+    <div class="emp-sig-label">Employee Name and Signature</div>
+  </div>
+
+  <div class="certify-text">
+    We certify the correctness of above calculations and acknowledge the net amount due to the abovementioned staff. Therefore, we recommend for his settlement of accounts.
+  </div>
+
+  <!-- APPROVAL SIGNATURES -->
+  <div class="approval-grid" style="margin-top:6px;">
+    <div class="approval-item">
+      <span class="al">Unit Head Name &amp; Signature:</span>
+      <span class="aline"></span>
+      <span class="adate">Date:</span>
+      <span class="adline"></span>
+    </div>
+    <div class="approval-item">
+      <span class="al">HR Officer Name &amp; Signature:</span>
+      <span class="aline"></span>
+      <span class="adate">Date:</span>
+      <span class="adline"></span>
+    </div>
+    <div class="approval-item">
+      <span class="al">Cashier Name &amp; Signature:</span>
+      <span class="aline"></span>
+      <span class="adate">Date:</span>
+      <span class="adline"></span>
+    </div>
+    <div class="approval-item">
+      <span class="al">HR-Unit Head Name &amp; Signature:</span>
+      <span class="aline"></span>
+      <span class="adate">Date:</span>
+      <span class="adline"></span>
+    </div>
+    <div class="approval-item">
+      <span class="al">Finance Head Name &amp; Signature:</span>
+      <span class="aline"></span>
+      <span class="adate">Date:</span>
+      <span class="adline"></span>
+    </div>
+    <div class="approval-item">
+      <span class="al">Admin Head Name &amp; Signature:</span>
+      <span class="aline"></span>
+      <span class="adate">Date:</span>
+      <span class="adline"></span>
+    </div>
+  </div>
+
+  <!-- GM ROW -->
+  <div class="gm-row">
+    <span class="gm-lbl">GENERAL ASST. GENERAL MANAGER</span>
+    <span class="gm-line"></span>
+    <span class="gm-item">APPROVED:</span><span class="gm-line" style="max-width:70px;"></span>
+    <span class="gm-item">DISAPPROVED:</span><span class="gm-line" style="max-width:70px;"></span>
+    <span class="gm-item">ON HOLD:</span><span class="gm-line" style="max-width:70px;"></span>
+  </div>
+
+  <div class="note-final">
+    NOTE: This form must be accomplished within 30 days and should not reach more than 45 days from the date of staff formal departure.
+  </div>
+</div>
+
+<script>
+  // ── DATA INJECTION SCRIPT ────────────────────────
+  // This is called by the parent page via postMessage or URL params
+  function populateForm(data) {
+    // Employee info
+    setText('empName',     data.empName     || '---');
+    setText('empId',       data.empId       || '---');
+    setText('empBranch',   data.empBranch   || '---');
+    setText('empPosition', data.empPosition || '---');
+    setText('empCell',     data.empCell     || '---');
+    setText('empDateExit', data.empDateExit || '---');
+    setText('empAcknowledge', data.empName  || '');
+
+    // Reason checkboxes
+    const reasons = { Resignation: 'chkResignation', 'Termination/Dismissal': 'chkTermination', AWOL: 'chkAwol', Others: 'chkOthers' };
+    Object.entries(reasons).forEach(([key, id]) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('checked', data.reason === key);
+    });
+
+    // Department sections
+    populateRows('hrRows',       data.sections?.hr,       'HR');
+    populateRows('itRows',       data.sections?.it,       'IT');
+    populateRows('unitHeadRows', data.sections?.unitHead, 'Unit Head');
+    populateRows('adminRows',    data.sections?.admin,    'Admin');
+    populateRows('financeRows',  data.sections?.finance,  'Finance');
+
+    // Officer sign-offs
+    setSignOff('hrOfficer',       'hrDate',       data.sections?.hr);
+    setSignOff('itOfficer',       'itDate',       data.sections?.it);
+    setSignOff('unitHeadOfficer', 'unitHeadDate', data.sections?.unitHead);
+    setSignOff('adminOfficer',    'adminDate',    data.sections?.admin);
+    setSignOff('financeOfficer',  'financeDate',  data.sections?.finance);
+  }
+
+  function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function populateRows(tbodyId, section, deptLabel) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody || !section) return;
+    tbody.innerHTML = '';
+    (section.items || []).forEach(item => {
+      const statusClass = item.status === 'yes' ? 'yes' : 'no';
+      const statusText  = item.status === 'yes' ? 'yes' : (item.status === 'no' ? 'no' : '---');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="dept-cell" style="width:36px;">${deptLabel}</td>
+        <td style="padding-left:${item.indent ? '18px' : '5px'};">${item.label}</td>
+        <td class="status-cell ${statusClass}">${statusText}</td>
+        <td class="remarks-cell">${item.remarks || ''}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function setSignOff(officerId, dateId, section) {
+    setText(officerId, section?.officer || '---');
+    setText(dateId,    section?.date    || '---');
+  }
+
+  // ── Listen for postMessage from opener ───────────
+  window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'CLEARANCE_DATA') {
+      populateForm(event.data.payload);
+    }
+  });
+
+  // ── Also support URL query param (base64 encoded JSON) ───────────
+  const params = new URLSearchParams(window.location.search);
+  const encoded = params.get('data');
+  if (encoded) {
+    try {
+      const payload = JSON.parse(atob(encoded));
+      populateForm(payload);
+    } catch(e) {
+      console.warn('Invalid clearance data in URL param', e);
+    }
+  }
+</script>
+</body>
+</html>

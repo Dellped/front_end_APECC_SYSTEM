@@ -5,10 +5,11 @@ import {
   TableHead, TableRow, ToggleButton, ToggleButtonGroup, Chip, Divider,
   Snackbar, Alert
 } from '@mui/material';
-import {
+import { 
   Search as SearchIcon,
   CheckCircle as ApproveIcon,
-  Save as SaveIcon
+  Save as SaveIcon,
+  Assignment as GenerateIcon
 } from '@mui/icons-material';
 import { staffClearanceRecords, employees, exitMembers } from '../../data/mockData';
 
@@ -93,6 +94,32 @@ export default function StaffClearanceTracker() {
       
       setSnackbarMessage('Clearance officially Approved and Finalized!');
     }
+  };
+
+  const handleGenerateClearance = () => {
+    if (!selectedRecord || !formData) return;
+    const emp = employees.find(e => e.id === selectedRecord.employeeId);
+    if (!emp) return;
+
+    const dateExitFormatted = selectedRecord.dateExit
+      ? new Date(selectedRecord.dateExit).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+      : '---';
+
+    const payload = {
+      empName:     `${emp.lastName}, ${emp.firstName}${emp.middleName ? ' ' + emp.middleName[0] + '.' : ''}`,
+      empId:       emp.id,
+      empBranch:   `${emp.payrollLocation || 'APECC'}-${emp.department || '---'}`,
+      empPosition: emp.designation || '---',
+      empCell:     emp.personal?.contactNumbers?.[0] || '---',
+      empDateExit: dateExitFormatted,
+      reason:      selectedRecord.reason || 'Resignation',
+      sections:    formData,
+    };
+
+    const encoded = btoa(JSON.stringify(payload));
+    const base = import.meta.env.BASE_URL;
+    const url  = `${base}forms/staffclearance/clearance-template.html?data=${encoded}`;
+    window.open(url, '_blank');
   };
 
   const renderTable = (deptKey, title, headers) => {
@@ -244,6 +271,23 @@ export default function StaffClearanceTracker() {
                     <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, display: 'block' }}>Effective Date</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 700 }}>{selectedRecord.dateExit}</Typography>
                   </Box>
+                  <Divider orientation="vertical" flexItem />
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<GenerateIcon />}
+                    onClick={handleGenerateClearance}
+                    sx={{ 
+                      fontWeight: 700,
+                      borderRadius: 2,
+                      borderColor: goldAccent,
+                      color: goldAccent,
+                      whiteSpace: 'nowrap',
+                      '&:hover': { bgcolor: 'rgba(212,168,67,0.08)', borderColor: goldAccent }
+                    }}
+                  >
+                    Generate Clearance
+                  </Button>
                 </Box>
               </Grid>
             )}
