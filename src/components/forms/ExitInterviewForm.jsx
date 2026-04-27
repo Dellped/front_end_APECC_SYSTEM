@@ -3,7 +3,8 @@ import {
   Box, Typography, Grid, TextField, Divider, Stack, Paper, Button, MenuItem
 } from '@mui/material';
 import {
-  AssignmentTurnedIn as InterviewIcon
+  AssignmentTurnedIn as InterviewIcon,
+  CloudUpload as UploadIcon
 } from '@mui/icons-material';
 
 export default function ExitInterviewForm({ 
@@ -19,6 +20,23 @@ export default function ExitInterviewForm({
     role: { resources: '', training: '', expectations: '', rewardChallenge: '', skillUtilization: '', support: '', workload: '', careerGoals: '', likedMost: '', likedLeast: '', growth: '', environment: '', valued: '', whatMadeValued: '' },
     forward: { advice: '', improvements: '', workAgain: '', recommend: '', oneThingChange: '', additional: '' }
   });
+
+  const [attachment, setAttachment] = useState(null);
+  const [attachmentData, setAttachmentData] = useState(null);
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setAttachment(file);
+        setAttachmentData(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    } else if (file) {
+      alert("Please upload a PDF file.");
+    }
+  };
 
   const handleReasonChange = (field, value) => {
     setFormData(prev => ({
@@ -298,16 +316,41 @@ export default function ExitInterviewForm({
         )}
 
         {!isReadOnly && (
-          <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 2 }}>
-            <Button onClick={onCancel} sx={{ color: 'text.secondary', fontWeight: 600 }}>Cancel</Button>
-            <Button 
-              variant="contained" 
-              onClick={() => onSubmit(formData)} 
-              sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)', px: 4, fontWeight: 700, borderRadius: 2 }}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+            <Button
+              component="label"
+              variant="outlined"
+              startIcon={<UploadIcon />}
+              sx={{ fontWeight: 600, borderRadius: 2, borderColor: 'rgba(0,0,0,0.15)', color: 'text.secondary' }}
             >
-              Submit Resignation
+              {attachment ? attachment.name : 'Upload Resignation Letter (PDF)'}
+              <input
+                type="file"
+                hidden
+                accept="application/pdf"
+                onChange={handleFileUpload}
+              />
             </Button>
-          </Stack>
+            <Stack direction="row" spacing={2}>
+              <Button onClick={onCancel} sx={{ color: 'text.secondary', fontWeight: 600 }}>Cancel</Button>
+              <Button 
+                variant="contained" 
+                onClick={() => {
+                  const mockPath = attachment ? `/uploaded_files/${attachment.name}` : null;
+                  if (mockPath) console.log(`Simulating file save to: public${mockPath}`);
+                  onSubmit({ 
+                    ...formData, 
+                    attachment: attachmentData, 
+                    fileName: attachment?.name,
+                    savedPath: mockPath 
+                  });
+                }} 
+                sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)', px: 4, fontWeight: 700, borderRadius: 2 }}
+              >
+                Submit Resignation
+              </Button>
+            </Stack>
+          </Box>
         )}
       </Stack>
     </Box>

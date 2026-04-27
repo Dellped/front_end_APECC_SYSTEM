@@ -43,9 +43,7 @@ import ServiceIncentiveLeave from './pages/hr/ServiceIncentiveLeave';
 
 // Exit Member Pages
 import ExitDashboard from './pages/exit/ExitDashboard';
-import ExitRequest from './pages/exit/ExitRequest';
-import ClearanceGeneration from './pages/exit/ClearanceGeneration';
-import StatementOfAccount from './pages/exit/StatementOfAccount';
+import ExitRequest from './pages/exit/ExitRequest';import StatementOfAccount from './pages/exit/StatementOfAccount';
 import WithdrawalMembership from './pages/exit/WithdrawalMembership';
 import StaffClearance from './pages/exit/StaffClearance';
 import ExitAuditTrail from './pages/exit/ExitAuditTrail';
@@ -148,7 +146,6 @@ export default function App() {
               <Route path="/hr/audit-trail" element={<HRAuditTrail />} />
               <Route path="/exit/dashboard" element={<ExitDashboard />} />
               <Route path="/exit/requests" element={<ExitRequest />} />
-              <Route path="/exit/clearance" element={<ClearanceGeneration />} />
               <Route path="/exit/staff-clearance" element={<StaffClearance />} />
               <Route path="/exit/soa" element={<StatementOfAccount />} />
               <Route path="/exit/withdrawal" element={<WithdrawalMembership />} />

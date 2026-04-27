@@ -13,7 +13,8 @@ import {
   Visibility as ViewIcon,
   ExpandMore as ExpandMoreIcon,
   Person as PersonIcon,
-  SupervisorAccount as RoleIcon
+  SupervisorAccount as RoleIcon,
+  PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { onboardingRecords, employees, addExitRequest } from '../../data/mockData';
@@ -72,6 +73,20 @@ export default function ApprovalQueue() {
     setActionType(type);
     setRemarks('');
     setDialogOpen(true);
+  };
+
+  const handleViewAttachment = (record) => {
+    const attachment = record.employeeData?.exitInterviewFull?.attachment;
+    if (attachment) {
+      // Create a temporary link and click it to open in new tab
+      const newWindow = window.open();
+      newWindow.document.write(
+        `<iframe src="${attachment}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`
+      );
+      newWindow.document.title = `Resignation Letter - ${record.employeeData.firstName} ${record.employeeData.lastName}`;
+    } else {
+      alert("No uploaded resignation letter (PDF) found for this record.");
+    }
   };
 
   const handleActionConfirm = () => {
@@ -365,8 +380,18 @@ export default function ApprovalQueue() {
                   </Accordion>
                  ) : queueType === 'Resignation' ? (
                   <Box sx={{ mb: 3, border: '1px solid #ddd', borderRadius: 2, overflow: 'hidden' }}>
-                    <Box sx={{ bgcolor: 'rgba(0,0,0,0.02)', p: 1.5, borderBottom: '1px solid #ddd' }}>
+                    <Box sx={{ bgcolor: 'rgba(0,0,0,0.02)', p: 1.5, borderBottom: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="body2" sx={{ fontWeight: 700, color: '#d32f2f' }}>Resignation Application Details</Typography>
+                      <Button 
+                        size="small" 
+                        variant="outlined" 
+                        color="error" 
+                        startIcon={<PdfIcon />} 
+                        sx={{ textTransform: 'none', fontWeight: 600 }}
+                        onClick={() => handleViewAttachment(selectedRecord)}
+                      >
+                        View Resignation Letter (PDF)
+                      </Button>
                     </Box>
                     <Box sx={{ maxHeight: '40vh', overflowY: 'auto', p: 1 }}>
                       <ExitInterviewForm 
@@ -429,9 +454,23 @@ export default function ApprovalQueue() {
                   <PayrollRegister isEmbedded={true} />
                 </Box>
               ) : queueType === 'Resignation' ? (
-                <Box sx={{ maxHeight: '70vh', overflowY: 'auto' }}>
-                  <ExitInterviewForm 
-                    employee={selectedRecord.employeeData} 
+                <Box sx={{ border: '1px solid #ddd', borderRadius: 2, overflow: 'hidden' }}>
+                  <Box sx={{ bgcolor: 'rgba(0,0,0,0.02)', p: 1.5, borderBottom: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#d32f2f' }}>Resignation Application Details</Typography>
+                    <Button 
+                      size="small" 
+                      variant="outlined" 
+                      color="error" 
+                      startIcon={<PdfIcon />} 
+                      sx={{ textTransform: 'none', fontWeight: 600 }}
+                      onClick={() => handleViewAttachment(selectedRecord)}
+                    >
+                      View Resignation Letter (PDF)
+                    </Button>
+                  </Box>
+                  <Box sx={{ maxHeight: '70vh', overflowY: 'auto', p: 1 }}>
+                    <ExitInterviewForm 
+                      employee={selectedRecord.employeeData} 
                     isReadOnly={true} 
                     initialData={selectedRecord.employeeData.exitInterviewFull || {
                       reasons: { 
@@ -445,6 +484,7 @@ export default function ApprovalQueue() {
                     }} 
                   />
                 </Box>
+              </Box>
               ) : queueType === 'Leave' ? (
                 <Box sx={{ maxHeight: '70vh', overflowY: 'auto' }}>
                   <LeaveApplicationForm 
