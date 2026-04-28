@@ -427,7 +427,7 @@ export default function EmployeeProfile() {
                           <TableRow>
                             <TableCell>Name</TableCell>
                             <TableCell>Birthdate</TableCell>
-                            <TableCell>School</TableCell>
+                            <TableCell>Gender</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
@@ -435,7 +435,7 @@ export default function EmployeeProfile() {
                             <TableRow key={i}>
                               <TableCell sx={{ fontWeight: 500 }}>{child.name}</TableCell>
                               <TableCell>{child.birthdate}</TableCell>
-                              <TableCell>{child.school}</TableCell>
+                              <TableCell>{child.gender}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -781,14 +781,16 @@ export default function EmployeeProfile() {
                         '&::-webkit-scrollbar': { height: 6 },
                         '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(0,0,0,0.12)', borderRadius: 3 }
                       }}>
-                        <Table size="small" sx={{ minWidth: 1100 }}>
+                        <Table size="small" sx={{ minWidth: 2200 }}>
                           <TableHead>
                             <TableRow sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)' }}>
                               {[
-                                'Period', 'Basic Pay', 'De Minimis', 'Total Income',
-                                'SSS (EE)', 'PhilHealth (EE)', 'Pag-IBIG (EE)', 'Tax',
-                                'Savings', 'Salary Loan', 'STL', 'LWOP',
-                                'Total Deductions', 'Net Pay', 'Status'
+                                'Period',
+                                'Basic Pay', 'Deminimis', 'Non-Taxable', 'Total Income',
+                                'SSS (ER)', 'PH (ER)', 'HDMF (ER)',
+                                'Tax', 'SSS (EE)', 'PH (EE)', 'HDMF (EE)',
+                                'Savings', 'Salary Loan', 'STL', 'HL', 'Educ Loan', 'Malasakit', 'LWOP',
+                                'Total Deductions', 'Net Pay', '1st Half', '2nd Half', 'Status'
                               ].map(h => (
                                 <TableCell key={h} sx={{ color: '#fff', fontWeight: 700, fontSize: '0.68rem', whiteSpace: 'nowrap', py: 1, px: 1.5, border: '1px solid rgba(255,255,255,0.1)' }}>{h}</TableCell>
                               ))}
@@ -797,20 +799,36 @@ export default function EmployeeProfile() {
                           <TableBody>
                             {histRecords.map((r, i) => (
                               <TableRow key={r.id} hover sx={{ '&:hover': { bgcolor: 'rgba(2,65,251,0.03)' } }}>
-                                <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap', px: 1.5 }}>{r.month} {r.year}</TableCell>
-                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5 }}>₱{r.basicPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
-                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#0241FB' }}>₱{(r.deminimis||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
-                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, fontWeight: 700, color: '#2e7d32' }}>₱{r.totalIncome.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
-                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.sssEE||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
-                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.phEE||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
-                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.hdmfEE||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
-                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.tax||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
-                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.savings||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
-                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.salaryLoan||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
-                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.stl||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
-                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, color: '#d32f2f' }}>₱{(r.lwop||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
-                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, fontWeight: 700, color: '#d32f2f' }}>₱{r.totalDeduction.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
-                                <TableCell align="right" sx={{ fontSize: '0.75rem', px: 1.5, fontWeight: 800, color: '#0241FB' }}>₱{r.netPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                {/* Period */}
+                                <TableCell sx={{ fontSize: '0.72rem', fontWeight: 700, whiteSpace: 'nowrap', px: 1.5 }}>{r.month} {r.year}</TableCell>
+                                {/* Income */}
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1 }}>₱{(r.basicPay||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#0241FB' }}>₱{(r.deminimis||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#0241FB' }}>₱{(r.nonTaxable||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, fontWeight: 700, color: '#2e7d32', bgcolor: 'rgba(2,65,251,0.02)' }}>₱{(r.totalIncome||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                {/* ER */}
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#666', bgcolor: 'rgba(0,0,0,0.02)' }}>₱{(r.sssER||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#666', bgcolor: 'rgba(0,0,0,0.02)' }}>₱{(r.phER||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#666', bgcolor: 'rgba(0,0,0,0.02)' }}>₱{(r.hdmfER||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                {/* EE Deductions */}
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#d32f2f' }}>₱{(r.tax||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#d32f2f' }}>₱{(r.sssEE||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#d32f2f' }}>₱{(r.phEE||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#d32f2f' }}>₱{(r.hdmfEE||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                {/* Other Deductions */}
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#d32f2f' }}>₱{(r.savings||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#d32f2f' }}>₱{(r.salaryLoan||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#d32f2f' }}>₱{(r.stl||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#d32f2f' }}>₱{(r.housingLoan||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#d32f2f' }}>₱{(r.educLoan||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#d32f2f' }}>₱{(r.malasakitLoan||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#d32f2f' }}>₱{(r.lwop||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                {/* Totals */}
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, fontWeight: 700, color: '#d32f2f' }}>₱{(r.totalDeduction||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, fontWeight: 800, color: '#0241FB' }}>₱{(r.netPay||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                {/* Half splits */}
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#555' }}>₱{(r.firstHalf||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right" sx={{ fontSize: '0.72rem', px: 1, color: '#555' }}>₱{(r.secondHalf||0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</TableCell>
                                 <TableCell sx={{ px: 1.5 }}>
                                   <Chip label={r.status || 'Paid'} size="small" sx={{ fontWeight: 700, fontSize: '0.65rem', bgcolor: 'rgba(46,125,50,0.1)', color: '#2e7d32' }} />
                                 </TableCell>

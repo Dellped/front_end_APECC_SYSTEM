@@ -1,11 +1,11 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, TextField, Button, Divider,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, IconButton, Avatar, Autocomplete,
   Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, createFilterOptions
 } from '@mui/material';
 const goldAccent = '#d4a843';
-import { Save as SaveIcon, Add as AddIcon, Delete as DeleteIcon, Search as SearchIcon } from '@mui/icons-material';
+import { Save as SaveIcon, Add as AddIcon, Delete as DeleteIcon, Search as SearchIcon, Edit as EditIcon } from '@mui/icons-material';
 import { employees } from '../../data/mockData';
 
 export default function FamilyBackground() {
@@ -19,6 +19,7 @@ export default function FamilyBackground() {
   // Modal states
   const [isAddChildOpen, setIsAddChildOpen] = useState(false);
   const [newChild, setNewChild] = useState({ name: '', birthdate: '', gender: '' });
+  const [editingChildIndex, setEditingChildIndex] = useState(null);
   
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [childToDelete, setChildToDelete] = useState(null);
@@ -45,16 +46,32 @@ export default function FamilyBackground() {
 
   const handleOpenAddChild = () => {
     setNewChild({ name: '', birthdate: '', gender: '' });
+    setEditingChildIndex(null);
+    setIsAddChildOpen(true);
+  };
+
+  const handleEditChildClick = (index) => {
+    setNewChild(familyData.children[index]);
+    setEditingChildIndex(index);
     setIsAddChildOpen(true);
   };
 
   const handleSaveChild = () => {
     if (newChild.name && newChild.birthdate) {
-      setFamilyData(prev => ({
-        ...prev,
-        children: [...prev.children, newChild]
-      }));
+      if (editingChildIndex !== null) {
+        setFamilyData(prev => {
+          const updatedChildren = [...prev.children];
+          updatedChildren[editingChildIndex] = newChild;
+          return { ...prev, children: updatedChildren };
+        });
+      } else {
+        setFamilyData(prev => ({
+          ...prev,
+          children: [...prev.children, newChild]
+        }));
+      }
       setIsAddChildOpen(false);
+      setEditingChildIndex(null);
     }
   };
 
@@ -253,7 +270,7 @@ export default function FamilyBackground() {
                     <TableCell>Name</TableCell>
                     <TableCell>Birthdate</TableCell>
                     <TableCell>Gender</TableCell>
-                    <TableCell width={60}>Action</TableCell>
+                    <TableCell width={90}>Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -263,6 +280,9 @@ export default function FamilyBackground() {
                       <TableCell>{child.birthdate}</TableCell>
                       <TableCell>{child.gender || '—'}</TableCell>
                       <TableCell>
+                        <IconButton size="small" color="primary" onClick={() => handleEditChildClick(i)}>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
                         <IconButton size="small" color="error" onClick={() => handleDeleteClick(i)}>
                           <DeleteIcon fontSize="small" />
                         </IconButton>
@@ -287,9 +307,9 @@ export default function FamilyBackground() {
         </CardContent>
       </Card>
 
-      {/* Add Child Dialog */}
+      {/* Add/Edit Child Dialog */}
       <Dialog open={isAddChildOpen} onClose={() => setIsAddChildOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, color: '#0241FB' }}>Add Child</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, color: '#0241FB' }}>{editingChildIndex !== null ? 'Edit Child' : 'Add Child'}</DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
             <Grid item xs={12}>
@@ -307,7 +327,7 @@ export default function FamilyBackground() {
                 onChange={(e) => setNewChild({...newChild, birthdate: e.target.value})} 
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} sx={{ minWidth: 100 }}>
               <TextField 
                 fullWidth size="small" label="Gender" select
                 value={newChild.gender} 
@@ -321,7 +341,7 @@ export default function FamilyBackground() {
         </DialogContent>
         <DialogActions sx={{ p: 1.5, px: 2 }}>
           <Button onClick={() => setIsAddChildOpen(false)} sx={{ color: 'text.secondary' }}>Cancel</Button>
-          <Button onClick={handleSaveChild} variant="contained" sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)' }}>Add</Button>
+          <Button onClick={handleSaveChild} variant="contained" sx={{ background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)' }}>Save</Button>
         </DialogActions>
       </Dialog>
 

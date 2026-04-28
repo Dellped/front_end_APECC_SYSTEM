@@ -151,6 +151,7 @@ export default function AddEmployee() {
   const [activeStep, setActiveStep] = useState(0);
   const [personal, setPersonal] = useState(initialPersonal);
   const [family, setFamily] = useState(initialFamily);
+  const [noSpouse, setNoSpouse] = useState(false);
   const [education, setEducation] = useState([
     { level: 'College', school: '', degree: '', areaOfStudy: '', distinction: '', units: '', from: '', till: '' },
   ]);
@@ -229,6 +230,32 @@ export default function AddEmployee() {
     setFamily({ ...family, [e.target.name]: e.target.value });
   };
 
+  const handleNoSpouse = (e) => {
+    const checked = e.target.checked;
+    setNoSpouse(checked);
+    if (checked) {
+      setFamily(prev => ({
+        ...prev,
+        spouseName: 'N/A',
+        spouseBirthdate: '',
+        spouseOccupation: 'N/A',
+        spouseContact: 'N/A',
+        spouseAddress: 'N/A',
+        spouseBusinessAddress: 'N/A',
+      }));
+    } else {
+      setFamily(prev => ({
+        ...prev,
+        spouseName: '',
+        spouseBirthdate: '',
+        spouseOccupation: '',
+        spouseContact: '',
+        spouseAddress: '',
+        spouseBusinessAddress: '',
+      }));
+    }
+  };
+
   const handleEmploymentChange = (e) => {
     setEmployment({ ...employment, [e.target.name]: e.target.value });
   };
@@ -238,7 +265,7 @@ export default function AddEmployee() {
   };
 
   const addChild = () => {
-    setFamily({ ...family, children: [...family.children, { name: '', birthdate: '', school: '' }] });
+    setFamily({ ...family, children: [...family.children, { name: '', birthdate: '', gender: '' }] });
   };
 
   const removeChild = (idx) => {
@@ -382,6 +409,7 @@ export default function AddEmployee() {
                   setActiveStep(0);
                   setPersonal(initialPersonal);
                   setFamily(initialFamily);
+                  setNoSpouse(false);
                   setEducation([{ level: 'College', school: '', degree: '', areaOfStudy: '', distinction: '', units: '', from: '', till: '' }]);
                   setWorkExperience([{ company: '', position: '', salary: '', from: '', to: '', reason: '' }]);
                   setReferences([{ name: '', position: '', addressCompany: '', contact: '' }]);
@@ -483,7 +511,7 @@ export default function AddEmployee() {
                   value={personal.presentBarangay || null}
                   onChange={(_, newValue) => handlePersonalChange({ target: { name: 'presentBarangay', value: newValue || '' } })}
                   renderInput={(params) => (
-                    <TextField {...params} label="Barangay" sx={{ minWidth: 110, '& .MuiInputLabel-root': { maxWidth: 'calc(100% - 24px)' } }} />
+                    <TextField {...params} label="Barangay" sx={{ minWidth: 190, '& .MuiInputLabel-root': { maxWidth: 'calc(100% - 24px)' } }} />
                   )}
                 />
               </Grid>
@@ -496,7 +524,7 @@ export default function AddEmployee() {
               <Grid item xs={12} sm={4} md={3}>
                 <TextField fullWidth size="small" label="Zipcode" value={personal.presentZipcode} InputProps={{ readOnly: true }} />
               </Grid>
-              <Grid item xs={12} sm={4} md={3}>
+              <Grid item xs={12} sm={4} md={3}  sx={{ minWidth: 120 }}>
                 <TextField fullWidth size="small" label="Tenureship" select name="tenureship" value={personal.tenureship} onChange={handlePersonalChange}
                   sx={{ minWidth: 110, '& .MuiInputLabel-root': { maxWidth: 'calc(100% - 24px)' } }}>
                   {['Owner', 'Renter/Tenant', 'Living with relatives', 'Mortgaged'].map(t => <MenuItem key={t} value={t}>{t}</MenuItem>)}
@@ -523,7 +551,7 @@ export default function AddEmployee() {
                   disabled={personal.sameAsPresent}
                   onChange={(_, newValue) => handlePersonalChange({ target: { name: 'permanentBarangay', value: newValue || '' } })}
                   renderInput={(params) => (
-                    <TextField {...params} label="Barangay" sx={{ minWidth: 110, '& .MuiInputLabel-root': { maxWidth: 'calc(100% - 24px)' } }} />
+                    <TextField {...params} label="Barangay" sx={{ minWidth: 190, '& .MuiInputLabel-root': { maxWidth: 'calc(100% - 24px)' } }} />
                   )}
                 />
               </Grid>
@@ -580,26 +608,32 @@ export default function AddEmployee() {
       case 1:
         return (
           <Box>
-            <SectionTitle>Spouse Information</SectionTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <SectionTitle>Spouse Information</SectionTitle>
+              <FormControlLabel
+                control={<Checkbox checked={noSpouse} onChange={handleNoSpouse} sx={{ color: IND, '&.Mui-checked': { color: IND } }} />}
+                label={<Typography variant="body2" sx={{ fontWeight: 600 }}>Not Applicable (No Spouse)</Typography>}
+              />
+            </Box>
             <Grid container spacing={2.5}>
               <Grid item xs={12} sm={6} md={4}>
-                <TextField fullWidth size="small" label="Spouse Name" name="spouseName" value={family.spouseName} onChange={handleFamilyChange} />
+                <TextField fullWidth size="small" label="Spouse Name" name="spouseName" value={family.spouseName} onChange={handleFamilyChange} disabled={noSpouse} />
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
-                <TextField fullWidth size="small" label="Birthdate" type="date" name="spouseBirthdate" value={family.spouseBirthdate} onChange={handleFamilyChange} InputLabelProps={{ shrink: true }} />
+                <TextField fullWidth size="small" label="Birthdate" type="date" name="spouseBirthdate" value={family.spouseBirthdate} onChange={handleFamilyChange} InputLabelProps={{ shrink: true }} disabled={noSpouse} />
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
-                <TextField fullWidth size="small" label="Occupation" name="spouseOccupation" value={family.spouseOccupation} onChange={handleFamilyChange} />
+                <TextField fullWidth size="small" label="Occupation" name="spouseOccupation" value={family.spouseOccupation} onChange={handleFamilyChange} disabled={noSpouse} />
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
                 <TextField fullWidth size="small" label="Contact Number" name="spouseContact" value={family.spouseContact} onChange={handleFamilyChange}
-              InputProps={{ startAdornment: <InputAdornment position="start">+63</InputAdornment> }} />
+              InputProps={{ startAdornment: <InputAdornment position="start">+63</InputAdornment> }} disabled={noSpouse} />
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
-                <TextField fullWidth size="small" label="Address" name="spouseAddress" value={family.spouseAddress} onChange={handleFamilyChange} />
+                <TextField fullWidth size="small" label="Address" name="spouseAddress" value={family.spouseAddress} onChange={handleFamilyChange} disabled={noSpouse} />
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
-                <TextField fullWidth size="small" label="Business Address" name="spouseBusinessAddress" value={family.spouseBusinessAddress} onChange={handleFamilyChange} />
+                <TextField fullWidth size="small" label="Business Address" name="spouseBusinessAddress" value={family.spouseBusinessAddress} onChange={handleFamilyChange} disabled={noSpouse} />
               </Grid>
             </Grid>
 
@@ -650,8 +684,10 @@ export default function AddEmployee() {
                 <Grid item xs={12} sm={3}>
                   <TextField fullWidth size="small" label="Birthdate" type="date" value={child.birthdate} onChange={(e) => updateChild(idx, 'birthdate', e.target.value)} InputLabelProps={{ shrink: true }} />
                 </Grid>
-                <Grid item xs={12} sm={4}>
-                  <TextField fullWidth size="small" label="School" value={child.school} onChange={(e) => updateChild(idx, 'school', e.target.value)} />
+                <Grid item xs={12} sm={4} sx={{ minWidth: 100 }}>
+                  <TextField fullWidth select size="small" label="Gender" value={child.gender || ''} onChange={(e) => updateChild(idx, 'gender', e.target.value)}>
+                    {['Male', 'Female'].map((g) => <MenuItem key={g} value={g}>{g}</MenuItem>)}
+                  </TextField>
                 </Grid>
                 <Grid item xs={12} sm={1}>
                   <IconButton size="small" color="error" onClick={() => removeChild(idx)}><DeleteIcon fontSize="small" /></IconButton>
@@ -832,11 +868,7 @@ export default function AddEmployee() {
               <Grid item xs={12} sm={6} md={4}>
                 <TextField fullWidth size="small" label="Date Hired *" type="date" name="dateHired" value={employment.dateHired} onChange={handleEmploymentChange} InputLabelProps={{ shrink: true }} />
               </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField fullWidth size="small" label="Shift Schedule" select name="shift" value={employment.shift} onChange={handleEmploymentChange}>
-                  {SHIFT_SCHEDULES.map((s) => <MenuItem key={s.type} value={s.type}>{s.type} ({s.in} – {s.out})</MenuItem>)}
-                </TextField>
-              </Grid>
+
               <Grid item xs={12} sm={6} md={4}>
                 <TextField fullWidth size="small" label="Supervisor" name="supervisor" value={employment.supervisor} onChange={handleEmploymentChange} />
               </Grid>
