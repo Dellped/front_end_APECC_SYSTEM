@@ -38,6 +38,7 @@ import AlphalistForms from './pages/hr/AlphalistForms';
 import BIRForms from './pages/hr/BIRForms';
 import PayrollRegister from './pages/hr/PayrollRegister';
 import SalaryAdjustment from './pages/hr/SalaryAdjustment';
+import PayrollAdjustment from './pages/hr/PayrollAdjustment';
 import SalaryHistory from './pages/hr/SalaryHistory';
 import ServiceIncentiveLeave from './pages/hr/ServiceIncentiveLeave';
 
@@ -132,6 +133,7 @@ export default function App() {
               <Route path="/hr/payroll/payroll" element={<Payroll />} />
               <Route path="/hr/payroll/register" element={<PayrollRegister />} />
               <Route path="/hr/payroll/salary-adjustment" element={<SalaryAdjustment />} />
+              <Route path="/hr/payroll/adjustment-lwop" element={<PayrollAdjustment />} />
               <Route path="/hr/payroll/salary-history" element={<SalaryHistory />} />
               <Route path="/hr/payroll/periods" element={<PayrollPeriods />} />
               <Route path="/hr/payroll/sil" element={<ServiceIncentiveLeave />} />

@@ -5,7 +5,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, TextField,
   Select, MenuItem, FormControl, InputLabel, Paper, Avatar, Divider,
   Accordion, AccordionSummary, AccordionDetails,
-  Tabs, Tab
+  Tabs, Tab, Snackbar, Alert
 } from '@mui/material';
 import {
   CheckCircle as ApproveIcon,
@@ -41,12 +41,67 @@ export default function ApprovalQueue() {
   const [actionType, setActionType] = useState(''); // 'verify', 'approve', 'decline'
   const [remarks, setRemarks] = useState('');
   const [exitInterview, setExitInterview] = useState({ date: '', interviewer: '', feedback: '', recommendation: 'Recommended' });
+  const [snackbarState, setSnackbarState] = useState({ open: false, message: '', severity: 'success' });
+
+  const handleCloseSnackbar = () => setSnackbarState(prev => ({ ...prev, open: false }));
 
   // Load records on mount
   useEffect(() => {
     // In a real app, this would be an API call.
     setRecords([...onboardingRecords]);
   }, []);
+
+  const submitEmployeeToAPI = async (record) => {
+  try {
+    const payload = {
+      first_name: record.employeeData.firstName,
+      middle_name: record.employeeData.middleName || null,
+      last_name: record.employeeData.lastName,
+      suffix: record.employeeData.suffix || null,
+
+      birthdate: record.employeeData.personal?.birthDate || null,
+      birthplace: record.employeeData.personal?.birthPlace || null,
+      gender: record.employeeData.personal?.gender || null,
+      civil_status: record.employeeData.personal?.civilStatus || null,
+      religion: record.employeeData.personal?.religion || null,
+      citizenship: record.employeeData.personal?.citizenship || null,
+      
+      height: record.employeeData.personal?.height ? parseFloat(record.employeeData.personal.height) : null,
+      weight: record.employeeData.personal?.weight ? parseFloat(record.employeeData.personal.weight) : null,
+      blood_type: record.employeeData.personal?.bloodType || null,
+
+      contact_number1: record.employeeData.personal?.contact1 || null,
+      contact_number2: record.employeeData.personal?.contact2 || null,
+      email_personal: record.employeeData.personal?.emailPersonal || null,
+      email_company: record.employeeData.personal?.emailCompany || null,
+
+      emergency_name: record.employeeData.family?.emergencyName || null,
+      emergency_number: record.employeeData.family?.emergencyNumber || null,
+      emergency_relationship: record.employeeData.family?.emergencyRelation || null,
+    };
+
+    const res = await fetch("http://localhost:8000/employees/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      console.log("Saved to backend:", data);
+      setSnackbarState({ open: true, message: "Employee successfully saved!", severity: "success" });
+    } else {
+      console.error("Failed to save employee. Server responded with:", res.status);
+      setSnackbarState({ open: true, message: "Failed to save employee. Please check the logs.", severity: "error" });
+    }
+
+  } catch (error) {
+    console.error("Error saving employee:", error);
+    setSnackbarState({ open: true, message: "An error occurred while saving the employee.", severity: "error" });
+  }
+};
 
   const refreshRecords = () => setRecords([...onboardingRecords]);
 
@@ -85,7 +140,7 @@ export default function ApprovalQueue() {
       );
       newWindow.document.title = `Resignation Letter - ${record.employeeData.firstName} ${record.employeeData.lastName}`;
     } else {
-      alert("No uploaded resignation letter (PDF) found for this record.");
+      setSnackbarState({ open: true, message: "No uploaded resignation letter (PDF) found for this record.", severity: "warning" });
     }
   };
 
@@ -125,20 +180,23 @@ export default function ApprovalQueue() {
       } else if (actionType === 'approve' && role === 'AGM' && !isResig && !isLeave) {
         record.status = 'Approved';
         record.approvalChain[2] = { role: 'Asst. General Manager', name: 'Simulated AGM', status: 'Approved', date: today, remarks: remarks };
-        
-        // ... (onboarding logic remains same)
-      } else if (actionType === 'approve' && role === 'General Manager' && isResig) {
+        submitEmployeeToAPI(record); // Save onboarding data to backend
+      } else if (actionType === 'approve' && role === 'General Manager') {
         record.status = 'Approved';
-        record.approvalChain[4] = { role: 'General Manager', name: 'Simulated GM', status: 'Approved', date: today, remarks: remarks };
+        record.approvalChain[isResig ? 4 : 3] = { role: 'General Manager', name: 'Simulated GM', status: 'Approved', date: today, remarks: remarks };
         
-        addExitRequest({
-          employeeId: record.employeeData.id,
-          name: `${record.employeeData.firstName} ${record.employeeData.lastName}`,
-          position: record.employeeData.designation,
-          reason: record.employeeData.resignationDetails?.reason || 'Resignation',
-          exitDate: record.employeeData.resignationDetails?.date || today,
-          remarks: remarks || 'Approved from Queue'
-        });
+        if (isResig) {
+          addExitRequest({
+            employeeId: record.employeeData.id,
+            name: `${record.employeeData.firstName} ${record.employeeData.lastName}`,
+            position: record.employeeData.designation,
+            reason: record.employeeData.resignationDetails?.reason || 'Resignation',
+            exitDate: record.employeeData.resignationDetails?.date || today,
+            remarks: remarks || 'Approved from Queue'
+          });
+        } else if (!isLeave) {
+          submitEmployeeToAPI(record); // Save onboarding data to backend if GM approves
+        }
       } else if (actionType === 'resubmit' && role === 'HR Officer') {
         record.status = 'Pending Unit Manager';
         record.approvalChain.push({ role: 'HR Officer', name: 'Simulated HR', status: 'Re-Submitted', date: today, remarks: remarks });
@@ -720,6 +778,16 @@ export default function ApprovalQueue() {
           )}
         </DialogActions>
       </Dialog>
+      <Snackbar 
+        open={snackbarState.open} 
+        autoHideDuration={3000} 
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbarState.severity} sx={{ width: '100%', fontWeight: 600 }}>
+          {snackbarState.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

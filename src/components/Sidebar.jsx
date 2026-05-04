@@ -106,6 +106,7 @@ const menuConfig = [
           { id: 'hr-pay-sil', label: 'Service Incentive Leave', icon: <LeavesIcon />, path: '/hr/payroll/sil' },
           { id: 'hr-pay-contributions', label: 'Gov Contributions', icon: <TaxIcon />, path: '/hr/payroll/contributions' },
           { id: 'hr-pay-payroll', label: 'Payroll Run', icon: <PaymentsIcon />, path: '/hr/payroll/payroll' },
+          { id: 'hr-pay-adj-lwop', label: 'Payroll Adjustment', icon: <AdjustmentIcon />, path: '/hr/payroll/adjustment-lwop' },
         ],
       },
       {
