@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statement of Account</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -260,7 +261,19 @@
                     renderSOA(data);
                     
                     if (printParam === 'true') {
-                        setTimeout(() => window.print(), 500);
+                        setTimeout(() => {
+                            const element = document.getElementById('soa-content');
+                            const opt = {
+                                margin: 5,
+                                filename: 'Statement_of_Account_' + (data.empId || 'Employee') + '.pdf',
+                                image: { type: 'jpeg', quality: 0.98 },
+                                html2canvas: { scale: 2, useCORS: true },
+                                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                            };
+                            html2pdf().set(opt).from(element).save().then(() => {
+                                setTimeout(() => window.close(), 1000);
+                            });
+                        }, 500);
                     }
                 } else {
                     document.getElementById('soa-content').innerHTML = '<h3 style="text-align: center;">No data provided</h3>';

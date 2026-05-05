@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clearance and Withdrawal Form</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
         body { font-family: 'Roboto', sans-serif; margin: 0; padding: 0; background-color: #525659; }
@@ -68,7 +69,19 @@
                     renderForm(data);
                     
                     if (printParam === 'true') {
-                        setTimeout(() => window.print(), 500);
+                        setTimeout(() => {
+                            const element = document.getElementById('form-content');
+                            const opt = {
+                                margin: 5,
+                                filename: 'Withdrawal_Form_' + (data.idNo || 'Member') + '.pdf',
+                                image: { type: 'jpeg', quality: 0.98 },
+                                html2canvas: { scale: 2, useCORS: true },
+                                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                            };
+                            html2pdf().set(opt).from(element).save().then(() => {
+                                setTimeout(() => window.close(), 1000);
+                            });
+                        }, 500);
                     }
                 } else {
                     document.getElementById('form-content').innerHTML = '<h3 style="text-align: center;">No data provided</h3>';

@@ -64,7 +64,18 @@ export default function WithdrawalMembership() {
   const handleDownloadPDF = (member) => {
     const encoded = getEncodedData(member);
     const base = import.meta.env.BASE_URL;
-    window.open(`${base}forms/withdrawal/withdrawal-template.html?data=${encoded}&print=true`, '_blank');
+    const url = `${base}forms/withdrawal/withdrawal-template.html?data=${encoded}&print=true`;
+
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = url;
+    document.body.appendChild(iframe);
+
+    setTimeout(() => {
+      if (document.body.contains(iframe)) {
+        document.body.removeChild(iframe);
+      }
+    }, 10000);
   };
 
   const handleExportCSV = (member) => {
