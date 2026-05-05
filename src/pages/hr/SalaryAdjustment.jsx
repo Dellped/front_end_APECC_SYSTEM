@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import {
   Box, Card, CardContent, Typography, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, IconButton, Grid, TextField,
   Button, Paper, Stack, MenuItem, Select, FormControl, InputLabel,
   InputAdornment, Chip, Divider, Tooltip, Avatar,
-  Dialog, DialogTitle, DialogContent, DialogActions, Autocomplete
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  List, ListItemText, ListItemButton
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -43,8 +44,8 @@ export default function SalaryAdjustment() {
   const [openViewDialog, setOpenViewDialog] = useState(false);
   const [formData, setFormData] = useState({
     empId: '',
-    name: 'Juan Dela Cruz',
-    currentSalary: 25000,
+    name: '',
+    currentSalary: 0,
     currentJobLevel: 'Level 1 - Probationary',
     currentEmploymentType: 'Probationary',
     type: 'Increase',
@@ -57,6 +58,47 @@ export default function SalaryAdjustment() {
     date: ''
   });
   const fileInputRef = useRef(null);
+
+  // Employee search state
+  const [empSearchQuery, setEmpSearchQuery] = useState('');
+  const [showEmpDropdown, setShowEmpDropdown] = useState(false);
+  const empSearchRef = useRef(null);
+
+  const filteredEmpOptions = useMemo(() => {
+    const q = empSearchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return employees.filter(emp => {
+      const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase();
+      const empId = String(emp.id).toLowerCase();
+      return empId.includes(q) || fullName.includes(q);
+    }).slice(0, 8);
+  }, [empSearchQuery]);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (empSearchRef.current && !empSearchRef.current.contains(e.target)) {
+        setShowEmpDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const selectEmp = (emp) => {
+    setEmpSearchQuery(`${emp.firstName} ${emp.lastName} (#${String(emp.id).padStart(4, '0')})`);
+    setShowEmpDropdown(false);
+    setFormData(prev => ({
+      ...prev,
+      empId: emp.id,
+      name: `${emp.firstName} ${emp.lastName}`,
+      currentSalary: emp.payrollProfile?.basicSalary || 0,
+      currentJobLevel: emp.employmentDetails?.jobLevel || prev.currentJobLevel,
+      currentEmploymentType: emp.employmentType || prev.currentEmploymentType,
+      newJobLevel: emp.employmentDetails?.jobLevel || prev.newJobLevel,
+      newEmploymentType: emp.employmentType || prev.newEmploymentType,
+      currentDeminimis: emp.payrollProfile?.deminimis || 0,
+    }));
+  };
 
   const handleImport = (e) => {
     const file = e.target.files[0];
@@ -127,46 +169,63 @@ export default function SalaryAdjustment() {
                 <Typography variant="h6" sx={{ fontWeight: 800 }}>Adjustment / Promotion Form</Typography>
               </Box>
               
-              <Box sx={{  p: 2.5, bgcolor: 'rgba(2, 61, 251, 0.03)', border: '1px solid rgba(2, 61, 251, 0.1)', borderRadius: 2, mb: 3 }}>
+              <Box sx={{ p: 2.5, bgcolor: 'rgba(2, 61, 251, 0.03)', border: '1px solid rgba(2, 61, 251, 0.1)', borderRadius: 2, mb: 3 }}>
                 <Grid container spacing={3} alignItems="center">
                   <Grid item xs={12} md={6}>
-                    <Autocomplete
-                      size="small"
-                      forcePopupIcon={false}
-                      options={employees}
-                      getOptionLabel={(option) => `${option.firstName} ${option.lastName} (${option.id})`}
-                      onChange={(e, newValue) => {
-                        if (newValue) {
-                          setFormData({
-                            ...formData,
-                            empId: newValue.id,
-                            name: `${newValue.firstName} ${newValue.lastName}`,
-                            currentSalary: newValue.payrollProfile?.basicSalary || 0,
-                            currentJobLevel: newValue.employmentDetails?.jobLevel || '',
-                            currentEmploymentType: newValue.employmentType || '',
-                            newJobLevel: newValue.employmentDetails?.jobLevel || '',
-                            newEmploymentType: newValue.employmentType || '',
-                            currentDeminimis: newValue.payrollProfile?.deminimis || 0,
-                          });
-                        }
-                      }}
-                      renderInput={(params) => (
-                        <TextField 
-                          {...params} 
-                          label="Search Employee *" 
-                          placeholder="Type name or ID..."
-                          InputLabelProps={{ shrink: true, sx: { fontWeight: 600 } }}
-                          InputProps={{
-                            ...params.InputProps,
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <SearchIcon fontSize="small" sx={{ ml: 0.5, color: 'text.secondary' }} />
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
+                    <Box ref={empSearchRef} sx={{ position: 'relative' }}>
+                      <TextField
+                        size="small"
+                        fullWidth
+                        label="Search Employee *"
+                        placeholder="Search by Employee ID or Name..."
+                        value={empSearchQuery}
+                        onChange={(e) => { setEmpSearchQuery(e.target.value); setShowEmpDropdown(true); }}
+                        onFocus={() => empSearchQuery && setShowEmpDropdown(true)}
+                        InputLabelProps={{ shrink: true, sx: { fontWeight: 600 } }}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <SearchIcon fontSize="small" sx={{ color: apeccBlue }} />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                      {showEmpDropdown && filteredEmpOptions.length > 0 && (
+                        <Paper elevation={6} sx={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1300, borderRadius: 2, mt: 0.5, overflow: 'hidden', border: `1px solid ${apeccBlue}30`, maxHeight: 280, overflowY: 'auto' }}>
+                          <List dense disablePadding>
+                            {filteredEmpOptions.map((emp, idx) => (
+                              <ListItemButton
+                                key={emp.id}
+                                onClick={() => selectEmp(emp)}
+                                divider={idx < filteredEmpOptions.length - 1}
+                                sx={{ '&:hover': { bgcolor: `${apeccBlue}10` } }}
+                              >
+                                <ListItemText
+                                  primary={
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                      <Typography variant="body2" sx={{ fontWeight: 800, color: apeccBlue, minWidth: 50 }}>
+                                        #{String(emp.id).padStart(4, '0')}
+                                      </Typography>
+                                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                        {emp.firstName} {emp.lastName}
+                                      </Typography>
+                                      <Typography variant="caption" sx={{ color: 'text.secondary', ml: 'auto' }}>
+                                        {emp.department || emp.position || ''}
+                                      </Typography>
+                                    </Box>
+                                  }
+                                />
+                              </ListItemButton>
+                            ))}
+                          </List>
+                        </Paper>
                       )}
-                    />
+                      {showEmpDropdown && empSearchQuery && filteredEmpOptions.length === 0 && (
+                        <Paper elevation={3} sx={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1300, borderRadius: 2, mt: 0.5, p: 2, textAlign: 'center' }}>
+                          <Typography variant="body2" color="text.secondary">No employees found.</Typography>
+                        </Paper>
+                      )}
+                    </Box>
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>
                     <FormControl fullWidth size="small">

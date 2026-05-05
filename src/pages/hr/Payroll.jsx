@@ -4,7 +4,8 @@ import {
   Box, Card, CardContent, Typography, Grid, Button, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Avatar,
   LinearProgress, IconButton, Tooltip, Stepper, Step, StepLabel,
-  FormControl, InputLabel, Select, MenuItem, Checkbox, Divider, Stack, Dialog
+  FormControl, InputLabel, Select, MenuItem, Checkbox, Divider, Stack, Dialog,
+  TextField, InputAdornment, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import {
   Payments as PaymentsIcon,
@@ -19,6 +20,7 @@ import {
   NavigateBefore as BeforeIcon,
   Calculate as CalcIcon,
   VerifiedUser as ApprovalIcon,
+  PersonOff as LwopIcon,
 } from '@mui/icons-material';
 import { employees, payrollPeriods, attendanceRecords, taxContributions, payrollRecords, onboardingRecords } from '../../data/mockData';
 
@@ -45,19 +47,69 @@ const cellStyle = {
 const steps = ['Select Period', 'Select Employees', 'Pre Computed Salary', 'Compute & Finalize'];
 
 export default function Payroll() {
+  const activeEmployees = employees.filter(e => e.status === 'Active');
+
   const [activeStep, setActiveStep] = useState(0);
-  const [selectedPeriod, setSelectedPeriod] = useState(payrollPeriods[0]?.id || '');
-  const [selectedEmployees, setSelectedEmployees] = useState(employees.map(e => e.id));
+  const [cutoffFrom, setCutoffFrom] = useState(payrollPeriods[0]?.startDate || '');
+  const [cutoffTo, setCutoffTo] = useState(payrollPeriods[0]?.endDate || '');
+  const [selectedEmployees, setSelectedEmployees] = useState(activeEmployees.map(e => e.id));
   const [processing, setProcessing] = useState(false);
   const [computed, setComputed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
+
+  // LWOP per-employee overrides: { [empId]: { days, amount } }
+  const [lwopOverrides, setLwopOverrides] = useState({});
+  const [lwopDialogOpen, setLwopDialogOpen] = useState(false);
+  const [lwopTarget, setLwopTarget] = useState(null); // { emp, record }
+  const [lwopDaysInput, setLwopDaysInput] = useState('');
+  const [lwopAmountInput, setLwopAmountInput] = useState('');
   const navigate = useNavigate();
 
   const formatCurrency = (val) => `₱${val.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const handleNext = () => setActiveStep((prev) => prev + 1);
   const handleBack = () => setActiveStep((prev) => prev - 1);
+
+  // Open LWOP dialog for a specific employee
+  const openLwopDialog = (emp, record) => {
+    setLwopTarget({ emp, record });
+    const existing = lwopOverrides[emp.id];
+    setLwopDaysInput(existing?.days || '');
+    setLwopAmountInput(existing?.amount || '');
+    setLwopDialogOpen(true);
+  };
+
+  const handleLwopDaysChange = (e) => {
+    const days = e.target.value;
+    setLwopDaysInput(days);
+    if (days && lwopTarget) {
+      const dailyRate = (lwopTarget.record.basicPay || 0) / 22;
+      setLwopAmountInput(Math.round(dailyRate * parseFloat(days)));
+    } else {
+      setLwopAmountInput('');
+    }
+  };
+
+  const saveLwop = () => {
+    if (!lwopTarget || !lwopAmountInput) return;
+    setLwopOverrides(prev => ({
+      ...prev,
+      [lwopTarget.emp.id]: { days: lwopDaysInput, amount: parseFloat(lwopAmountInput) }
+    }));
+    setLwopDialogOpen(false);
+    setLwopTarget(null);
+    setLwopDaysInput('');
+    setLwopAmountInput('');
+  };
+
+  const removeLwop = (empId) => {
+    setLwopOverrides(prev => {
+      const next = { ...prev };
+      delete next[empId];
+      return next;
+    });
+  };
 
   const handleProcess = () => {
     setProcessing(true);
@@ -74,10 +126,21 @@ export default function Payroll() {
     );
   };
 
-  const currentPeriodData = payrollPeriods.find(p => p.id === selectedPeriod);
+  // Derive current period — match against existing periods or build a virtual one
+  const currentPeriodData = useMemo(() => {
+    if (!cutoffFrom || !cutoffTo) return null;
+    const match = payrollPeriods.find(p => p.startDate === cutoffFrom && p.endDate === cutoffTo);
+    return match || {
+      id: `MANUAL-${cutoffFrom}-${cutoffTo}`,
+      startDate: cutoffFrom,
+      endDate: cutoffTo,
+      type: 'Custom Cut-off',
+      status: 'Open'
+    };
+  }, [cutoffFrom, cutoffTo]);
 
   // Status checks
-  const currentQueueRecord = onboardingRecords.find(r => r.type === 'Payroll' && r.payrollPeriodId === selectedPeriod);
+  const currentQueueRecord = onboardingRecords.find(r => r.type === 'Payroll' && r.payrollPeriodId === currentPeriodData?.id);
   const isApprovedByAGM = currentQueueRecord && currentQueueRecord.status === 'Approved';
   const isAlreadyPending = currentQueueRecord && currentQueueRecord.status !== 'Approved' && !currentQueueRecord.status.includes('Decline');
 
@@ -88,7 +151,7 @@ export default function Payroll() {
     onboardingRecords.push({
       id: newId,
       type: 'Payroll',
-      payrollPeriodId: selectedPeriod,
+      payrollPeriodId: currentPeriodData?.id,
       submittedDate: today,
       submittedBy: 'HR Officer',
       status: 'Pending Unit Manager',
@@ -227,29 +290,40 @@ export default function Payroll() {
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Step 1: Select Payroll Period</Typography>
                   <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                      <FormControl fullWidth>
-                        <InputLabel>Payroll Period</InputLabel>
-                        <Select
-                          value={selectedPeriod}
-                          label="Payroll Period"
-                          onChange={(e) => setSelectedPeriod(e.target.value)}
-                        >
-                          {payrollPeriods.map(p => (
-                            <MenuItem key={p.id} value={p.id}>
-                              {p.startDate} to {p.endDate} ({p.type})
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="From Cut-off Date *"
+                        type="date"
+                        value={cutoffFrom}
+                        onChange={(e) => setCutoffFrom(e.target.value)}
+                        InputLabelProps={{ shrink: true, sx: { fontWeight: 600 } }}
+                        inputProps={{ max: cutoffTo || undefined }}
+                        helperText="Start of the payroll cut-off period"
+                      />
                     </Grid>
-                    {currentPeriodData && (
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="To Cut-off Date *"
+                        type="date"
+                        value={cutoffTo}
+                        onChange={(e) => setCutoffTo(e.target.value)}
+                        InputLabelProps={{ shrink: true, sx: { fontWeight: 600 } }}
+                        inputProps={{ min: cutoffFrom || undefined }}
+                        helperText="End of the payroll cut-off period"
+                      />
+                    </Grid>
+                    {currentPeriodData && cutoffFrom && cutoffTo && (
                       <Grid item xs={12}>
-                        <Box sx={{ mt: 2, p: 3, borderRadius: 3, bgcolor: 'rgba(2, 61, 251, 0.04)', border: '1px solid rgba(2, 61, 251, 0.1)' }}>
-                          <Typography variant="subtitle2" sx={{ color: '#0241FB', fontWeight: 700, mb: 1 }}>Period Details</Typography>
-                          <Typography variant="body2"><strong>Status:</strong> {currentPeriodData.status}</Typography>
+                        <Box sx={{ p: 3, borderRadius: 3, bgcolor: 'rgba(2, 61, 251, 0.04)', border: '1px solid rgba(2, 61, 251, 0.1)' }}>
+                          <Typography variant="subtitle2" sx={{ color: '#0241FB', fontWeight: 700, mb: 1 }}>Period Summary</Typography>
+                          <Typography variant="body2"><strong>Cut-off:</strong> {cutoffFrom} — {cutoffTo}</Typography>
                           <Typography variant="body2"><strong>Type:</strong> {currentPeriodData.type}</Typography>
-                          <Typography variant="body2"><strong>Dates:</strong> {currentPeriodData.startDate} — {currentPeriodData.endDate}</Typography>
+                          <Typography variant="body2"><strong>Status:</strong> {currentPeriodData.status}</Typography>
+                          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+                            Duration: {Math.ceil((new Date(cutoffTo) - new Date(cutoffFrom)) / (1000 * 60 * 60 * 24)) + 1} days
+                          </Typography>
                         </Box>
                       </Grid>
                     )}
@@ -266,9 +340,9 @@ export default function Payroll() {
                         <TableRow>
                           <TableCell padding="checkbox">
                             <Checkbox 
-                              checked={selectedEmployees.length === employees.length}
-                              indeterminate={selectedEmployees.length > 0 && selectedEmployees.length < employees.length}
-                              onChange={() => setSelectedEmployees(selectedEmployees.length === employees.length ? [] : employees.map(e => e.id))}
+                              checked={selectedEmployees.length === activeEmployees.length}
+                              indeterminate={selectedEmployees.length > 0 && selectedEmployees.length < activeEmployees.length}
+                              onChange={() => setSelectedEmployees(selectedEmployees.length === activeEmployees.length ? [] : activeEmployees.map(e => e.id))}
                             />
                           </TableCell>
                           <TableCell sx={{ fontWeight: 700 }}>Employee ID</TableCell>
@@ -278,7 +352,7 @@ export default function Payroll() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {employees.map((emp) => (
+                        {activeEmployees.map((emp) => (
                           <TableRow key={emp.id} hover onClick={() => toggleEmployee(emp.id)} sx={{ cursor: 'pointer' }}>
                             <TableCell padding="checkbox">
                               <Checkbox checked={selectedEmployees.includes(emp.id)} />
@@ -299,9 +373,19 @@ export default function Payroll() {
 
               {activeStep === 2 && (
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Step 3: Pre Computed Salary</Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>Step 3: Pre Computed Salary</Typography>
+                    {Object.keys(lwopOverrides).length > 0 && (
+                      <Chip
+                        icon={<LwopIcon sx={{ fontSize: '0.9rem !important' }} />}
+                        label={`${Object.keys(lwopOverrides).length} LWOP Employee${Object.keys(lwopOverrides).length > 1 ? 's' : ''} Added`}
+                        size="small"
+                        sx={{ bgcolor: 'rgba(211,47,47,0.1)', color: '#d32f2f', fontWeight: 700 }}
+                      />
+                    )}
+                  </Box>
                   <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, overflowX: 'auto' }}>
-                    <Table stickyHeader size="small" sx={{ minWidth: 2200 }}>
+                    <Table stickyHeader size="small" sx={{ minWidth: 2300 }}>
                       <TableHead>
                         <TableRow>
                           <TableCell sx={tableHeaderStyle}>Employee ID</TableCell>
@@ -326,43 +410,80 @@ export default function Payroll() {
                           <TableCell sx={tableHeaderStyle}>LWOP</TableCell>
                           <TableCell sx={tableHeaderStyle}>Total Deductions</TableCell>
                           <TableCell sx={tableHeaderStyle}>Total Pay</TableCell>
+                          <TableCell sx={{ ...tableHeaderStyle, minWidth: 110 }}>LWOP Action</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         {selectedEmployees.map((id) => {
                           const emp = employees.find(e => e.id === id);
-                          const record = payrollRecords.find(r => r.employeeId === id) || {
+                          const baseRecord = payrollRecords.find(r => r.employeeId === id) || {
                               basicPay: 0, deminimis: 0, nonTaxable: 0, totalIncome: 0,
                               sssER: 0, phER: 0, hdmfER: 0, tax: 0, sssEE: 0, phEE: 0, hdmfEE: 0,
                               savings: 0, salaryLoan: 0, stl: 0, hl: 0, educLoan: 0, malasakit: 0, lwop: 0,
                               totalDeduction: 0, netPay: 0
                           };
-                          
+                          const override = lwopOverrides[id];
+                          const lwopVal = override ? override.amount : (baseRecord.lwop || 0);
+                          const totalDeduction = (baseRecord.totalDeduction || 0) + (override ? override.amount - (baseRecord.lwop || 0) : 0);
+                          const netPay = (baseRecord.netPay || 0) - (override ? override.amount - (baseRecord.lwop || 0) : 0);
+
                           if (!emp) return null;
                           return (
-                            <TableRow key={id} hover>
+                            <TableRow key={id} hover sx={override ? { bgcolor: 'rgba(211,47,47,0.03)' } : {}}>
                               <TableCell sx={{ ...cellStyle, textAlign: 'center', fontWeight: 600 }}>{emp.id}</TableCell>
                               <TableCell sx={{ ...cellStyle, fontWeight: 700 }}>{emp.firstName} {emp.lastName}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right' }}>{formatCurrency(record.basicPay)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right' }}>{formatCurrency(record.deminimis)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right' }}>{formatCurrency(record.nonTaxable)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', fontWeight: 700, bgcolor: 'rgba(2, 61, 251, 0.02)' }}>{formatCurrency(record.totalIncome)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#666' }}>{formatCurrency(record.sssER)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#666' }}>{formatCurrency(record.phER)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#666' }}>{formatCurrency(record.hdmfER)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(record.tax)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(record.sssEE)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(record.phEE)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(record.hdmfEE)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(record.savings || 0)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(record.salaryLoan || 0)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(record.stl || 0)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(record.hl || 0)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(record.educLoan || 0)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(record.malasakit || 0)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(record.lwop || 0)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', fontWeight: 700, color: '#d32f2f' }}>{formatCurrency(record.totalDeduction)}</TableCell>
-                              <TableCell sx={{ ...cellStyle, textAlign: 'right', fontWeight: 800, color: '#0241FB' }}>{formatCurrency(record.netPay)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right' }}>{formatCurrency(baseRecord.basicPay)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right' }}>{formatCurrency(baseRecord.deminimis)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right' }}>{formatCurrency(baseRecord.nonTaxable)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', fontWeight: 700, bgcolor: 'rgba(2, 61, 251, 0.02)' }}>{formatCurrency(baseRecord.totalIncome)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#666' }}>{formatCurrency(baseRecord.sssER)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#666' }}>{formatCurrency(baseRecord.phER)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#666' }}>{formatCurrency(baseRecord.hdmfER)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(baseRecord.tax)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(baseRecord.sssEE)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(baseRecord.phEE)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(baseRecord.hdmfEE)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(baseRecord.savings || 0)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(baseRecord.salaryLoan || 0)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(baseRecord.stl || 0)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(baseRecord.hl || 0)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(baseRecord.educLoan || 0)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f' }}>{formatCurrency(baseRecord.malasakit || 0)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', color: '#d32f2f', fontWeight: override ? 800 : 400, bgcolor: override ? 'rgba(211,47,47,0.08)' : 'inherit' }}>{formatCurrency(lwopVal)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', fontWeight: 700, color: '#d32f2f' }}>{formatCurrency(totalDeduction)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'right', fontWeight: 800, color: '#0241FB' }}>{formatCurrency(netPay)}</TableCell>
+                              <TableCell sx={{ ...cellStyle, textAlign: 'center', padding: '2px 4px' }}>
+                                {override ? (
+                                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3 }}>
+                                    <Button
+                                      size="small"
+                                      variant="outlined"
+                                      onClick={() => openLwopDialog(emp, baseRecord)}
+                                      sx={{ fontSize: '0.6rem', py: 0.2, px: 0.8, minWidth: 0, borderColor: '#d32f2f', color: '#d32f2f', lineHeight: 1.4 }}
+                                    >
+                                      Edit LWOP
+                                    </Button>
+                                    <Button
+                                      size="small"
+                                      variant="text"
+                                      onClick={() => removeLwop(id)}
+                                      sx={{ fontSize: '0.6rem', py: 0, px: 0.8, minWidth: 0, color: 'text.secondary', lineHeight: 1.4 }}
+                                    >
+                                      Remove
+                                    </Button>
+                                  </Box>
+                                ) : (
+                                  <Button
+                                    size="small"
+                                    variant="contained"
+                                    startIcon={<LwopIcon sx={{ fontSize: '0.75rem !important' }} />}
+                                    onClick={() => openLwopDialog(emp, baseRecord)}
+                                    sx={{ fontSize: '0.6rem', py: 0.3, px: 0.8, minWidth: 0, bgcolor: '#d32f2f', '&:hover': { bgcolor: '#b71c1c' }, lineHeight: 1.4 }}
+                                  >
+                                    Add LWOP
+                                  </Button>
+                                )}
+                              </TableCell>
                             </TableRow>
                           );
                         })}
@@ -581,6 +702,69 @@ export default function Payroll() {
             View Register
           </Button>
         </Box>
+      </Dialog>
+      {/* LWOP Dialog */}
+      <Dialog
+        open={lwopDialogOpen}
+        onClose={() => setLwopDialogOpen(false)}
+        PaperProps={{ sx: { borderRadius: 3, minWidth: 380 } }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, color: '#d32f2f', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <LwopIcon /> Add LWOP Deduction
+        </DialogTitle>
+        <DialogContent dividers>
+          {lwopTarget && (
+            <Stack spacing={2} sx={{ pt: 1 }}>
+              <Box sx={{ p: 1.5, bgcolor: 'rgba(211,47,47,0.05)', borderRadius: 2, border: '1px solid rgba(211,47,47,0.15)' }}>
+                <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                  {lwopTarget.emp.firstName} {lwopTarget.emp.lastName}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  ID: {lwopTarget.emp.id} &nbsp;|&nbsp; Basic Pay: {formatCurrency(lwopTarget.record.basicPay)}
+                </Typography>
+              </Box>
+              <TextField
+                size="small"
+                fullWidth
+                label="LWOP Days (Optional)"
+                type="number"
+                placeholder="e.g. 2.5"
+                value={lwopDaysInput}
+                onChange={handleLwopDaysChange}
+                helperText="Auto-calculates amount based on daily rate (Basic ÷ 22)"
+              />
+              <TextField
+                size="small"
+                fullWidth
+                label="Deduction Amount *"
+                type="number"
+                value={lwopAmountInput}
+                onChange={(e) => setLwopAmountInput(e.target.value)}
+                InputProps={{ startAdornment: <InputAdornment position="start">₱</InputAdornment> }}
+                sx={{ '& .MuiOutlinedInput-root': { fontWeight: 700, color: '#d32f2f' } }}
+              />
+              {lwopAmountInput > 0 && (
+                <Box sx={{ p: 1.5, bgcolor: 'rgba(2,61,251,0.05)', borderRadius: 2, border: '1px solid rgba(2,61,251,0.15)' }}>
+                  <Typography variant="caption" sx={{ color: '#0241FB', fontWeight: 700 }}>Adjusted Net Pay</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: '#0241FB' }}>
+                    {formatCurrency(Math.max(0, (lwopTarget.record.netPay || 0) - parseFloat(lwopAmountInput)))}
+                  </Typography>
+                </Box>
+              )}
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button onClick={() => setLwopDialogOpen(false)} sx={{ fontWeight: 700, color: 'text.secondary' }}>Cancel</Button>
+          <Button
+            variant="contained"
+            disabled={!lwopAmountInput || parseFloat(lwopAmountInput) <= 0}
+            onClick={saveLwop}
+            sx={{ bgcolor: '#d32f2f', fontWeight: 700, '&:hover': { bgcolor: '#b71c1c' } }}
+          >
+            Apply LWOP
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );

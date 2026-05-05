@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, TextField,
   Button, Paper, Stack, InputAdornment, Avatar,
-  Autocomplete, Divider, Snackbar, Alert, Table, TableBody,
-  TableCell, TableContainer, TableHead, TableRow, Chip
+  Divider, Snackbar, Alert, Table, TableBody,
+  TableCell, TableContainer, TableHead, TableRow, List, ListItemText, ListItemButton
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -20,29 +20,60 @@ export default function PayrollAdjustment() {
   const [selectedPayroll, setSelectedPayroll] = useState(null);
   const [lwopDays, setLwopDays] = useState('');
   const [lwopAmount, setLwopAmount] = useState('');
-  
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchRef = useRef(null);
+
   const [snackbarState, setSnackbarState] = useState({ open: false, message: '', severity: 'success' });
-  const [adjustments, setAdjustments] = useState([]); // Mock history for this session
+  const [adjustments, setAdjustments] = useState([]);
 
   const handleCloseSnackbar = () => setSnackbarState(prev => ({ ...prev, open: false }));
 
-  const handleEmployeeChange = (e, newValue) => {
-    setSelectedEmployee(newValue);
-    if (newValue) {
-      // Find the most recent payroll record for this employee
-      const empPayrolls = payrollRecords.filter(p => p.employeeId === newValue.id);
-      if (empPayrolls.length > 0) {
-        // Sort to get the latest (descending by dateProcessed or year/month)
-        const latest = empPayrolls.sort((a, b) => new Date(b.dateProcessed) - new Date(a.dateProcessed))[0];
-        setSelectedPayroll(latest);
-      } else {
-        setSelectedPayroll(null);
+  // Filter employees by ID or name from a single query
+  const filteredEmployees = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return employees.filter(emp => {
+      const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase();
+      const empId = String(emp.id).toLowerCase();
+      return empId.includes(q) || fullName.includes(q);
+    }).slice(0, 8);
+  }, [searchQuery]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setShowDropdown(false);
       }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const selectEmployee = (emp) => {
+    setSelectedEmployee(emp);
+    setSearchQuery(`${emp.firstName} ${emp.lastName} (#${String(emp.id).padStart(4, '0')})`);
+    setShowDropdown(false);
+
+    const empPayrolls = payrollRecords.filter(p => p.employeeId === emp.id);
+    if (empPayrolls.length > 0) {
+      const latest = empPayrolls.sort((a, b) => new Date(b.dateProcessed) - new Date(a.dateProcessed))[0];
+      setSelectedPayroll(latest);
     } else {
       setSelectedPayroll(null);
     }
     setLwopDays('');
     setLwopAmount('');
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setSelectedEmployee(null);
+    setSelectedPayroll(null);
+    setShowDropdown(true);
   };
 
   // If days are inputted, auto-calc amount. Assuming 22 working days / month for daily rate.
@@ -95,6 +126,7 @@ export default function PayrollAdjustment() {
     setLwopAmount('');
     setSelectedEmployee(null);
     setSelectedPayroll(null);
+    setSearchQuery('');
   };
 
   return (
@@ -116,34 +148,62 @@ export default function PayrollAdjustment() {
               <Typography variant="h6" sx={{ fontWeight: 800 }}>LWOP Deduction Form</Typography>
             </Box>
 
-            <Box sx={{ p: 2.5, bgcolor: 'rgba(2, 61, 251, 0.03)', border: '1px solid rgba(2, 61, 251, 0.1)', borderRadius: 2, mb: 4 }}>
-              <Grid container spacing={3} alignItems="center">
-                <Grid item xs={12} md={12}>
-                  <Autocomplete
-                    size="small"
-                    options={employees}
-                    getOptionLabel={(option) => `${option.firstName} ${option.lastName} (${option.id})`}
-                    value={selectedEmployee}
-                    onChange={handleEmployeeChange}
-                    renderInput={(params) => (
-                      <TextField 
-                        {...params} 
-                        label="Select Employee *" 
-                        placeholder="Type name or ID..."
-                        InputLabelProps={{ shrink: true, sx: { fontWeight: 600 } }}
-                        InputProps={{
-                          ...params.InputProps,
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <SearchIcon fontSize="small" sx={{ ml: 0.5, color: 'text.secondary' }} />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    )}
-                  />
-                </Grid>
-              </Grid>
+            <Box ref={searchRef} sx={{ p: 2.5, bgcolor: 'rgba(2, 61, 251, 0.03)', border: '1px solid rgba(2, 61, 251, 0.1)', borderRadius: 2, mb: 4, position: 'relative' }}>
+              <TextField
+                size="small"
+                fullWidth
+                label="Search Employee"
+                placeholder="Search by Employee ID or Name..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onFocus={() => searchQuery && setShowDropdown(true)}
+                InputLabelProps={{ shrink: true, sx: { fontWeight: 600 } }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" sx={{ color: apeccBlue }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              {/* Dropdown suggestions */}
+              {showDropdown && filteredEmployees.length > 0 && (
+                <Paper elevation={6} sx={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1300, borderRadius: 2, mt: 0.5, overflow: 'hidden', border: `1px solid ${apeccBlue}30`, maxHeight: 300, overflowY: 'auto' }}>
+                  <List dense disablePadding>
+                    {filteredEmployees.map((emp, idx) => (
+                      <ListItemButton
+                        key={emp.id}
+                        onClick={() => selectEmployee(emp)}
+                        divider={idx < filteredEmployees.length - 1}
+                        sx={{ '&:hover': { bgcolor: `${apeccBlue}10` } }}
+                      >
+                        <ListItemText
+                          primary={
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 800, color: apeccBlue, minWidth: 50 }}>
+                                #{String(emp.id).padStart(4, '0')}
+                              </Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                {emp.firstName} {emp.lastName}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: 'text.secondary', ml: 'auto' }}>
+                                {emp.department || emp.position || ''}
+                              </Typography>
+                            </Box>
+                          }
+                        />
+                      </ListItemButton>
+                    ))}
+                  </List>
+                </Paper>
+              )}
+
+              {showDropdown && searchQuery && filteredEmployees.length === 0 && (
+                <Paper elevation={3} sx={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1300, borderRadius: 2, mt: 0.5, p: 2, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">No employees found.</Typography>
+                </Paper>
+              )}
             </Box>
 
             {selectedPayroll ? (
