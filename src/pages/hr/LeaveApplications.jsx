@@ -74,9 +74,6 @@ export default function LeaveApplications() {
 
       <Card sx={{ borderRadius: 2, mb: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: `1px solid ${goldAccent}` }}>
         <CardContent sx={{ p: 3 }}>
-          <Typography variant="caption" sx={{ color: '#d32f2f', fontWeight: 700, display: 'block', mb: 2 }}>
-            ** if the leave duration is halfday only, kindly put 0.5 in no.of days
-          </Typography>
           <TextField
             fullWidth size="small"
             placeholder="Search employee..."

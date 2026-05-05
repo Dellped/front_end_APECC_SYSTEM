@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import {
   Box, Card, CardContent, Typography, Grid, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Chip, Tabs, Tab, Avatar, Button,
-  FormControl, InputLabel, Select, MenuItem, Stack, Paper
+  FormControl, InputLabel, Select, MenuItem, Stack, Paper, TextField, InputAdornment
 } from '@mui/material';
 import {
   EventNote as LeavesIcon, Gavel as SanctionsIcon,
@@ -12,6 +12,7 @@ import {
   FileDownload as CsvIcon,
   PictureAsPdf as PdfIcon,
   Print as PrintIcon,
+  Search as SearchIcon
 } from '@mui/icons-material';
 import { employees, leaveRecords, leaveBalances, sanctions, leaveTypes } from '../../data/mockData';
 import { exportToCSV, printTable, exportToPDF } from '../../utils/exportUtils';
@@ -43,6 +44,7 @@ export default function LeavesSanctions() {
   const [tabValue, setTabValue] = useState(0);
   const [leaveStatusFilter, setLeaveStatusFilter] = useState('All');
   const [leaveTypeFilter, setLeaveTypeFilter] = useState('All');
+  const [empSearchQuery, setEmpSearchQuery] = useState('');
 
   // Pre-apply filter when navigated from dashboard
   useEffect(() => {
@@ -56,11 +58,23 @@ export default function LeavesSanctions() {
     }
   }, [location.search]);
 
+  const matchEmployee = (empId) => {
+    if (!empSearchQuery) return true;
+    const emp = employees.find((e) => e.id === empId);
+    if (!emp) return false;
+    const q = empSearchQuery.toLowerCase();
+    const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase();
+    return String(emp.id).toLowerCase().includes(q) || fullName.includes(q);
+  };
+
   const displayedLeaves = leaveRecords.filter((l) => {
     const matchStatus = leaveStatusFilter === 'All' || l.status === leaveStatusFilter;
     const matchType = leaveTypeFilter === 'All' || l.type === leaveTypeFilter;
-    return matchStatus && matchType;
+    return matchStatus && matchType && matchEmployee(l.employeeId);
   });
+
+  const displayedBalances = leaveBalances.filter((lb) => matchEmployee(lb.employeeId));
+  const displayedSanctions = sanctions.filter((s) => matchEmployee(s.employeeId));
 
   return (
     <Box className="page-container">
@@ -119,6 +133,22 @@ export default function LeavesSanctions() {
                   {['Approved', 'Recommended', 'Pending', 'Disapproved'].map((s) => <MenuItem key={s} value={s}>{s}</MenuItem>)}
                 </Select>
               </FormControl>
+
+              <TextField
+                size="small"
+                label="Search Employee"
+                placeholder="Name or ID..."
+                value={empSearchQuery}
+                onChange={(e) => setEmpSearchQuery(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" sx={{ color: '#0241FB' }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ minWidth: 200, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+              />
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               <Stack direction="row" spacing={1}>
@@ -126,24 +156,24 @@ export default function LeavesSanctions() {
                   startIcon={<CsvIcon />}
                   onClick={() => {
                     if (tabValue === 0) exportToCSV(['Employee','Type','Start Date','End Date','Days','Reason','Status'], displayedLeaves.map(l => { const emp = employees.find(e => e.id === l.employeeId); return [emp ? `${emp.firstName} ${emp.lastName}` : l.employeeId, l.type, l.startDate, l.endDate, l.days, l.reason, l.status]; }), 'leave_applications');
-                    else if (tabValue === 1) exportToCSV(['Employee','Leave Type','Total','Used','Remaining'], leaveBalances.map(lb => { const emp = employees.find(e => e.id === lb.employeeId); return [emp ? `${emp.firstName} ${emp.lastName}` : lb.employeeId, lb.type, lb.total, lb.used, lb.remaining]; }), 'leave_balances');
-                    else exportToCSV(['Employee','Type','Date','Reason','Status'], sanctions.map(s => { const emp = employees.find(e => e.id === s.employeeId); return [emp ? `${emp.firstName} ${emp.lastName}` : s.employeeId, s.type, s.date, s.reason, s.status]; }), 'sanctions');
+                    else if (tabValue === 1) exportToCSV(['Employee','Leave Type','Total','Used','Remaining'], displayedBalances.map(lb => { const emp = employees.find(e => e.id === lb.employeeId); return [emp ? `${emp.firstName} ${emp.lastName}` : lb.employeeId, lb.type, lb.total, lb.used, lb.remaining]; }), 'leave_balances');
+                    else exportToCSV(['Employee','Type','Date','Reason','Status'], displayedSanctions.map(s => { const emp = employees.find(e => e.id === s.employeeId); return [emp ? `${emp.firstName} ${emp.lastName}` : s.employeeId, s.type, s.date, s.reason, s.status]; }), 'sanctions');
                   }}
                   sx={{ borderRadius: 2, fontSize: '0.75rem' }}>CSV</Button>
                 <Button size="small" variant="outlined"
                   startIcon={<PdfIcon />}
                   onClick={() => {
                     if (tabValue === 0) exportToPDF('Leave Applications', ['Employee','Type','Start Date','End Date','Days','Reason','Status'], displayedLeaves.map(l => { const emp = employees.find(e => e.id === l.employeeId); return [emp ? `${emp.firstName} ${emp.lastName}` : l.employeeId, l.type, l.startDate, l.endDate, l.days, l.reason, l.status]; }));
-                    else if (tabValue === 1) exportToPDF('Leave Balances', ['Employee','Leave Type','Total','Used','Remaining'], leaveBalances.map(lb => { const emp = employees.find(e => e.id === lb.employeeId); return [emp ? `${emp.firstName} ${emp.lastName}` : lb.employeeId, lb.type, lb.total, lb.used, lb.remaining]; }));
-                    else exportToPDF('Sanctions', ['Employee','Type','Date','Reason','Status'], sanctions.map(s => { const emp = employees.find(e => e.id === s.employeeId); return [emp ? `${emp.firstName} ${emp.lastName}` : s.employeeId, s.type, s.date, s.reason, s.status]; }));
+                    else if (tabValue === 1) exportToPDF('Leave Balances', ['Employee','Leave Type','Total','Used','Remaining'], displayedBalances.map(lb => { const emp = employees.find(e => e.id === lb.employeeId); return [emp ? `${emp.firstName} ${emp.lastName}` : lb.employeeId, lb.type, lb.total, lb.used, lb.remaining]; }));
+                    else exportToPDF('Sanctions', ['Employee','Type','Date','Reason','Status'], displayedSanctions.map(s => { const emp = employees.find(e => e.id === s.employeeId); return [emp ? `${emp.firstName} ${emp.lastName}` : s.employeeId, s.type, s.date, s.reason, s.status]; }));
                   }}
                   sx={{ borderRadius: 2, fontSize: '0.75rem' }}>PDF</Button>
                 <Button size="small" variant="outlined"
                   startIcon={<PrintIcon />}
                   onClick={() => {
                     if (tabValue === 0) printTable('Leave Applications', ['Employee','Type','Start Date','End Date','Days','Reason','Status'], displayedLeaves.map(l => { const emp = employees.find(e => e.id === l.employeeId); return [emp ? `${emp.firstName} ${emp.lastName}` : l.employeeId, l.type, l.startDate, l.endDate, l.days, l.reason, l.status]; }));
-                    else if (tabValue === 1) printTable('Leave Balances', ['Employee','Leave Type','Total','Used','Remaining'], leaveBalances.map(lb => { const emp = employees.find(e => e.id === lb.employeeId); return [emp ? `${emp.firstName} ${emp.lastName}` : lb.employeeId, lb.type, lb.total, lb.used, lb.remaining]; }));
-                    else printTable('Sanctions', ['Employee','Type','Date','Reason','Status'], sanctions.map(s => { const emp = employees.find(e => e.id === s.employeeId); return [emp ? `${emp.firstName} ${emp.lastName}` : s.employeeId, s.type, s.date, s.reason, s.status]; }));
+                    else if (tabValue === 1) printTable('Leave Balances', ['Employee','Leave Type','Total','Used','Remaining'], displayedBalances.map(lb => { const emp = employees.find(e => e.id === lb.employeeId); return [emp ? `${emp.firstName} ${emp.lastName}` : lb.employeeId, lb.type, lb.total, lb.used, lb.remaining]; }));
+                    else printTable('Sanctions', ['Employee','Type','Date','Reason','Status'], displayedSanctions.map(s => { const emp = employees.find(e => e.id === s.employeeId); return [emp ? `${emp.firstName} ${emp.lastName}` : s.employeeId, s.type, s.date, s.reason, s.status]; }));
                   }}
                   sx={{ borderRadius: 2, fontSize: '0.75rem' }}>Print</Button>
               </Stack>
@@ -234,7 +264,7 @@ export default function LeavesSanctions() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {leaveBalances.map((lb, i) => {
+                  {displayedBalances.map((lb, i) => {
                     const emp = employees.find((e) => e.id === lb.employeeId);
                     return (
                       <TableRow key={i} hover>
@@ -253,6 +283,13 @@ export default function LeavesSanctions() {
                       </TableRow>
                     );
                   })}
+                  {displayedBalances.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 4, color: '#666' }}>
+                        No leave balance records found.
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -273,7 +310,7 @@ export default function LeavesSanctions() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {sanctions.map((s) => {
+                  {displayedSanctions.map((s) => {
                     const emp = employees.find((e) => e.id === s.employeeId);
                     return (
                       <TableRow key={s.id} hover>
@@ -298,6 +335,13 @@ export default function LeavesSanctions() {
                       </TableRow>
                     );
                   })}
+                  {displayedSanctions.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 4, color: '#666' }}>
+                        No sanction records found.
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>

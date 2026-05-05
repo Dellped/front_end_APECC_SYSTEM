@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statement of Account</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: white;
+            padding: 0;
+            margin: 0;
+            color: #333;
+        }
+        .soa-print-container {
+            width: 190mm;
+            margin: 0 auto;
+            padding: 10mm;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .header img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 16px;
+        }
+        .header h1 {
+            font-weight: 900;
+            line-height: 1.1;
+            font-size: 1.25rem;
+            margin: 0;
+        }
+        .header p {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.75rem;
+            margin: 4px 0 0 0;
+        }
+        .title-box {
+            background-color: #fff8e1;
+            border: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            margin-bottom: 16px;
+        }
+        .title-box h2 {
+            font-weight: 800;
+            margin: 0;
+            font-size: 1.25rem;
+        }
+        .summary-header {
+            font-weight: 800;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+        .grid {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .grid-col {
+            flex: 1;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 4px;
+            font-size: 0.75rem;
+        }
+        .info-label {
+            width: 150px;
+            font-weight: 700;
+        }
+        .tables-container {
+            display: flex;
+            border: 1px solid #000;
+            margin-bottom: 0;
+        }
+        .tables-col {
+            flex: 1;
+        }
+        .tables-col:first-child {
+            border-right: 1px solid #000;
+        }
+        .table-header {
+            background-color: #fff8e1;
+            border-bottom: 1px solid #000;
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 8px;
+            font-weight: 800;
+            font-size: 0.75rem;
+        }
+        .table-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 8px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.7rem;
+        }
+        .table-row .val {
+            font-weight: 600;
+        }
+        .table-footer {
+            border-top: 1px solid #000;
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 8px;
+            font-weight: 800;
+            font-size: 0.75rem;
+            background-color: #FDFDFC;
+        }
+        .net-pay-box {
+            border: 1px solid #000;
+            border-top: 2px solid #000;
+            border-right: none;
+            border-bottom: none;
+        }
+        .net-pay-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+        }
+        .net-pay-header {
+            background-color: #fff8e1;
+            font-weight: 800;
+        }
+        .net-pay-total {
+            border-top: 1px solid #000;
+            background-color: #fff8e1;
+            padding-top: 4px;
+            padding-bottom: 4px;
+        }
+        .net-pay-total .label {
+            font-weight: 800;
+        }
+        .net-pay-total .val {
+            font-weight: 900;
+        }
+        .total-summary {
+            margin-top: 8px;
+            text-align: center;
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            padding: 4px 0;
+        }
+        .total-summary p {
+            margin: 0;
+        }
+        .total-summary .main {
+            font-weight: 900;
+            font-size: 0.8rem;
+        }
+        .total-summary .sub {
+            font-size: 0.75rem;
+            margin-top: 2px;
+        }
+        .notes-section {
+            margin-top: 8px;
+        }
+        .notes-label {
+            font-weight: 800;
+            font-size: 0.75rem;
+        }
+        .signatures {
+            margin-top: 16px;
+            display: flex;
+        }
+        .sig-col {
+            flex: 1;
+        }
+        .sig-row {
+            margin-bottom: 16px;
+            font-size: 0.75rem;
+        }
+        .sig-row strong {
+            font-weight: 700;
+        }
+        .sig-row span {
+            margin-left: 96px;
+            display: block;
+        }
+        .declaration {
+            margin-top: 8px;
+            padding-top: 4px;
+            border-top: 1px solid #000;
+        }
+        .declaration h3 {
+            font-weight: 800;
+            font-size: 0.7rem;
+            margin: 0 0 4px 0;
+        }
+        .declaration p {
+            font-size: 0.65rem;
+            line-height: 1.2;
+            margin: 0;
+        }
+        .employee-signature {
+            margin-top: 24px;
+            text-align: center;
+        }
+        .employee-signature .line {
+            border-bottom: 1px solid #000;
+            width: 250px;
+            margin: 0 auto 4px auto;
+        }
+        .employee-signature span {
+            font-weight: 800;
+            font-size: 0.75rem;
+        }
+        
+        @media print {
+            body { -webkit-print-color-adjust: exact; }
+            .soa-print-container { width: 210mm; padding: 10mm; margin: 0; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align: center; padding: 20px; background: #f0f0f0;">
+        <button onclick="window.print()" style="padding: 10px 20px; font-weight: bold; cursor: pointer; background: #0241FB; color: white; border: none; border-radius: 4px;">Print Statement of Account</button>
+    </div>
+
+    <div class="soa-print-container" id="soa-content">
+        <!-- Content will be injected here -->
+    </div>
+
+    <script>
+        // Number to words functionality for the total amount
+        const a = ['','One ','Two ','Three ','Four ', 'Five ','Six ','Seven ','Eight ','Nine ','Ten ','Eleven ','Twelve ','Thirteen ','Fourteen ','Fifteen ','Sixteen ','Seventeen ','Eighteen ','Nineteen '];
+        const b = ['', '', 'Twenty','Thirty','Forty','Fifty', 'Sixty','Seventy','Eighty','Ninety'];
+
+        function inWords(num) {
+            if ((num = num.toString()).length > 9) return 'overflow';
+            n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+            if (!n) return; var str = '';
+            str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+            str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+            str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+            str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
+            str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
+            return str.trim() + ' Only';
+        }
+
+        window.onload = function() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const dataParam = params.get('data');
+                const printParam = params.get('print');
+                
+                if (dataParam) {
+                    const data = JSON.parse(atob(dataParam));
+                    renderSOA(data);
+                    
+                    if (printParam === 'true') {
+                        setTimeout(() => window.print(), 500);
+                    }
+                } else {
+                    document.getElementById('soa-content').innerHTML = '<h3 style="text-align: center;">No data provided</h3>';
+                }
+            } catch (e) {
+                document.getElementById('soa-content').innerHTML = '<h3 style="text-align: center;">Error loading data</h3>';
+                console.error(e);
+            }
+        };
+
+        function renderSOA(data) {
+            const numWords = Math.floor(data.netPayable) > 0 ? inWords(Math.floor(data.netPayable)) : 'Zero';
+            const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            let compensationsHtml = '';
+            data.compensations.forEach(c => {
+                const val = c.amount > 0 ? c.amount.toLocaleString('en-US', {minimumFractionDigits: 2}) : '-';
+                compensationsHtml += `
+                    <div class="table-row">
+                        <span>${c.label}</span>
+                        <span class="val">${val}</span>
+                    </div>`;
+            });
+            for(let i=0; i<5; i++) compensationsHtml += `<div class="table-row" style="height: 16px;"></div>`;
+
+            let deductionsHtml = '';
+            data.deductions.forEach(d => {
+                const val = d.amount > 0 ? d.amount.toLocaleString('en-US', {minimumFractionDigits: 2}) : '-';
+                deductionsHtml += `
+                    <div class="table-row">
+                        <span>${d.label}</span>
+                        <span class="val">${val}</span>
+                    </div>`;
+            });
+            for(let i=0; i<3; i++) deductionsHtml += `<div class="table-row" style="height: 16px;"></div>`;
+
+            const formatAmount = (val) => val > 0 ? val.toLocaleString('en-US', {minimumFractionDigits: 2}) : '-';
+            const netPayableStr = formatAmount(data.netPayable);
+
+            document.getElementById('soa-content').innerHTML = `
+                <div class="header">
+                    <img src="../../assets/images/APECC-Logo.jpg" onerror="this.src='/assets/images/APECC-Logo.jpg'" alt="Logo" />
+                    <div>
+                        <h1>ASA PHILIPPINES EMPLOYEES CREDIT COOPERATIVE</h1>
+                        <p>#3rd floor, 309 Prestige Tower., Ortigas Pasig City, Metro Manila</p>
+                    </div>
+                </div>
+
+                <div class="title-box">
+                    <h2>SETTLEMENT OF ACCOUNT</h2>
+                    <h2>SoA-0</h2>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <div class="summary-header">EMPLOYEE PAY SUMMARY</div>
+                    <div class="grid">
+                        <div class="grid-col">
+                            <div class="info-row"><div class="info-label">Employee Name</div><div>: ${data.empName}</div></div>
+                            <div class="info-row"><div class="info-label">Designation</div><div>: ${data.designation}</div></div>
+                            <div class="info-row"><div class="info-label">Employment Date</div><div>: January 0, 1900</div></div>
+                            <div class="info-row"><div class="info-label">Effective Date of Exit</div><div>: ${data.dateExit}</div></div>
+                            <div class="info-row"><div class="info-label">Settlement Date</div><div>: ${today}</div></div>
+                        </div>
+                        <div class="grid-col">
+                            <div class="info-row"><div class="info-label">Employee No</div><div>: ${data.empId}</div></div>
+                            <div class="info-row"><div class="info-label">Assigned Area</div><div>: -</div></div>
+                            <div class="info-row"><div class="info-label">Releasing Branch</div><div>: -</div></div>
+                            <div class="info-row"><div class="info-label">SOA Number</div><div>: -</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tables-container">
+                    <div class="tables-col">
+                        <div class="table-header">
+                            <span>COMPENSATIONS</span>
+                            <span>AMOUNT</span>
+                        </div>
+                        <div>${compensationsHtml}</div>
+                        <div class="table-footer">
+                            <span>Total Compensations</span>
+                            <span>${formatAmount(data.totalCompensations)}</span>
+                        </div>
+                    </div>
+                    <div class="tables-col">
+                        <div class="table-header">
+                            <span>DEDUCTIONS</span>
+                            <span>AMOUNT</span>
+                        </div>
+                        <div>${deductionsHtml}</div>
+                        <div class="table-footer">
+                            <span>Total Deductions</span>
+                            <span>${formatAmount(data.totalDeductions)}</span>
+                        </div>
+                        
+                        <div class="net-pay-box">
+                            <div class="net-pay-row net-pay-header">
+                                <span>NET PAY</span>
+                                <span>AMOUNT</span>
+                            </div>
+                            <div class="net-pay-row">
+                                <span>Total Compensations</span>
+                                <span class="val">${formatAmount(data.totalCompensations)}</span>
+                            </div>
+                            <div class="net-pay-row">
+                                <span>Total Deductions</span>
+                                <span class="val">${formatAmount(data.totalDeductions)}</span>
+                            </div>
+                            <div class="net-pay-row net-pay-total">
+                                <span class="label">Total Net Payable</span>
+                                <span class="val">${netPayableStr}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="total-summary">
+                    <p class="main">Total Net Payable: ₱${netPayableStr} | ${numWords}</p>
+                    <p class="sub">**Total Net Payable = ((Gross Earning - Total Deduction) + Reimbursement)</p>
+                </div>
+
+                <div class="notes-section">
+                    <div class="notes-label">Note:</div>
+                    <div class="signatures">
+                        <div class="sig-col">
+                            <div class="sig-row"><strong>Prepared By</strong> : -----<span>HR Officer</span></div>
+                        </div>
+                        <div class="sig-col">
+                            <div class="sig-row"><strong>Reviewed By</strong> : -----<span>Finance Head</span></div>
+                            <div class="sig-row"><strong>Approved By</strong> : -----</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="declaration">
+                    <h3>Declaration By the Receiver</h3>
+                    <p>I, the undersigned, hereby acknowledge receipt of the stated amount as my full and final settlement upon my voluntary resignation. I confirm that I hold no grievances, disputes, demands, or claims regarding salary, benefits, reinstatement, or reemployment against ASA Philippines Employees Credit Cooperative</p>
+                </div>
+
+                <div class="employee-signature">
+                    <div class="line"></div>
+                    <span>Employee's Signature</span>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

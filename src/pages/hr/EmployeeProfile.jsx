@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Box, Card, CardContent, Typography, Tabs, Tab, Grid, Avatar, Chip,
   Button, Divider, Table, TableBody, TableCell, TableContainer, TableHead,
-  TableRow, IconButton, Paper, Autocomplete, TextField, createFilterOptions,
-  FormControl, InputLabel, Select, MenuItem, Stack
+  TableRow, IconButton, Paper, TextField, InputAdornment,
+  FormControl, InputLabel, Select, MenuItem, Stack, List, ListItemButton, ListItemText
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon, Edit as EditIcon, Print as PrintIcon,
@@ -66,6 +66,31 @@ export default function EmployeeProfile() {
   const [historyMonth, setHistoryMonth] = useState(new Date().getMonth());
   const [historyYear, setHistoryYear] = useState(currentYear);
   const [expandedLeaveRow, setExpandedLeaveRow] = useState(null);
+
+  // Employee search state
+  const [empSearchQuery, setEmpSearchQuery] = useState('');
+  const [showEmpDropdown, setShowEmpDropdown] = useState(false);
+  const empSearchRef = useRef(null);
+
+  const filteredEmpOptions = useMemo(() => {
+    const q = empSearchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return employees.filter(emp => {
+      const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase();
+      const empId = String(emp.id).toLowerCase();
+      return empId.includes(q) || fullName.includes(q);
+    }).slice(0, 8);
+  }, [empSearchQuery]);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (empSearchRef.current && !empSearchRef.current.contains(e.target)) {
+        setShowEmpDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const handleExitFormSubmit = (data) => {
     setExitInterviewData(data);
@@ -146,9 +171,6 @@ export default function EmployeeProfile() {
   const formatCurrency = (val) => `₱${val.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 
-  const filterOptions = createFilterOptions({
-    stringify: (option) => `${option.firstName} ${option.lastName} ${option.id} ${option.designation}`
-  });
 
   return (
     <Box className="page-container">
@@ -156,26 +178,58 @@ export default function EmployeeProfile() {
       <Card sx={{ mb: 3, borderRadius: 3,borderTop: `3px solid #d4a843`, boxShadow: '0 4px 24px rgba(0,0,0,0.06)', overflow: 'visible' }}>
         <CardContent sx={{ p: 0 }}>
             <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
-                    <Autocomplete
+                <Box ref={empSearchRef} sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, position: 'relative' }}>
+                    <TextField
                         size="small"
-                        options={employees || []}
-                        getOptionLabel={(option) => `${option.firstName} ${option.lastName} (${option.id})`}
-                        value={null}
-                        onChange={(event, newValue) => {
-                          if (newValue) {
-                            const index = employees.findIndex(e => e.id === newValue.id);
-                            setSelectedEmployee(index);
-                          }
+                        label="Search Employee Name or ID"
+                        placeholder="Type name or ID..."
+                        value={empSearchQuery}
+                        onChange={(e) => { setEmpSearchQuery(e.target.value); setShowEmpDropdown(true); }}
+                        onFocus={() => empSearchQuery && setShowEmpDropdown(true)}
+                        InputLabelProps={{ shrink: true, sx: { fontWeight: 600 } }}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon fontSize="small" sx={{ color: '#0241FB' }} />
+                                </InputAdornment>
+                            )
                         }}
-                        renderInput={(params) => (
-                            <TextField 
-                                {...params} 
-                                label="Search Employee Name or ID" 
-                                sx={{ minWidth: 350, '& .MuiOutlinedInput-root': { borderRadius: 2 } }} 
-                            />
-                        )}
+                        sx={{ minWidth: 350, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                     />
+                    {showEmpDropdown && filteredEmpOptions.length > 0 && (
+                        <Paper elevation={6} sx={{ position: 'absolute', top: '100%', left: 0, width: 400, zIndex: 1300, borderRadius: 2, mt: 0.5, overflow: 'hidden', border: '1px solid rgba(2,61,251,0.15)', maxHeight: 280, overflowY: 'auto' }}>
+                            <List dense disablePadding>
+                                {filteredEmpOptions.map((opt, idx) => (
+                                    <ListItemButton
+                                        key={opt.id}
+                                        divider={idx < filteredEmpOptions.length - 1}
+                                        onClick={() => {
+                                            const index = employees.findIndex(e => e.id === opt.id);
+                                            setSelectedEmployee(index);
+                                            setEmpSearchQuery(`${opt.firstName} ${opt.lastName} (#${opt.id})`);
+                                            setShowEmpDropdown(false);
+                                        }}
+                                        sx={{ '&:hover': { bgcolor: 'rgba(2,61,251,0.06)' } }}
+                                    >
+                                        <ListItemText
+                                            primary={
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 800, color: '#0241FB', minWidth: 45 }}>#{opt.id}</Typography>
+                                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{opt.firstName} {opt.lastName}</Typography>
+                                                    <Typography variant="caption" sx={{ color: 'text.secondary', ml: 'auto' }}>{opt.department || opt.designation}</Typography>
+                                                </Box>
+                                            }
+                                        />
+                                    </ListItemButton>
+                                ))}
+                            </List>
+                        </Paper>
+                    )}
+                    {showEmpDropdown && empSearchQuery && filteredEmpOptions.length === 0 && (
+                        <Paper elevation={3} sx={{ position: 'absolute', top: '100%', left: 0, width: 350, zIndex: 1300, borderRadius: 2, mt: 0.5, p: 2, textAlign: 'center' }}>
+                            <Typography variant="body2" color="text.secondary">No employees found.</Typography>
+                        </Paper>
+                    )}
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1.5 }}>
                     <Button 

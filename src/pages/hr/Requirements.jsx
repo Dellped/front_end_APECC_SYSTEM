@@ -1,7 +1,7 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Box, Card, CardContent, Typography, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Chip, Avatar, Autocomplete, TextField, createFilterOptions
+  TableContainer, TableHead, TableRow, Chip, Avatar, TextField, InputAdornment, Paper, List, ListItemButton, ListItemText
 } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
 import { employees } from '../../data/mockData';
@@ -11,6 +11,31 @@ const goldAccent = '#d4a843';
 export default function Requirements() {
   const [selectedEmp, setSelectedEmp] = useState(0);
   const [requirements, setRequirements] = useState(employees[0].requirements);
+
+  // Unified employee search
+  const [empSearchQuery, setEmpSearchQuery] = useState('');
+  const [showEmpDropdown, setShowEmpDropdown] = useState(false);
+  const empSearchRef = useRef(null);
+
+  const filteredEmpOptions = useMemo(() => {
+    const q = empSearchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return employees.filter(emp => {
+      const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase();
+      const empId = String(emp.id).toLowerCase();
+      return empId.includes(q) || fullName.includes(q);
+    }).slice(0, 8);
+  }, [empSearchQuery]);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (empSearchRef.current && !empSearchRef.current.contains(e.target)) {
+        setShowEmpDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   useEffect(() => {
     setRequirements(employees[selectedEmp].requirements);
@@ -32,26 +57,25 @@ export default function Requirements() {
     );
   };
 
-  const filterOptions = createFilterOptions({
-    stringify: (option) => `${option.firstName} ${option.lastName} ${option.id} ${option.designation}`
-  });
-
   return (
     <Box className="page-container">
       {/* Employee Search Bar */}
-      <Box sx={{ mb: 3, maxWidth: 500 }}>
-        <Autocomplete
-          options={employees}
-          filterOptions={filterOptions}
-          getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
-          value={employees[selectedEmp]}
-          onChange={(event, newValue) => {
-            if (newValue) {
-              const index = employees.findIndex(emp => emp.id === newValue.id);
-              setSelectedEmp(index);
-            } else {
-              setSelectedEmp(0);
-            }
+      <Box ref={empSearchRef} sx={{ mb: 3, maxWidth: 500, position: 'relative' }}>
+        <TextField
+          fullWidth
+          size="small"
+          label="Search Employee Name or ID"
+          placeholder="Type name or ID..."
+          value={empSearchQuery}
+          onChange={(e) => { setEmpSearchQuery(e.target.value); setShowEmpDropdown(true); }}
+          onFocus={() => empSearchQuery && setShowEmpDropdown(true)}
+          InputLabelProps={{ shrink: true, sx: { fontWeight: 600 } }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ color: '#0241FB', fontSize: '1.2rem' }} />
+              </InputAdornment>
+            )
           }}
           sx={{
             '& .MuiOutlinedInput-root': {
@@ -64,29 +88,44 @@ export default function Requirements() {
               '&.Mui-focused fieldset': { borderColor: '#0241FB', boxShadow: '0 4px 20px rgba(2,61,251,0.15)' }
             }
           }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              placeholder="Search by name, ID or position..."
-              InputProps={{
-                ...params.InputProps,
-                startAdornment: (
-                  <SearchIcon sx={{ color: 'text.secondary', ml: 1, mr: -0.5, fontSize: '1.2rem' }} />
-                ),
-              }}
-            />
-          )}
-          renderOption={(props, option) => (
-            <Box component="li" {...props} sx={{ display: 'flex', gap: 1.5, py: 1.5 }}>
-              <Avatar sx={{ bgcolor: goldAccent, width: 28, height: 28, fontSize: '0.75rem', fontWeight: 700 }}>
-                {option.firstName[0]}
-              </Avatar>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                {option.firstName} {option.lastName}
-              </Typography>
-            </Box>
-          )}
         />
+        {showEmpDropdown && filteredEmpOptions.length > 0 && (
+          <Paper elevation={6} sx={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1300, borderRadius: 2, mt: 0.5, overflow: 'hidden', border: '1px solid rgba(2,61,251,0.15)', maxHeight: 280, overflowY: 'auto' }}>
+            <List dense disablePadding>
+              {filteredEmpOptions.map((opt, idx) => (
+                <ListItemButton
+                  key={opt.id}
+                  divider={idx < filteredEmpOptions.length - 1}
+                  onClick={() => {
+                    const index = employees.findIndex(e => e.id === opt.id);
+                    setSelectedEmp(index);
+                    setEmpSearchQuery(`${opt.firstName} ${opt.lastName} (#${opt.id})`);
+                    setShowEmpDropdown(false);
+                  }}
+                  sx={{ '&:hover': { bgcolor: 'rgba(2,61,251,0.06)' } }}
+                >
+                  <ListItemText
+                    primary={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Avatar sx={{ bgcolor: goldAccent, width: 28, height: 28, fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>
+                          {opt.firstName[0]}
+                        </Avatar>
+                        <Typography variant="body2" sx={{ fontWeight: 800, color: '#0241FB', minWidth: 45 }}>#{opt.id}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{opt.firstName} {opt.lastName}</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', ml: 'auto' }}>{opt.department || opt.designation}</Typography>
+                      </Box>
+                    }
+                  />
+                </ListItemButton>
+              ))}
+            </List>
+          </Paper>
+        )}
+        {showEmpDropdown && empSearchQuery && filteredEmpOptions.length === 0 && (
+          <Paper elevation={3} sx={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1300, borderRadius: 2, mt: 0.5, p: 2, textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">No employees found.</Typography>
+          </Paper>
+        )}
       </Box>
 
       {/* Selected Employee Name Card */}
