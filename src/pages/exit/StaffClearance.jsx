@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, Autocomplete, TextField,
   InputAdornment, Button, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, ToggleButton, ToggleButtonGroup, Chip, Divider,
-  Snackbar, Alert
+  Snackbar, Alert, Paper, List, ListItemButton, ListItemText, Avatar
 } from '@mui/material';
 import { 
   Search as SearchIcon,
@@ -22,6 +22,33 @@ export default function StaffClearanceTracker() {
   const [formData, setFormData] = useState(null);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [currentRole, setCurrentRole] = useState('Superadmin');
+
+  // Unified employee search
+  const [empSearchQuery, setEmpSearchQuery] = useState('');
+  const [showEmpDropdown, setShowEmpDropdown] = useState(false);
+  const empSearchRef = useRef(null);
+
+  const filteredEmpOptions = useMemo(() => {
+    const q = empSearchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return staffClearanceRecords.filter(clr => {
+      const emp = employees.find(e => e.id === clr.employeeId);
+      if (!emp) return false;
+      const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase();
+      const empId = String(emp.id).toLowerCase();
+      return empId.includes(q) || fullName.includes(q);
+    }).slice(0, 8);
+  }, [empSearchQuery]);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (empSearchRef.current && !empSearchRef.current.contains(e.target)) {
+        setShowEmpDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const ROLES = [
     { id: 'Superadmin', label: 'Superadmin (All Access)' },
@@ -231,29 +258,70 @@ export default function StaffClearanceTracker() {
           <Grid container spacing={3} alignItems="center">
             <Grid item xs={12} md={6}>
               <Typography variant="subtitle2" sx={{ color: 'text.secondary', mb: 1, fontWeight: 700 }}>Select Pending Clearance Record</Typography>
-              <Autocomplete
-                options={staffClearanceRecords}
-                getOptionLabel={(option) => {
-                  const emp = employees.find(e => e.id === option.employeeId);
-                  return emp ? `${emp.firstName} ${emp.lastName} (${emp.id})` : option.employeeId;
-                }}
-                value={selectedRecord}
-                onChange={(event, newValue) => setSelectedRecord(newValue)}
-                renderInput={(params) => (
-                  <TextField 
-                    {...params} placeholder="Search by Employee..." size="small"
-                    InputProps={{
-                      ...params.InputProps,
-                      startAdornment: (
-                        <>
-                          <InputAdornment position="start" sx={{ pl: 1 }}><SearchIcon /></InputAdornment>
-                          {params.InputProps.startAdornment}
-                        </>
-                      ),
-                    }}
-                  />
+              <Box ref={empSearchRef} sx={{ position: 'relative' }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="Search by name or ID..."
+                  value={empSearchQuery}
+                  onChange={(e) => { setEmpSearchQuery(e.target.value); setShowEmpDropdown(true); }}
+                  onFocus={() => empSearchQuery && setShowEmpDropdown(true)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start" sx={{ pl: 1 }}>
+                        <SearchIcon sx={{ color: '#0241FB' }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      bgcolor: '#FDFDFC',
+                      transition: 'all 0.3s ease',
+                      '&.Mui-focused fieldset': { borderColor: '#0241FB' }
+                    }
+                  }}
+                />
+                {showEmpDropdown && filteredEmpOptions.length > 0 && (
+                  <Paper elevation={6} sx={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1300, borderRadius: 2, mt: 0.5, overflow: 'hidden', border: '1px solid rgba(2,61,251,0.15)', maxHeight: 280, overflowY: 'auto' }}>
+                    <List dense disablePadding>
+                      {filteredEmpOptions.map((clr, idx) => {
+                        const opt = employees.find(e => e.id === clr.employeeId);
+                        if (!opt) return null;
+                        return (
+                          <ListItemButton
+                            key={clr.id}
+                            divider={idx < filteredEmpOptions.length - 1}
+                            onClick={() => {
+                              setSelectedRecord(clr);
+                              setEmpSearchQuery(`${opt.firstName} ${opt.lastName} (#${opt.id})`);
+                              setShowEmpDropdown(false);
+                            }}
+                            sx={{ '&:hover': { bgcolor: 'rgba(2,61,251,0.06)' } }}
+                          >
+                            <ListItemText
+                              primary={
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                  <Avatar sx={{ bgcolor: goldAccent, width: 28, height: 28, fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>
+                                    {opt.firstName[0]}
+                                  </Avatar>
+                                  <Typography variant="body2" sx={{ fontWeight: 800, color: '#0241FB', minWidth: 45 }}>#{opt.id}</Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{opt.firstName} {opt.lastName}</Typography>
+                                  <Typography variant="caption" sx={{ color: 'text.secondary', ml: 'auto' }}>{opt.department || opt.designation}</Typography>
+                                </Box>
+                              }
+                            />
+                          </ListItemButton>
+                        );
+                      })}
+                    </List>
+                  </Paper>
                 )}
-              />
+                {showEmpDropdown && empSearchQuery && filteredEmpOptions.length === 0 && (
+                  <Paper elevation={3} sx={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1300, borderRadius: 2, mt: 0.5, p: 2, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">No clearance records found.</Typography>
+                  </Paper>
+                )}
+              </Box>
             </Grid>
             {selectedRecord && (
               <Grid item xs={12} md={6}>

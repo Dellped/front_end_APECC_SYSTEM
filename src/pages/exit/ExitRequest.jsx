@@ -88,7 +88,7 @@ export default function ExitRequest() {
       <Grid container spacing={3}>
         {/* Main List */}
         <Grid item xs={12} lg={8}>
-          <Card sx={{ borderRadius: 4, borderTop: `3px solid #0241FB`,boxShadow: '0 12px 32px rgba(10,22,40,0.05)', overflow: 'hidden' }}>
+          <Card sx={{ borderRadius: 4, borderTop: `3px solid #d4a843`,boxShadow: '0 12px 32px rgba(10,22,40,0.05)', overflow: 'hidden' }}>
             <Box sx={{ p: 3, borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
               <TextField
                 size="small"
