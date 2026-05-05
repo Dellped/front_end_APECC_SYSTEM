@@ -1110,7 +1110,7 @@ export const staffClearanceRecords = [
     dateExit: '2025-04-17',
     reason: 'Resignation',
     cellNo: '0956-234-5678',
-    status: 'Pending',
+    status: 'Cleared',
     sections: {
       hr: {
         officer: 'KYZEEL M. ESTRELLA',
@@ -1186,6 +1186,31 @@ export const staffClearanceRecords = [
       financeHead: { name: '', date: '' },
       adminHead: { name: '', date: '' },
       generalManager: { status: 'PENDING', remarks: '' },
+    }
+  },
+  {
+    id: 'CLR-2025-0017',
+    employeeId: 'E0011',
+    dateExit: '2026-02-01',
+    reason: 'RESIGNATION',
+    cellNo: '0912-345-6789',
+    status: 'Cleared',
+    sections: {
+      hr: { officer: 'Jane Doe', date: '2026-02-05', items: [] },
+      it: { officer: 'John Smith', date: '2026-02-05', items: [] },
+      unitHead: { officer: 'Bob Head', date: '2026-02-05', items: [] },
+      admin: { officer: 'Alice Admin', date: '2026-02-05', items: [] },
+      finance: { officer: 'Charlie Finance', date: '2026-02-05', items: [] }
+    },
+    acknowledgement: 'TUPAS, MA. LYN JEE',
+    approval: {
+      unitHead: { name: '', date: '' },
+      hrOfficer: { name: '', date: '' },
+      cashier: { name: '', date: '' },
+      hrUnitHead: { name: '', date: '' },
+      financeHead: { name: '', date: '' },
+      adminHead: { name: '', date: '' },
+      generalManager: { status: 'APPROVED', remarks: '' },
     }
   }
 ];

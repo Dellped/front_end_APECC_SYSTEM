@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clearance and Withdrawal Form</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
+        body { font-family: 'Roboto', sans-serif; margin: 0; padding: 0; background-color: #525659; }
+        .print-container { width: 210mm; min-height: 297mm; margin: 20px auto; padding: 5mm; box-sizing: border-box; background: #FDFDFC; box-shadow: 0 0 20px rgba(0,0,0,0.5); color: #000; }
+        @page { size: A4 portrait; margin: 5mm; }
+        @media print {
+            body { background: #fff; }
+            .print-container { margin: 0; box-shadow: none; }
+            .no-print { display: none !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #777; padding: 4px 8px; font-size: 8pt; }
+        .no-border td { border: none; }
+        .bg-grey { background-color: #e6e6e6 !important; }
+        .bg-yellow { background-color: #ffff80 !important; }
+        .bg-light { background-color: #f4f4f4 !important; }
+        .bg-dark-grey { background-color: #c9cacb !important; }
+        .checkbox { width: 12px; height: 12px; border: 1px solid #000; border-radius: 2px; display: inline-block; margin-right: 4px; position: relative; top: 2px; }
+        .header { display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+        .header img { width: 60px; height: 60px; margin-right: 15px; }
+        .header-text { text-align: center; }
+        .header-text h1 { font-weight: 900; font-size: 15pt; color: #000; line-height: 1.1; letter-spacing: -0.2px; margin: 0; }
+        .header-text p { font-size: 9pt; margin: 2px 0 0 0; }
+        .header-text p.small { font-size: 8pt; color: #666; }
+        .section-box { border: 2px solid #555; margin-bottom: 8px; padding-bottom: 4px; }
+        .section-header { background-color: #c9cacb; border-bottom: 2px solid #555; padding: 2px 0; margin-bottom: 0; text-align: center; }
+        .section-header h2 { font-weight: 900; font-size: 12pt; letter-spacing: 0.5px; margin: 0; }
+        
+        .grid-2 { display: flex; }
+        .grid-2 > div { flex: 1; padding: 0 8px; }
+        
+        .flex-row { display: flex; }
+        .flex-row > div { flex: 1; display: flex; flex-direction: column; }
+        .line-input { border-bottom: 1px solid #000; flex: 1; height: 16px; }
+        .line-input-bg { background-color: #ffff80; }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align: center; padding: 20px;">
+        <button onclick="window.print()" style="padding: 10px 20px; font-weight: bold; cursor: pointer; background: #0241FB; color: white; border: none; border-radius: 4px;">Print Withdrawal Form</button>
+    </div>
+
+    <div class="print-container" id="form-content">
+        <!-- Content injected here -->
+    </div>
+
+    <script>
+        function fComm(val) {
+            const n = parseFloat(val);
+            return isNaN(n) ? '0' : n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        window.onload = function() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const dataParam = params.get('data');
+                const printParam = params.get('print');
+                
+                if (dataParam) {
+                    const data = JSON.parse(atob(dataParam));
+                    renderForm(data);
+                    
+                    if (printParam === 'true') {
+                        setTimeout(() => window.print(), 500);
+                    }
+                } else {
+                    document.getElementById('form-content').innerHTML = '<h3 style="text-align: center;">No data provided</h3>';
+                }
+            } catch (e) {
+                document.getElementById('form-content').innerHTML = '<h3 style="text-align: center;">Error loading data</h3>';
+                console.error(e);
+            }
+        };
+
+        function renderForm(data) {
+            const dateExitStr = data.dateExit ? new Date(data.dateExit).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
+            const today = new Date().toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
+
+            const assetsList = [
+                ['SHARE CAPITAL', fComm(data.shareCapital)],
+                ['PATRONAGE REFUND', fComm(data.patronageRefund)],
+                ['SAVINGS WITH INTEREST', fComm(data.savingsWithInterest)],
+                ['DIVIDEND', fComm(data.dividend)],
+                ['VOLUNTARY SAVINGS', fComm(data.voluntarySavings)],
+                ['Rebates Salary Loan (Valid until April. 2026)', '0'],
+                ['RebatesHousing Loan (Valid until March. 2026)', fComm(data.rebates || 25000)]
+            ];
+
+            const liabilitiesList = [
+                ['LESS: SHORT TERM LOAN', fComm(data.stlLoan)],
+                ['LESS: SALARY LOAN BALANCE', fComm(data.salaryLoan)],
+                ['LESS: MOTORCYCLE LOAN BALANCE', fComm(data.motorcycleLoan)],
+                ['LESS: HOUSING LOAN BALANCE', fComm(data.housingLoan)],
+                ['LESS: CAR LOAN BALANCE', fComm(data.carLoan)],
+                ['LESS: EDUCATION LOAN BALANCE', fComm(data.educationalLoan)],
+                ['LESS: GADGET LOAN BALANCE', fComm(data.gadgetLoan)],
+                ['LESS: MALASAKIT LOAN BALANCE', fComm(data.malasakitLoan)]
+            ];
+
+            let assetsHtml = '';
+            assetsList.forEach((item, i) => {
+                const bgClass = i % 2 === 0 ? 'bg-yellow' : '';
+                assetsHtml += `<tr class="${bgClass}">
+                    <td style="font-size: 7pt; font-weight: bold;">${item[0]}</td>
+                    <td style="font-size: 7.5pt; text-align: center;">${item[1]}</td>
+                </tr>`;
+            });
+
+            let liabilitiesHtml = '';
+            liabilitiesList.forEach((item, i) => {
+                liabilitiesHtml += `<tr class="bg-yellow">
+                    <td style="font-size: 7pt; font-style: italic;">${item[0]}</td>
+                    <td style="font-size: 7.5pt; text-align: center;">${item[1]}</td>
+                </tr>`;
+            });
+
+            document.getElementById('form-content').innerHTML = `
+                <div class="header">
+                    <img src="../../assets/images/APECC-Logo.jpg" onerror="this.src='/assets/images/APECC-Logo.jpg'" alt="Logo" />
+                    <div class="header-text">
+                        <h1>ASA PHILIPPINES EMPLOYEES CREDIT COOPERATIVE</h1>
+                        <p>Ortigas Pasig City, Metro Manila | Contact Number: 09985523801</p>
+                        <p class="small">https://apecc.com.ph</p>
+                    </div>
+                </div>
+
+                <!-- SECTION 1 -->
+                <div class="section-box">
+                    <div class="section-header"><h2>MEMBERSHIP CLEARANCE FORM</h2></div>
+                    <div>
+                        <table style="margin-bottom: 8px;">
+                            <tr>
+                                <td class="bg-grey" style="font-weight: bold; width: 20%;">Name of Member:</td>
+                                <td class="bg-yellow" style="font-weight: bold; width: 45%;">${data.name || ''}</td>
+                                <td class="bg-grey" style="font-weight: bold; width: 10%; text-align: center;">ID No.:</td>
+                                <td class="bg-light" style="text-align: center;">${data.idNo || ''}</td>
+                            </tr>
+                            <tr>
+                                <td class="bg-grey" style="font-weight: bold;">Date of Exit:</td>
+                                <td class="bg-yellow" style="font-weight: bold;">${dateExitStr}</td>
+                                <td class="bg-grey" style="font-weight: bold; text-align: center;">Position:</td>
+                                <td class="bg-yellow" style="font-weight: bold; text-align: center;">${data.designation || ''}</td>
+                            </tr>
+                        </table>
+
+                        <table style="margin-bottom: 4px;">
+                            <tr>
+                                <td class="bg-grey" style="font-weight: bold;">I. ASSETS</td>
+                                <td class="bg-grey" style="font-weight: bold; text-align: center; width: 35%;">AMOUNT</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding-left: 32px;">TOTAL ASSETS:</td>
+                                <td style="text-align: center; font-weight: bold;">${fComm(data.totalAssets)}</td>
+                            </tr>
+                            <tr>
+                                <td class="bg-grey" style="font-weight: bold;">II. LIABILITIES</td>
+                                <td class="bg-grey" style="font-weight: bold; text-align: center;">AMOUNT</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding-left: 32px;">TOTAL LIABILITIES:</td>
+                                <td style="text-align: center; font-weight: bold;">${fComm(data.totalLiabilities)}</td>
+                            </tr>
+                        </table>
+
+                        <table style="margin-bottom: 4px;">
+                            <tr class="bg-light">
+                                <td style="font-weight: bold;">Net Amounts Due (Total Assets less Total Liabilities):</td>
+                                <td style="font-weight: bold; width: 100px; text-align: right;">Php:</td>
+                                <td style="text-align: center; font-size: 9.5pt; font-weight: 900; width: 25%;">${fComm(data.netAmountDue)}</td>
+                            </tr>
+                        </table>
+
+                        <div style="padding: 0 8px;">
+                            <p style="font-size: 7pt; font-style: italic; margin: 0 0 4px 0; line-height: 1.1;">
+                                We certify the correctness of above calculations and acknowledge the net amount due to the abovementioned staff. Therefore, we recommend for his settlement of accounts.
+                            </p>
+                            <p style="font-size: 7.5pt; font-weight: bold; margin: 0 0 2px 0;">REMARKS:</p>
+                            
+                            <div style="display: flex; gap: 32px; margin-bottom: 8px; padding-right: 16px;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: flex-end;">
+                                        <span style="font-size: 7.5pt; margin-right: 8px; white-space: nowrap;">Verified thru Call:</span>
+                                        <div class="line-input line-input-bg"></div>
+                                    </div>
+                                    <div style="font-size: 6.5pt; text-align: center; margin-top: 2px;">Printed Name with ID Number</div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: flex-end;">
+                                        <span style="font-size: 7.5pt; margin-right: 8px; white-space: nowrap;">Comments thru Call:</span>
+                                        <div class="line-input"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid-2">
+                                <div>
+                                    <div style="font-size: 7.5pt; font-weight: bold;">Prepared /Checked by</div>
+                                    <div style="margin-top: 8px; text-align: center;">
+                                        <div style="font-size: 8pt; font-weight: 800; border-bottom: 1px solid #000; display: inline-block; min-width: 80%; background-color: #ffff80; min-height: 15px;">
+                                            Kyzeel M. Estrella (E-013)
+                                        </div>
+                                        <div style="font-size: 6.5pt;">Printed Name with ID Number aboved signature</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 7.5pt; font-weight: bold;">Cleared / Approved by</div>
+                                    <div style="margin-top: 8px; text-align: center;">
+                                        <div style="font-size: 8pt; font-weight: 800; border-bottom: 1px solid #000; display: inline-block; min-width: 80%; background-color: #ffff80; min-height: 15px;">
+                                            Ma. Lyn Jee Tupas (E0006)
+                                        </div>
+                                        <div style="font-size: 6.5pt;">Printed Name with ID Number aboved signature</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2 -->
+                <div class="section-box">
+                    <div class="section-header" style="background-color: #c9cacb; padding: 2px 0; margin-bottom: 4px;">
+                        <h2 style="font-size: 11pt;">WITHDRAWAL OF MEMBERSHIP</h2>
+                    </div>
+
+                    <div style="padding: 0 8px;">
+                        <p style="font-size: 7.5pt; margin: 0 0 8px 0; line-height: 1.2;">
+                            I wish to withdraw my membership with ASA Philippines Employees Credit Cooperative. I am fully aware that by withdrawing my membership 
+                            from <span style="display: inline-block; border-bottom: 1px solid #000; width: 120px;"></span> to <span style="display: inline-block; border-bottom: 1px solid #000; width: 120px;"></span> of the current year, I am no longer entitled to dividend/patronage refund.
+                        </p>
+
+                        <div style="margin-bottom: 8px;">
+                            <div style="font-size: 7.5pt; font-weight: bold; margin-bottom: 4px;">
+                                Reason for Withdrawal: <span style="display: inline-block; border-bottom: 1px solid #000; width: 80%;"></span>
+                            </div>
+                            <div style="font-size: 7.5pt; font-weight: bold; margin-bottom: 4px;">
+                                Effectivity Date: <span style="display: inline-block; border-bottom: 1px solid #000; width: 85%;"></span>
+                            </div>
+                            <div style="display: flex; gap: 48px; margin-top: 4px; padding-left: 16px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox"></div> <span style="font-size: 7.5pt;">Active Employee</span>
+                                </div>
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox"></div> <span style="font-size: 7.5pt;">Resigned / Retired from the company/ Discontinued from service of the company</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background-color: #c9cacb; border: 1px solid #555; padding: 2px; text-align: center; margin-bottom: 4px;">
+                            <span style="font-weight: 800; font-size: 8pt;">INSTRUCTIONS</span>
+                        </div>
+
+                        <div style="display: flex; gap: 8px;">
+                            <div style="flex: 1; padding-right: 8px;">
+                                <p style="font-size: 7pt; font-style: italic; margin: 0 0 4px 0;">Kindly check your preference.</p>
+                                
+                                <div style="font-size: 7.5pt; font-weight: bold; margin-bottom: 4px;">A. For my Savings, Share capital contribution and dividend and patronage refund</div>
+                                
+                                <div style="margin-left: 16px; margin-bottom: 4px; display: flex; align-items: flex-start;">
+                                    <div class="checkbox"></div> <span style="font-size: 7.5pt; line-height: 1.2;">Please credit my Membership withdrawal proceeds to the settlement of account.</span>
+                                </div>
+                                <div style="margin-left: 16px; margin-bottom: 4px; display: flex; align-items: flex-start;">
+                                    <div class="checkbox"></div> <span style="font-size: 7.5pt; line-height: 1.2;">Please credit my Membership withdrawal proceeds to my BDO bank account.</span>
+                                </div>
+                                
+                                <div style="font-size: 7.5pt; font-weight: bold; margin-left: 16px; margin-top: 4px; margin-bottom: 4px;">
+                                    BDO Account no: <span style="display: inline-block; border-bottom: 1px solid #000; width: 120px;"></span>
+                                    &nbsp;&nbsp;&nbsp; ( &nbsp;&nbsp; ) Savings Account &nbsp;&nbsp;&nbsp; ( &nbsp;&nbsp; ) Credit Account
+                                </div>
+
+                                <div style="margin-left: 16px; margin-bottom: 4px; display: flex; align-items: flex-start;">
+                                    <div class="checkbox"></div> <span style="font-size: 7.5pt; line-height: 1.2;">Check for pick-up at the ASA Philippines Employees Credit Cooperative office <br/> <i>(Pls. bring any valid I.D upon claiming the Check)</i></span>
+                                </div>
+                                <div style="margin-left: 16px; margin-bottom: 4px; display: flex; align-items: flex-start;">
+                                    <div class="checkbox"></div> <span style="font-size: 7.5pt; line-height: 1.2;">Check for pick-up at the Coop's office by my authorized representative. <br/> <i>(Attached is a written authorization. My identification card and that of my reprented upon claiming my check).</i></span>
+                                </div>
+
+                                <div style="font-size: 7.5pt; font-weight: bold; margin-bottom: 4px; margin-top: 16px;">B. Requirements</div>
+                                <div style="font-size: 7.5pt; margin-left: 16px; margin-bottom: 2px;">1. Photocopy of member's valid ID with signature</div>
+                                <div style="font-size: 7.5pt; margin-left: 16px; margin-bottom: 2px;">2. stock Certificate (Applicable to members who received a stock certificate)</div>
+                            </div>
+
+                            <div style="flex: 1;">
+                                <div style="font-size: 7.5pt; font-weight: bold; margin-bottom: 2px;">C. Accounts in the cooperative</div>
+                                <table style="border: 1px solid #555; table-layout: fixed;">
+                                    <tr class="bg-grey">
+                                        <th style="font-weight: bold; font-size: 7.5pt; text-align: center;">BREAKDOWN</th>
+                                        <th style="font-weight: bold; font-size: 7.5pt; text-align: center; width: 35%;">AMOUNT (PHP)</th>
+                                    </tr>
+                                    ${assetsHtml}
+                                    <tr>
+                                        <td style="font-size: 7.5pt; font-weight: 900; color: #c00;">TOTAL</td>
+                                        <td style="font-size: 8pt; text-align: center; font-weight: 900;">${fComm(data.totalAssets)}</td>
+                                    </tr>
+                                    ${liabilitiesHtml}
+                                    <tr>
+                                        <td style="font-size: 8pt; font-weight: 900; color: #c00;">GRAND TOTAL</td>
+                                        <td style="font-size: 8pt; text-align: center; font-weight: 900;">${fComm(data.netAmountDue)}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 24px; display: flex; justify-content: space-between; padding: 0 16px;">
+                        <div style="text-align: center; width: 30%;">
+                            <div style="font-size: 8pt; min-height: 15px; background-color: #ffff80; font-weight: bold;">${data.name || ''}</div>
+                            <div style="border-top: 1px solid #000; padding-top: 4px; font-size: 7pt;">Signature over Printed Name</div>
+                        </div>
+                        <div style="text-align: center; width: 25%;">
+                            <div style="font-size: 8pt; min-height: 15px; background-color: #ffff80; font-weight: bold;">${data.idNo || ''}</div>
+                            <div style="border-top: 1px solid #000; padding-top: 4px; font-size: 7pt;">Staff ID No.</div>
+                        </div>
+                        <div style="text-align: center; width: 25%;">
+                            <div style="font-size: 8pt; min-height: 15px; background-color: #ffff80; font-weight: bold;">${today}</div>
+                            <div style="border-top: 1px solid #000; padding-top: 4px; font-size: 7pt;">Date</div>
+                        </div>
+                    </div>
+
+                    <div style="border: 2px solid #555; margin-top: 8px; margin-left: 4px; margin-right: 4px; margin-bottom: 4px;">
+                        <div style="background-color: #c9cacb; border-bottom: 1px solid #555; text-align: center; padding: 2px 0;">
+                            <span style="font-weight: 800; font-size: 8pt;">THIS PORTION WILL BE FILLED OUT BY APECC SECRETARY / AUTHORIZED PERSON</span>
+                        </div>
+                        <table>
+                            <tr>
+                                <td style="font-size: 7.5pt; width: 30%;">Membership Account</td>
+                                <td style="width: 30%;"></td>
+                                <td style="width: 40%;"></td>
+                            </tr>
+                            <tr>
+                                <td style="font-size: 7.5pt;">Board Resolution No</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td style="font-size: 7.5pt; text-align: center;">Secretary</td>
+                                <td colspan="2" style="font-size: 7.5pt; text-align: center;">signature over printed name</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
