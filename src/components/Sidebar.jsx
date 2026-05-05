@@ -194,7 +194,7 @@ export default function Sidebar({ open, onToggle, isMobile }) {
             : 'transparent',
           border: active ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid transparent',
           boxShadow: 'none',
-          color: active ? goldAccent : `rgba(${PER},0.85)`,
+          color: active ? goldAccent : WHT,
           transition: 'background 0.2s, color 0.2s',
           '&:hover': {
             background: active
@@ -234,7 +234,7 @@ export default function Sidebar({ open, onToggle, isMobile }) {
       >
         <ListItemIcon
           sx={{
-            color: active ? goldAccent : `rgba(180,183,211,0.85)`,
+            color: active ? goldAccent : WHT,
             minWidth: open ? 36 : 'auto',
             mr: open ? 1 : 'auto',
             justifyContent: 'center',
@@ -256,7 +256,7 @@ export default function Sidebar({ open, onToggle, isMobile }) {
                 fontWeight: active ? 700 : (depth === 0 ? 500 : 400),
                 letterSpacing: depth === 0 ? '0.01em' : '0',
                 noWrap: true,
-                color: active ? goldAccent : (depth === 0 ? WHT : `rgba(180,183,211,0.88)`),
+                color: active ? goldAccent : WHT,
               }}
             />
             {hasChildren && (expanded[item.id]
@@ -299,12 +299,17 @@ export default function Sidebar({ open, onToggle, isMobile }) {
       variant={isMobile ? 'temporary' : 'permanent'}
       open={open}
       onClose={onToggle}
+      ModalProps={{
+        keepMounted: true, // Better open performance on mobile
+      }}
       sx={{
-        width: open ? DRAWER_WIDTH : (isMobile ? 0 : DRAWER_COLLAPSED),
+        width: isMobile ? 'auto' : (open ? DRAWER_WIDTH : DRAWER_COLLAPSED),
         flexShrink: 0,
-        transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        whiteSpace: 'nowrap',
+        boxSizing: 'border-box',
+        ...( !isMobile && { transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)' } ),
         '& .MuiDrawer-paper': {
-          width: open ? DRAWER_WIDTH : (isMobile ? 0 : DRAWER_COLLAPSED),
+          width: isMobile ? DRAWER_WIDTH : (open ? DRAWER_WIDTH : DRAWER_COLLAPSED),
           transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           overflowX: 'hidden',
           background: sidebarGradient,
@@ -363,9 +368,9 @@ export default function Sidebar({ open, onToggle, isMobile }) {
             <Box>
               <Typography variant="subtitle2" sx={{
                 fontWeight: 800, fontSize: '1.12rem', letterSpacing: '0.07em', lineHeight: 1.2,
-                background: `linear-gradient(135deg, ${goldAccent} 0%, #f0d060 35%, ${WHT} 60%, #e8c96a 80%, ${goldAccent} 100%)`,
+                background: `linear-gradient(135deg, #FFB74D 0%, #FF9800 50%, #F57C00 100%)`,
                 backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                filter: `drop-shadow(0 0 6px rgba(212,168,67,0.45))`,
+                filter: `drop-shadow(0 0 6px rgba(255,152,0,0.45))`,
               }}>
                 APECC
               </Typography>

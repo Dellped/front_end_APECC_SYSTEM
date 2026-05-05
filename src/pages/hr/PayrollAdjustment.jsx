@@ -81,6 +81,12 @@ export default function PayrollAdjustment() {
       date: new Date().toISOString().split('T')[0]
     };
 
+    // Reflect the adjustment directly into the mock data so PayrollRegister sees it
+    selectedPayroll.secondHalf = computedAdjustedSecondHalf;
+    selectedPayroll.lwop = (selectedPayroll.lwop || 0) + parseFloat(lwopAmount);
+    selectedPayroll.totalDeduction = (selectedPayroll.totalDeduction || 0) + parseFloat(lwopAmount);
+    selectedPayroll.netPay = selectedPayroll.netPay - parseFloat(lwopAmount);
+
     setAdjustments(prev => [newAdjustment, ...prev]);
     setSnackbarState({ open: true, message: 'Payroll adjustment successfully saved!', severity: 'success' });
     
@@ -112,7 +118,7 @@ export default function PayrollAdjustment() {
 
             <Box sx={{ p: 2.5, bgcolor: 'rgba(2, 61, 251, 0.03)', border: '1px solid rgba(2, 61, 251, 0.1)', borderRadius: 2, mb: 4 }}>
               <Grid container spacing={3} alignItems="center">
-                <Grid item xs={12} md={8}>
+                <Grid item xs={12} md={12}>
                   <Autocomplete
                     size="small"
                     options={employees}
