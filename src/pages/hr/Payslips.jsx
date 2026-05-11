@@ -1,18 +1,19 @@
 import React, { useState, useRef } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, MenuItem, Select,
-  FormControl, InputLabel, Button, TableContainer,
-  TextField, InputAdornment, Paper, Divider, Stack, Chip
+  FormControl, InputLabel, Button, TableContainer, Table, TableHead, TableRow, TableCell, TableBody,
+  TextField, InputAdornment, Paper, Divider, Stack, Chip, IconButton, Dialog, DialogContent, DialogActions, Tooltip
 } from '@mui/material';
 import {
   Print as PrintIcon,
   Search as SearchIcon,
-  FileDownload as CsvIcon,
-  PictureAsPdf as PdfIcon
+  PictureAsPdf as PdfIcon,
+  Visibility as ViewIcon,
+  Description as ExcelIcon
 } from '@mui/icons-material';
 import { employees, payrollRecords } from '../../data/mockData';
 import apeccLogo from '../../../assets/images/APECC-Logo.jpg';
-import { exportToCSV } from '../../utils/exportUtils';
+import { exportToExcel } from '../../utils/exportUtils';
 
 // ── Palette ──────────────────────────────────────────────────────────────────
 const NAV = '#05077E';
@@ -29,24 +30,32 @@ export default function Payslips() {
   const [search, setSearch] = useState('');
   const [selectedYear, setSelectedYear] = useState(2026);
   const [selectedMonth, setSelectedMonth] = useState(0);
-  const printRef = useRef();
+  
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedEmp, setSelectedEmp] = useState(null);
+  const [selectedRecord, setSelectedRecord] = useState(null);
 
+  // Filter employees matching search
   const filteredEmployees = employees.filter((emp) => {
-    return `${emp.firstName} ${emp.lastName} ${emp.id}`
+    const matchesSearch = `${emp.firstName} ${emp.lastName} ${emp.id}`
       .toLowerCase()
       .includes(search.toLowerCase());
+    return matchesSearch;
   });
 
-  const emp = filteredEmployees.length > 0 ? filteredEmployees[0] : null;
+  const getRecordForEmp = (empId) => {
+    return payrollRecords.find(
+      (r) => r.employeeId === empId && r.year === selectedYear && r.monthIndex === selectedMonth
+    );
+  };
 
-  const record = emp ? payrollRecords.find(
-    (r) => r.employeeId === emp.id && r.year === selectedYear && r.monthIndex === selectedMonth
-  ) : null;
+  const tableData = filteredEmployees.map(emp => ({
+    emp,
+    record: getRecordForEmp(emp.id)
+  })).filter(data => data.record); // Only show employees who have a payslip this month
 
-  const handlePrint = (isPdf = false) => {
-    if (!record || !emp) return;
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
+  const generatePayslipHTML = (emp, record, isPdf = false) => {
+    return `
       <html>
         <head>
           <title>Payslip - ${emp.lastName}, ${emp.firstName}</title>
@@ -136,19 +145,19 @@ export default function Payslips() {
                 <div class="section-header">DEDUCTIONS</div>
                 <table class="data-table">
                   <tr><td colspan="2" style="font-weight: 700; background: #ddd; text-align: center; font-size: 8pt; border-bottom: 1px solid #000; border-top: 1px solid #000;">GOVERNMENT DEDUCTIONS</td></tr>
-                  <tr><td>SSS</td><td class="amount">${formatCurrency(record.sss)}</td></tr>
-                  <tr><td>PH</td><td class="amount">${formatCurrency(record.philHealth)}</td></tr>
-                  <tr><td>HDMF</td><td class="amount">${formatCurrency(record.pagIbig)}</td></tr>
+                  <tr><td>SSS</td><td class="amount">${formatCurrency(record.sssEE || record.sss)}</td></tr>
+                  <tr><td>PH</td><td class="amount">${formatCurrency(record.phEE || record.philHealth)}</td></tr>
+                  <tr><td>HDMF</td><td class="amount">${formatCurrency(record.hdmfEE || record.pagIbig)}</td></tr>
                   <tr><td>Tax</td><td class="amount">${formatCurrency(record.tax)}</td></tr>
                   <tr><td colspan="2" style="font-weight: 700; background: #ddd; text-align: center; font-size: 8pt; border-bottom: 1px solid #000; border-top: 1px solid #000;">APECC DEDUCTIONS</td></tr>
                   <tr><td>Savings</td><td class="amount">${formatCurrency(record.savings)}</td></tr>
                   <tr><td>Salary loan</td><td class="amount">${formatCurrency(record.salaryLoan)}</td></tr>
                   <tr><td>STL</td><td class="amount">${formatCurrency(record.stl)}</td></tr>
-                  <tr><td>HL</td><td class="amount">${formatCurrency(record.hl)}</td></tr>
+                  <tr><td>HL</td><td class="amount">${formatCurrency(record.hl || record.housingLoan)}</td></tr>
                   <tr><td>Educ Loan</td><td class="amount">${formatCurrency(record.educLoan)}</td></tr>
-                  <tr><td>Malasakit</td><td class="amount">${formatCurrency(record.malasakit)}</td></tr>
+                  <tr><td>Malasakit</td><td class="amount">${formatCurrency(record.malasakit || record.malasakitLoan)}</td></tr>
                   <tr><td>LWOP</td><td class="amount">${formatCurrency(record.lwop || 0)}</td></tr>
-                  <tr><td>Other deduction</td><td class="amount">${formatCurrency(record.otherDeductions)}</td></tr>
+                  <tr><td>Other deduction</td><td class="amount">${formatCurrency(record.otherDeductions || record.otherDeduction)}</td></tr>
                   <tr class="spacer-row"><td></td><td></td></tr>
                   <tr class="total-row"><td>Total Deduction</td><td class="amount">${formatCurrency(record.totalDeduction)}</td></tr>
                 </table>
@@ -198,31 +207,56 @@ export default function Payslips() {
           ` : ''}
         </body>
       </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    if (!isPdf) {
-       setTimeout(() => {
-           printWindow.print();
-           printWindow.close();
-       }, 250);
-    }
+    `;
   };
 
-  const handleExportCSV = () => {
+  const handlePrintPdf = (emp, record) => {
+    if (!record || !emp) return;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(generatePayslipHTML(emp, record, true));
+    printWindow.document.close();
+    printWindow.focus();
+  };
+
+  const handleExportExcel = (emp, record) => {
     if (!record || !emp) return;
     const headers = ['Employee ID', 'Name', 'Month', 'Year', 'Basic Pay', 'Deminimis', 'Repair & Maint', 'Total Paid', 'Savings', 'SSS', 'PH', 'HDMF', 'Salary Loan', 'STL', 'HL', 'Educ Loan', 'Tax', 'Malasakit', 'Other Ded', 'Total Deduction', 'Net Pay', 'First Half', 'Second Half'];
     const row = [
-      emp.id, `${emp.lastName}, ${emp.firstName}`, record.month, record.year, record.basicPay, record.deminimis, record.repairMaintenance, record.totalIncome, record.savings, record.sss, record.philHealth, record.pagIbig, record.salaryLoan, record.stl, record.hl, record.educLoan, record.tax, record.malasakit, record.otherDeductions, record.totalDeduction, record.netPay, record.firstHalf, record.secondHalf
+      emp.id, `${emp.lastName}, ${emp.firstName}`, record.month, record.year, record.basicPay, record.deminimis, record.repairMaintenance, record.totalIncome, record.savings, (record.sssEE || record.sss), (record.phEE || record.philHealth), (record.hdmfEE || record.pagIbig), record.salaryLoan, record.stl, (record.hl || record.housingLoan), record.educLoan, record.tax, (record.malasakit || record.malasakitLoan), (record.otherDeductions || record.otherDeduction), record.totalDeduction, record.netPay, record.firstHalf, record.secondHalf
     ];
-    exportToCSV(headers, [row], `Payslip_${emp.id}_${record.month}${record.year}`);
+    exportToExcel(headers, [row], `Payslip_${emp.id}_${record.month}${record.year}`);
+  };
+
+  const handleView = (emp, record) => {
+    setSelectedEmp(emp);
+    setSelectedRecord(record);
+    setViewModalOpen(true);
+  };
+
+  const handlePrintFromModal = () => {
+    if (!selectedRecord || !selectedEmp) return;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(generatePayslipHTML(selectedEmp, selectedRecord, false));
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 250);
+  };
+
+  const handlePdfFromModal = () => {
+    handlePrintPdf(selectedEmp, selectedRecord);
+  };
+
+  const handleExcelFromModal = () => {
+    handleExportExcel(selectedEmp, selectedRecord);
   };
 
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
   return (
     <Box className="page-container">
-
       {/* ── Page Header & Quick Stats ─────────────────────────────────────── */}
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 2 }}>
         <Box>
@@ -248,7 +282,7 @@ export default function Payslips() {
       }}>
         <CardContent sx={{ p: 3 }}>
           <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={6}>
               <TextField
                 fullWidth size="small"
                 placeholder="Search Employee Name or ID..."
@@ -268,7 +302,7 @@ export default function Payslips() {
                 }}
               />
             </Grid>
-            <Grid item xs={6} md={2}>
+            <Grid item xs={6} md={3}>
               <FormControl fullWidth size="small">
                 <InputLabel sx={{ color: 'rgba(253,253,252,0.8)', '&.Mui-focused': { color: goldAccent } }}>Year</InputLabel>
                 <Select
@@ -302,57 +336,80 @@ export default function Payslips() {
                 </Select>
               </FormControl>
             </Grid>
-            
-            <Grid item xs={12} md={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Stack direction="row" spacing={1}>
-                <Button size="small" variant="contained"
-                  startIcon={<PdfIcon />} onClick={() => handlePrint(true)} disabled={!record}
-                  sx={{
-                    background: 'linear-gradient(135deg, #d32f2f 0%, #ef5350 100%)', color: WHT, borderRadius: 2, fontWeight: 800,
-                    boxShadow: '0 4px 12px rgba(211,47,47,0.3)',
-                    '&:hover': { filter: 'brightness(1.15)', boxShadow: '0 6px 16px rgba(211,47,47,0.4)' },
-                    '&.Mui-disabled': { background: 'rgba(253,253,252,0.2)', color: 'rgba(253,253,252,0.5)', boxShadow: 'none' }
-                  }}>
-                  PDF
-                </Button>
-                <Button size="small" variant="contained"
-                  startIcon={<CsvIcon />} onClick={handleExportCSV} disabled={!record}
-                  sx={{
-                    background: 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)', color: WHT, borderRadius: 2, fontWeight: 800,
-                    boxShadow: '0 4px 12px rgba(46,125,50,0.3)',
-                    '&:hover': { filter: 'brightness(1.15)', boxShadow: '0 6px 16px rgba(46,125,50,0.4)' },
-                    '&.Mui-disabled': { background: 'rgba(253,253,252,0.2)', color: 'rgba(253,253,252,0.5)', boxShadow: 'none' }
-                  }}>
-                  CSV
-                </Button>
-                <Button size="small" variant="contained"
-                  startIcon={<PrintIcon />} onClick={() => handlePrint(false)} disabled={!record}
-                  sx={{
-                    background: 'linear-gradient(135deg, #8d6e63 0%, #a1887f 100%)', color: WHT, borderRadius: 2, fontWeight: 800,
-                    boxShadow: '0 4px 12px rgba(141,110,99,0.3)',
-                    '&:hover': { filter: 'brightness(1.15)', boxShadow: '0 6px 16px rgba(141,110,99,0.4)' },
-                    '&.Mui-disabled': { background: 'rgba(253,253,252,0.2)', color: 'rgba(253,253,252,0.5)', boxShadow: 'none' }
-                  }}>
-                  Print
-                </Button>
-              </Stack>
-            </Grid>
           </Grid>
         </CardContent>
       </Card>
 
-      {/* ── Payslip Preview Container ────────────────────────────────────── */}
+      {/* ── Payslip List Container ────────────────────────────────────── */}
       <Card sx={{ borderRadius: 3, borderTop: `3px solid ${goldAccent}`, boxShadow: '0 4px 24px rgba(5,7,126,0.08)' }}>
-        <CardContent sx={{ p: 0, bgcolor: '#f4f7fe' }}>
-          
-          {record && emp ? (
-            <Box sx={{ p: { xs: 2, sm: 4, md: 5 } }}>
-              <Paper elevation={12} sx={{ 
-                width: '100%', maxWidth: 850, mx: 'auto', p: { xs: 3, md: 6 }, borderRadius: 2,
+        <TableContainer component={Paper} elevation={0}>
+          <Table sx={{ minWidth: 650 }}>
+            <TableHead sx={{ bgcolor: '#f4f7fe' }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 800, color: NAV }}>ID</TableCell>
+                <TableCell sx={{ fontWeight: 800, color: NAV }}>Employee Name</TableCell>
+                <TableCell sx={{ fontWeight: 800, color: NAV }}>Department</TableCell>
+                <TableCell sx={{ fontWeight: 800, color: NAV }} align="right">Net Pay</TableCell>
+                <TableCell sx={{ fontWeight: 800, color: NAV }} align="center">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {tableData.length > 0 ? tableData.map((row) => (
+                <TableRow key={row.emp.id} hover>
+                  <TableCell>{row.emp.id}</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>{row.emp.lastName}, {row.emp.firstName}</TableCell>
+                  <TableCell>{row.emp.department}</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700, color: '#2e7d32' }}>
+                    {formatCurrency(row.record.netPay)}
+                  </TableCell>
+                  <TableCell align="center">
+                    <Stack direction="row" spacing={1} justifyContent="center">
+                      <Tooltip title="View Payslip">
+                        <IconButton size="small" onClick={() => handleView(row.emp, row.record)} sx={{ color: NAV, bgcolor: 'rgba(5,7,126,0.08)', '&:hover': { bgcolor: 'rgba(5,7,126,0.15)' } }}>
+                          <ViewIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Download PDF">
+                        <IconButton size="small" onClick={() => handlePrintPdf(row.emp, row.record)} sx={{ color: '#d32f2f', bgcolor: 'rgba(211,47,47,0.08)', '&:hover': { bgcolor: 'rgba(211,47,47,0.15)' } }}>
+                          <PdfIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Download Excel">
+                        <IconButton size="small" onClick={() => handleExportExcel(row.emp, row.record)} sx={{ color: '#2e7d32', bgcolor: 'rgba(46,125,50,0.08)', '&:hover': { bgcolor: 'rgba(46,125,50,0.15)' } }}>
+                          <ExcelIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
+                  </TableCell>
+                </TableRow>
+              )) : (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
+                    <Typography variant="h6" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                      No payslips found for this period.
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mt: 1 }}>
+                      Try selecting a different month/year or clearing the search filter.
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Card>
+
+      {/* ── Payslip View Modal ────────────────────────────────────────── */}
+      <Dialog open={viewModalOpen} onClose={() => setViewModalOpen(false)} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <DialogContent sx={{ p: 0, bgcolor: '#f4f7fe', overflowX: 'hidden' }}>
+          {selectedRecord && selectedEmp && (
+            <Box sx={{ p: { xs: 2, sm: 4 } }}>
+              <Paper elevation={8} sx={{ 
+                width: '100%', maxWidth: 850, mx: 'auto', p: { xs: 3, md: 5 }, borderRadius: 2,
                 bgcolor: '#ffffff', color: '#000', 
                 fontFamily: "'Courier Prime', monospace",
-                position: 'relative', overflo : 'hidden', zIndex: 1
-              }} ref={printRef}>
+                position: 'relative', overflow: 'hidden', zIndex: 1
+              }}>
               
                 <Box sx={{
                   position: 'absolute', top: '50%', left: '50%',
@@ -379,20 +436,20 @@ export default function Payslips() {
                 {/* Employee Info Box */}
                 <Box sx={{ border: '2px solid #333', mb: 4 }}>
                   <Grid container sx={{ borderBottom: '1px solid #333' }}>
-                    <Grid item xs={3} sx={{ p: 1.5, borderRight: '1px solid #333', fontWeight: 800, bgcolor: '#fafafa', fontFamily: "'Courier Prime', monospace" }}>Name:</Grid>
-                    <Grid item xs={9} sx={{ p: 1.5, fontWeight: 700, fontFamily: "'Courier Prime', monospace" }}>
-                      {emp.lastName}, {emp.firstName} {emp.middleName || ''}
+                    <Grid item xs={4} sm={3} sx={{ p: 1.5, borderRight: '1px solid #333', fontWeight: 800, bgcolor: '#fafafa', fontFamily: "'Courier Prime', monospace" }}>Name:</Grid>
+                    <Grid item xs={8} sm={9} sx={{ p: 1.5, fontWeight: 700, fontFamily: "'Courier Prime', monospace" }}>
+                      {selectedEmp.lastName}, {selectedEmp.firstName} {selectedEmp.middleName || ''}
                     </Grid>
                   </Grid>
                   <Grid container sx={{ borderBottom: '1px solid #333' }}>
-                    <Grid item xs={3} sx={{ p: 1.5, borderRight: '1px solid #333', fontWeight: 800, bgcolor: '#fafafa', fontFamily: "'Courier Prime', monospace" }}>Position:</Grid>
-                    <Grid item xs={9} sx={{ p: 1.5, fontFamily: "'Courier Prime', monospace" }}>
-                      {emp.designation || 'N/A'} - {emp.department || 'N/A'}
+                    <Grid item xs={4} sm={3} sx={{ p: 1.5, borderRight: '1px solid #333', fontWeight: 800, bgcolor: '#fafafa', fontFamily: "'Courier Prime', monospace" }}>Position:</Grid>
+                    <Grid item xs={8} sm={9} sx={{ p: 1.5, fontFamily: "'Courier Prime', monospace" }}>
+                      {selectedEmp.designation || 'N/A'} - {selectedEmp.department || 'N/A'}
                     </Grid>
                   </Grid>
                   <Grid container>
-                    <Grid item xs={3} sx={{ p: 1.5, borderRight: '1px solid #333', fontWeight: 800, bgcolor: '#fafafa', fontFamily: "'Courier Prime', monospace" }}>ID No.</Grid>
-                    <Grid item xs={9} sx={{ p: 1.5, fontFamily: "'Courier Prime', monospace" }}>{emp.id}</Grid>
+                    <Grid item xs={4} sm={3} sx={{ p: 1.5, borderRight: '1px solid #333', fontWeight: 800, bgcolor: '#fafafa', fontFamily: "'Courier Prime', monospace" }}>ID No.</Grid>
+                    <Grid item xs={8} sm={9} sx={{ p: 1.5, fontFamily: "'Courier Prime', monospace" }}>{selectedEmp.id}</Grid>
                   </Grid>
                 </Box>
 
@@ -407,32 +464,32 @@ export default function Payslips() {
                   fontSize: '1.2rem',
                   fontFamily: "'Courier Prime', monospace"
                 }}>
-                  {record.month} {record.year} PAYSLIP
+                  {selectedRecord.month} {selectedRecord.year} PAYSLIP
                 </Box>
 
                 {/* Grid Content */}
                 <Grid container sx={{ border: '2px solid #333' }}>
                   {/* Earnings */}
-                  <Grid item xs={4} sx={{ borderRight: '1px solid #333' }}>
+                  <Grid item xs={12} md={4} sx={{ borderRight: { md: '1px solid #333' }, borderBottom: { xs: '2px solid #333', md: 'none' } }}>
                     <Box sx={{ bgcolor: '#eee', borderBottom: '2px solid #333', p: 1, textAlign: 'center', fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>PAID</Box>
-                    <Box sx={{ p: 2, minHeight: 220 }}>
+                    <Box sx={{ p: 2, minHeight: { md: 220 } }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
                         <Typography variant="body2" sx={{ fontFamily: "'Courier Prime', monospace" }}>Basic pay</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 700, fontFamily: "'Courier Prime', monospace" }}>{formatCurrency(record.basicPay)}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 700, fontFamily: "'Courier Prime', monospace" }}>{formatCurrency(selectedRecord.basicPay)}</Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
                         <Typography variant="body2" sx={{ fontFamily: "'Courier Prime', monospace" }}>Deminimis</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 700, fontFamily: "'Courier Prime', monospace" }}>{formatCurrency(record.deminimis)}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 700, fontFamily: "'Courier Prime', monospace" }}>{formatCurrency(selectedRecord.deminimis)}</Typography>
                       </Box>
                     </Box>
                     <Box sx={{ borderTop: '2px solid #333', p: 1.5, display: 'flex', justifyContent: 'space-between', gap: 2, bgcolor: '#fff9c4' }}>
                       <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>Total Paid</Typography>
-                      <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>{formatCurrency(record.totalIncome)}</Typography>
+                      <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>{formatCurrency(selectedRecord.totalIncome)}</Typography>
                     </Box>
                   </Grid>
 
                   {/* Deductions */}
-                  <Grid item xs={4} sx={{ borderRight: '1px solid #333' }}>
+                  <Grid item xs={12} md={4} sx={{ borderRight: { md: '1px solid #333' }, borderBottom: { xs: '2px solid #333', md: 'none' } }}>
                     <Box sx={{ bgcolor: '#eee', borderBottom: '2px solid #333', p: 1, textAlign: 'center', fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>DEDUCTIONS</Box>
                     <Box sx={{ pb: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
                        <Box sx={{ bgcolor: '#ddd', borderBottom: '1px solid #333', py: 0.3, px: 2, mb: 1, textAlign: 'center' }}>
@@ -440,10 +497,10 @@ export default function Payslips() {
                        </Box>
                        <Box sx={{ px: 2 }}>
                          {[
-                           ['SSS', record.sss],
-                           ['PH', record.philHealth],
-                           ['HDMF', record.pagIbig],
-                           ['Tax', record.tax],
+                           ['SSS', (selectedRecord.sssEE || selectedRecord.sss)],
+                           ['PH', (selectedRecord.phEE || selectedRecord.philHealth)],
+                           ['HDMF', (selectedRecord.hdmfEE || selectedRecord.pagIbig)],
+                           ['Tax', selectedRecord.tax],
                          ].map(([l, v]) => (
                            <Box key={l} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                              <Typography variant="caption" sx={{ fontFamily: "'Courier Prime', monospace", fontSize: '0.7rem' }}>{l}</Typography>
@@ -456,14 +513,14 @@ export default function Payslips() {
                        </Box>
                        <Box sx={{ px: 2, flex: 1 }}>
                          {[
-                           ['Savings', record.savings],
-                           ['Salary loan', record.salaryLoan],
-                           ['STL', record.stl],
-                           ['HL', record.hl],
-                           ['Educ Loan', record.educLoan],
-                           ['Malasakit', record.malasakit],
-                           ['LWOP', record.lwop || 0],
-                           ['Other deduct', record.otherDeductions],
+                           ['Savings', selectedRecord.savings],
+                           ['Salary loan', selectedRecord.salaryLoan],
+                           ['STL', selectedRecord.stl],
+                           ['HL', (selectedRecord.hl || selectedRecord.housingLoan)],
+                           ['Educ Loan', selectedRecord.educLoan],
+                           ['Malasakit', (selectedRecord.malasakit || selectedRecord.malasakitLoan)],
+                           ['LWOP', selectedRecord.lwop || 0],
+                           ['Other deduct', (selectedRecord.otherDeductions || selectedRecord.otherDeduction)],
                          ].map(([l, v]) => (
                            <Box key={l} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                              <Typography variant="caption" sx={{ fontFamily: "'Courier Prime', monospace", fontSize: '0.7rem' }}>{l}</Typography>
@@ -474,24 +531,24 @@ export default function Payslips() {
                     </Box>
                     <Box sx={{ borderTop: '2px solid #333', p: 1.5, display: 'flex', justifyContent: 'space-between', gap: 2, bgcolor: '#fff9c4' }}>
                       <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>Total Deduct.</Typography>
-                      <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>{formatCurrency(record.totalDeduction)}</Typography>
+                      <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>{formatCurrency(selectedRecord.totalDeduction)}</Typography>
                     </Box>
                   </Grid>
 
                   {/* Take Home Summary */}
-                  <Grid item xs={4}>
+                  <Grid item xs={12} md={4}>
                     <Box sx={{ bgcolor: '#fee2b3', borderBottom: '2px solid #333', p: 1.5, display: 'flex', justifyContent: 'space-between', gap: 2 }}>
                       <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>Net Pay</Typography>
-                      <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>{formatCurrency(record.netPay)}</Typography>
+                      <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>{formatCurrency(selectedRecord.netPay)}</Typography>
                     </Box>
                     <Box sx={{ p: 3, pt: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
                        <Box sx={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #777', pb: 1 }}>
                          <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>1ST HALF</Typography>
-                         <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>{formatCurrency(record.firstHalf)}</Typography>
+                         <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>{formatCurrency(selectedRecord.firstHalf)}</Typography>
                        </Box>
                        <Box sx={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #777', pb: 1 }}>
                          <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>2ND HALF</Typography>
-                         <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>{formatCurrency(record.secondHalf)}</Typography>
+                         <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>{formatCurrency(selectedRecord.secondHalf)}</Typography>
                        </Box>
                     </Box>
                   </Grid>
@@ -499,7 +556,7 @@ export default function Payslips() {
 
                 {/* Signatories */}
                 <Grid container sx={{ mt: 10, pt: 2 }}>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <Typography variant="body2" sx={{ fontFamily: "'Courier Prime', monospace" }}>Prepared by:</Typography>
                     <Box sx={{ width: '80%', borderBottom: '1px solid #000', mt: 5, textAlign: 'center' }}>
                       <Typography sx={{ fontWeight: 800, fontFamily: "'Courier Prime', monospace" }}>Kyzeel M. Estrella</Typography>
@@ -507,22 +564,20 @@ export default function Payslips() {
                     <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', width: '80%', fontFamily: "'Courier Prime', monospace" }}>HR Officer</Typography>
                   </Grid>
                 </Grid>
-
               </Paper>
             </Box>
-          ) : (
-            <Box sx={{ p: 8, textAlign: 'center' }}>
-              <Typography variant="h6" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                {search ? 'No payslip found for the given search terms.' : 'Search for an employee to generate payslip.'}
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mt: 1 }}>
-                Ensure selected year and month have matching payroll records.
-              </Typography>
-            </Box>
           )}
-
-        </CardContent>
-      </Card>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, bgcolor: '#f4f7fe' }}>
+          <Button onClick={() => setViewModalOpen(false)} sx={{ color: 'text.secondary', fontWeight: 700 }}>Close</Button>
+          <Box sx={{ flexGrow: 1 }} />
+          <Button startIcon={<PdfIcon />} onClick={handlePdfFromModal} sx={{ color: '#d32f2f', fontWeight: 700 }}>PDF</Button>
+          <Button startIcon={<ExcelIcon />} onClick={handleExcelFromModal} sx={{ color: '#2e7d32', fontWeight: 700 }}>Excel</Button>
+          <Button variant="contained" startIcon={<PrintIcon />} onClick={handlePrintFromModal} sx={{ bgcolor: NAV, '&:hover': { bgcolor: IND }, borderRadius: 2, fontWeight: 700 }}>
+            Print
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
