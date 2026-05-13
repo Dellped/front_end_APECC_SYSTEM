@@ -13,12 +13,12 @@ import {
 } from '@mui/icons-material';
 
 // ── Palette ──────────────────────────────────────────────────────────────────
-const NAV = '#05077E';   // Navy
-const IND = '#0241FB';   // Bright Indigo
-const ROY = '#4470ED';   // Royal Blue
-const PER = '#B4B7D3';   // Periwinkle
+const NAV = '#0B3D91';   // Deep Blue
+const IND = '#1E40AF';   // Mid Blue
+const ROY = '#FF8C00';   // Orange Accent
+const PER = '#C0C0C0';   // Silver
 const WHT = '#FDFDFC';   // White
-const goldAccent = '#d4a843';
+const goldAccent = '#FF8C00'; // Orange Accent
 // ─────────────────────────────────────────────────────────────────────────────
 
 const routeMap = {
@@ -105,13 +105,13 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
         position: 'sticky',
         top: 0,
         zIndex: 100,
-        background: isDark ? `rgba(5, 7, 126, 0.65)` : `rgba(253, 253, 252, 0.70)`,
+        background: isDark ? `rgba(11, 61, 145, 0.85)` : `rgba(253, 253, 252, 0.70)`,
         backdropFilter: 'blur(32px) saturate(200%)',
         WebkitBackdropFilter: 'blur(32px) saturate(200%)',
-        borderBottom: `1px solid ${isDark ? `rgba(255,255,255,0.08)` : `rgba(5,7,126,0.06)`}`,
+        borderBottom: `1px solid ${isDark ? `rgba(192,192,192,0.2)` : `rgba(11,61,145,0.06)`}`,
         boxShadow: isDark
           ? `0 4px 32px rgba(0,0,0,0.4)`
-          : `0 4px 32px rgba(5,7,126,0.04)`,
+          : `0 4px 32px rgba(11,61,145,0.04)`,
         px: { xs: 2, sm: 3, md: 4 },
         py: 1.4,
         display: 'flex',
@@ -142,7 +142,7 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
         {/* Breadcrumbs */}
         <Breadcrumbs
           separator={
-            <NavNextIcon sx={{ fontSize: 12, color: isDark ? `rgba(255,255,255,0.4)` : `rgba(5,7,126,0.4)` }} />
+            <NavNextIcon sx={{ fontSize: 12, color: isDark ? `rgba(192,192,192,0.6)` : `rgba(11,61,145,0.4)` }} />
           }
           aria-label="breadcrumb"
           sx={{
@@ -183,12 +183,12 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
             </Typography>
           ))}
 
-          {/* Active crumb — gold gradient */}
+          {/* Active crumb — orange gradient */}
           <Typography variant="caption" sx={{
             fontSize: '0.72rem', fontWeight: 800, whiteSpace: 'nowrap', letterSpacing: '0.02em',
-            background: `linear-gradient(135deg, ${goldAccent} 0%, #f0d060 100%)`,
+            background: `linear-gradient(135deg, ${goldAccent} 0%, #FFA726 100%)`,
             backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            filter: `drop-shadow(0 0 6px rgba(212,168,67,0.4))`
+            filter: `drop-shadow(0 0 6px rgba(255,140,0,0.4))`
           }}>
             {currentPage}
           </Typography>
@@ -200,12 +200,12 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
           fontSize: { xs: '1rem', sm: '1.2rem' },
           lineHeight: 1.2,
           background: isDark
-            ? `linear-gradient(135deg, #a5d6a7 0%, #4caf50 100%)`
-            : `linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)`,
+            ? `linear-gradient(135deg, #FFB74D 0%, #FF8C00 100%)`
+            : `linear-gradient(135deg, #1E40AF 0%, #0B3D91 100%)`,
           backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           letterSpacing: '-0.02em',
-          filter: isDark ? `drop-shadow(0 0 8px rgba(165,214,167,0.2))` : 'none',
+          filter: isDark ? `drop-shadow(0 0 8px rgba(255,140,0,0.3))` : 'none',
         }}>
           {currentPage}
         </Typography>
@@ -249,7 +249,7 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
           >
             {isDark
               ? <LightModeIcon sx={{ fontSize: 18, color: goldAccent, filter: `drop-shadow(0 0 6px ${goldAccent})` }} />
-              : <DarkModeIcon sx={{ fontSize: 18, color: '#4caf50', filter: `drop-shadow(0 0 6px rgba(76,175,80,0.6))` }} />
+              : <DarkModeIcon sx={{ fontSize: 18, color: IND, filter: `drop-shadow(0 0 6px rgba(30,64,175,0.6))` }} />
             }
           </Box>
         </Tooltip>
@@ -268,13 +268,13 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}>
             <BellIcon sx={{ fontSize: 19, color: textPrimary, opacity: 0.9 }} />
-            {/* notification dot in bright green */}
+            {/* notification dot in bright orange */}
             <Box sx={{
               position: 'absolute', top: 9, right: 9,
               width: 8, height: 8, borderRadius: '50%',
-              background: `linear-gradient(135deg, #a5d6a7, #4caf50)`,
-              border: isDark ? `1.5px solid rgba(5,7,126,0.8)` : `1.5px solid rgba(253,253,252,0.8)`,
-              boxShadow: `0 0 8px #4caf50`,
+              background: `linear-gradient(135deg, #FFA726, #FF8C00)`,
+              border: isDark ? `1.5px solid rgba(11,61,145,0.8)` : `1.5px solid rgba(253,253,252,0.8)`,
+              boxShadow: `0 0 8px #FF8C00`,
             }} />
           </Box>
         </Tooltip>
@@ -293,11 +293,11 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
           }}>
             <Avatar sx={{
               width: 30, height: 30,
-              background: `linear-gradient(135deg, ${goldAccent} 0%, #4caf50 100%)`,
+              background: `linear-gradient(135deg, ${goldAccent} 0%, #E0E0E0 100%)`,
               fontSize: '0.75rem', fontWeight: 800,
-              color: WHT,
+              color: NAV,
               border: `1px solid rgba(255,255,255,0.6)`,
-              boxShadow: `0 2px 10px rgba(76,175,80,0.4)`,
+              boxShadow: `0 2px 10px rgba(255,140,0,0.4)`,
             }}>
               AD
             </Avatar>
