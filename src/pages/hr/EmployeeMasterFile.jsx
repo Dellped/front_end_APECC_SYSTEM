@@ -157,7 +157,8 @@ function EmploymentDetailsDialog({ open, onClose, emp }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function EmployeeMasterFile() {
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('Active');
+  const [employmentFilter, setEmploymentFilter] = useState('Regular');
   const [selectedEmp, setSelectedEmp] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -166,7 +167,8 @@ export default function EmployeeMasterFile() {
       .toLowerCase()
       .includes(search.toLowerCase());
     const matchStatus = statusFilter === 'All' || emp.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchEmployment = employmentFilter === 'All' || emp.employmentType === employmentFilter;
+    return matchSearch && matchStatus && matchEmployment;
   });
 
   const handleViewDetails = (emp) => {
@@ -208,15 +210,31 @@ export default function EmployeeMasterFile() {
               <TextField
                 select
                 size="small"
+                label="Employment Status"
+                value={employmentFilter}
+                onChange={(e) => setEmploymentFilter(e.target.value)}
+                sx={{
+                  minWidth: 160,
+                  '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'rgba(0,0,0,0.02)' }
+                }}
+              >
+                <MenuItem value="All">Employment Status</MenuItem>
+                <MenuItem value="Regular">Regular</MenuItem>
+                <MenuItem value="Probationary">Probationary</MenuItem>
+                <MenuItem value="Contractual">Contractual</MenuItem>
+              </TextField>
+              <TextField
+                select
+                size="small"
                 label="Status"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 sx={{
-                  minWidth: 150,
+                  minWidth: 120,
                   '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'rgba(0,0,0,0.02)' }
                 }}
               >
-                <MenuItem value="All">Status</MenuItem>
+                <MenuItem value="All">File Status</MenuItem>
                 <MenuItem value="Active">Active</MenuItem>
                 <MenuItem value="Suspended">Suspended</MenuItem>
                 <MenuItem value="AWOL">AWOL</MenuItem>

@@ -63,7 +63,7 @@ const menuConfig = [
   },
   {
     id: 'hr-employee',
-    label: 'Employment Management',
+    label: 'Employee Management',
     icon: <PeopleIcon />,
     children: [
       { id: 'hr-emp-master',       label: 'Employee Master File',   icon: <AssignmentIndIcon />, path: '/hr/employees/master-file' },
@@ -72,7 +72,7 @@ const menuConfig = [
       { id: 'hr-emp-family',       label: 'Family Background',      icon: <FamilyIcon />,        path: '/hr/employees/family' },
       { id: 'hr-emp-education',    label: 'Educational Attainment', icon: <SchoolIcon />,        path: '/hr/employees/education' },
       { id: 'hr-emp-work',         label: 'Work Experience',        icon: <WorkIcon />,          path: '/hr/employees/work-experience' },
-      { id: 'hr-emp-requirements', label: 'List of Requirements',   icon: <AlphalistIcon />,     path: '/hr/employees/requirements' },
+      { id: 'hr-emp-requirements', label: 'Employee Requirements',   icon: <AlphalistIcon />,     path: '/hr/employees/requirements' },
       { id: 'hr-emp-job-levels',   label: 'Job Levels / Ranks',     icon: <LayersIcon />,        path: '/hr/employees/job-levels' },
     ],
   },
