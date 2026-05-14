@@ -112,7 +112,6 @@ export default function ApprovalQueue() {
     const isLeave = r.type === 'Leave';
     
     if (queueType === 'Onboarding' && (isPayroll || isResignation || isLeave)) return false;
-    if (queueType === 'Payroll' && !isPayroll) return false;
     if (queueType === 'Resignation' && !isResignation) return false;
     if (queueType === 'Leave' && !isLeave) return false;
 
@@ -273,7 +272,6 @@ export default function ApprovalQueue() {
           indicatorColor="primary"
         >
           <Tab label="Onboarding Approvals" value="Onboarding" sx={{ fontWeight: 700 }} />
-          <Tab label="Payroll Approvals" value="Payroll" sx={{ fontWeight: 700 }} />
           <Tab label="Exit Approval Queue" value="Resignation" sx={{ fontWeight: 700 }} />
           <Tab label="Leave Approvals" value="Leave" sx={{ fontWeight: 700 }} />
         </Tabs>

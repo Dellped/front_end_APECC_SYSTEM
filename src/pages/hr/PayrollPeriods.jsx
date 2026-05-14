@@ -1,197 +1,222 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Box, Card, CardContent, Typography, Grid, Button, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Chip, IconButton,
   Tooltip, TextField, InputAdornment, Dialog, DialogTitle, DialogContent,
-  DialogActions, MenuItem, Stack
+  DialogActions, MenuItem, Stack, Paper
 } from '@mui/material';
 import {
   Add as AddIcon,
   CalendarMonth as CalendarIcon,
   Search as SearchIcon,
-  FilterList as FilterIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Schedule as ScheduleIcon,
-  FileDownload as CsvIcon,
-  PictureAsPdf as PdfIcon,
-  Print as PrintIcon,
 } from '@mui/icons-material';
-import { payrollPeriods } from '../../data/mockData';
-import { exportToCSV, printTable, exportToPDF } from '../../utils/exportUtils';
 
 const goldAccent = '#d4a843';
+const NAV = '#05077E';
+const IND = '#0241FB';
+
+const initialPeriods = [
+  { id: 1, name: 'May 2026', start: '2026-05-01', end: '2026-05-15', cutoff: 'First Half', payDate: '2026-05-20', status: 'Active' },
+  { id: 2, name: 'May 2026', start: '2026-05-16', end: '2026-05-31', cutoff: 'Second Half', payDate: '2026-06-05', status: 'Active' },
+  { id: 3, name: 'April 2026', start: '2026-04-16', end: '2026-04-30', cutoff: 'Second Half', payDate: '2026-05-05', status: 'Closed' },
+  { id: 4, name: 'April 2026', start: '2026-04-01', end: '2026-04-15', cutoff: 'First Half', payDate: '2026-04-20', status: 'Closed' },
+];
 
 export default function PayrollPeriods() {
+  const [periods, setPeriods] = useState(initialPeriods);
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState(null);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Open': return { bg: '#e3f2fd', color: '#1976d2' };
-      case 'Processing': return { bg: '#fff3e0', color: '#f57c00' };
-      case 'Closed': return { bg: '#e8f5e9', color: '#2e7d32' };
-      default: return { bg: '#f5f5f5', color: '#757575' };
-    }
+  const handleOpen = (period = null) => {
+    setSelectedPeriod(period);
+    setOpen(true);
   };
 
-  const filtered = payrollPeriods.filter(p => 
-    p.id.toLowerCase().includes(search.toLowerCase()) ||
-    p.type.toLowerCase().includes(search.toLowerCase())
-  );
+  const getStatusChip = (status) => {
+    const isActive = status === 'Active';
+    return (
+      <Chip
+        label={status}
+        size="small"
+        sx={{
+          fontWeight: 700,
+          bgcolor: isActive ? '#e8f5e9' : '#f5f5f5',
+          color: isActive ? '#2e7d32' : '#757575',
+          fontSize: '0.7rem',
+          border: '1px solid',
+          borderColor: isActive ? 'rgba(46, 125, 50, 0.2)' : 'rgba(0,0,0,0.1)'
+        }}
+      />
+    );
+  };
 
   return (
     <Box className="page-container">
-      {/* Header */}
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
-          <Typography variant="h4" sx={{ 
-            fontWeight: 800, color: '#0241FB', 
-            background: 'linear-gradient(90deg, #0241FB, #4470ED)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            mb: 0.5 
-          }}>
-            Payroll Period Management
+          <Typography variant="h4" sx={{ fontWeight: 800, color: NAV, mb: 0.5 }}>
+            Payroll Periods
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-            Create and maintain payroll cycles and cutoff schedules
+            Define and control cutoff schedules and pay dates.
           </Typography>
         </Box>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => setOpen(true)}
-          sx={{ 
-            borderRadius: 2, 
-            background: 'linear-gradient(135deg, #0241FB, #4470ED)',
-            boxShadow: '0 4px 12px rgba(2, 61, 251, 0.2)',
+          onClick={() => handleOpen()}
+          sx={{
+            borderRadius: 2,
+            background: `linear-gradient(135deg, ${NAV} 0%, ${IND} 100%)`,
+            boxShadow: '0 4px 12px rgba(2,65,251,0.2)',
+            fontWeight: 700,
             px: 3
           }}
         >
-          New Period
+          Create Payroll Period
         </Button>
       </Box>
 
       <Grid container spacing={3}>
-        {/* Quick Stats */}
-        <Grid item xs={12} md={4}>
-          <Card sx={{ borderRadius: 4, background: 'linear-gradient(135deg, #05077E 0%, #0241FB 60%, #4470ED 100%)', color: '#FDFDFC', p: 1 }}>
-            <CardContent>
-              <Typography variant="overline" sx={{ opacity: 0.8, fontWeight: 700 }}>Active Period</Typography>
-              <Typography variant="h5" sx={{ fontWeight: 800, my: 1 }}>March 1-15, 2025</Typography>
-              <Typography variant="body2" sx={{ color: goldAccent, fontWeight: 600 }}>1st Cutoff | Processing</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ borderRadius: 4, border: '1px solid rgba(0,0,0,0.08)', p: 1 }}>
-            <CardContent>
-              <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 700 }}>Next Cutoff</Typography>
-              <Typography variant="h5" sx={{ fontWeight: 800, my: 1 }}>March 16-31, 2025</Typography>
-              <Typography variant="body2" sx={{ color: '#1976d2', fontWeight: 600 }}>2nd Cutoff | Open</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ borderRadius: 4, border: '1px solid rgba(0,0,0,0.08)', p: 1 }}>
-            <CardContent>
-              <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 700 }}>Total Cycles (2025)</Typography>
-              <Typography variant="h5" sx={{ fontWeight: 800, my: 1 }}>5 Cycles</Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>Last Closed: Feb 28, 2025</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Periods Table */}
-        <Grid item xs={12}>
-          <Card sx={{ borderRadius: 4, boxShadow: '0 12px 32px rgba(10,22,40,0.05)', overflow: 'hidden' }}>
-            <Box sx={{ p: 3, borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: '#0241FB' }}>Payroll Schedules</Typography>
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-                <TextField
-                  size="small"
-                  placeholder="Search periods..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon sx={{ color: 'text.disabled', fontSize: '1.1rem' }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ width: 250 }}
-                />
-                <Button variant="outlined" startIcon={<FilterIcon />} size="small" sx={{ borderRadius: 2 }}>Filter</Button>
-                <Stack direction="row" spacing={1}>
-                  <Button size="small" variant="outlined" startIcon={<CsvIcon />}
-                    onClick={() => exportToCSV(['Period ID','Start Date','End Date','Payroll Type','Status'], filtered.map(p => [p.id, p.startDate, p.endDate, p.type, p.status]), 'payroll_periods')}
-                    sx={{ borderRadius: 2, fontSize: '0.75rem' }}>CSV</Button>
-                  <Button size="small" variant="outlined" startIcon={<PdfIcon />}
-                    onClick={() => exportToPDF('Payroll Periods', ['Period ID','Start Date','End Date','Payroll Type','Status'], filtered.map(p => [p.id, p.startDate, p.endDate, p.type, p.status]))}
-                    sx={{ borderRadius: 2, fontSize: '0.75rem' }}>PDF</Button>
-                  <Button size="small" variant="outlined" startIcon={<PrintIcon />}
-                    onClick={() => printTable('Payroll Periods', ['Period ID','Start Date','End Date','Payroll Type','Status'], filtered.map(p => [p.id, p.startDate, p.endDate, p.type, p.status]))}
-                    sx={{ borderRadius: 2, fontSize: '0.75rem' }}>Print</Button>
-                </Stack>
-              </Box>
+        <Grid item xs={12} md={selectedPeriod ? 8 : 12} sx={{ transition: 'all 0.3s ease' }}>
+          <Card sx={{ borderRadius: 4, boxShadow: '0 8px 32px rgba(0,0,0,0.06)', borderTop: `4px solid ${goldAccent}` }}>
+            <Box sx={{ p: 3, borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <TextField
+                size="small"
+                placeholder="Search periods..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: 'text.disabled', fontSize: '1.1rem' }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ width: 300, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+              />
             </Box>
             <TableContainer>
               <Table>
-                <TableHead sx={{ bgcolor: 'rgba(2, 61, 251, 0.02)' }}>
+                <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
                   <TableRow>
-                    {['Period ID', 'Start Date', 'End Date', 'Payroll Type', 'Status', 'Actions'].map((h) => (
-                      <TableCell key={h} sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase' }}>{h}</TableCell>
-                    ))}
+                    <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>Period Name</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>Start Date</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>End Date</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>Cutoff Type</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>Pay Date</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>Status</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700, color: 'text.secondary' }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filtered.map((period) => {
-                    const statusStyle = getStatusColor(period.status);
-                    return (
-                      <TableRow key={period.id} hover>
-                        <TableCell sx={{ fontWeight: 600, color: '#0241FB' }}>{period.id}</TableCell>
-                        <TableCell>{period.startDate}</TableCell>
-                        <TableCell>{period.endDate}</TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <CalendarIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
-                            <Typography variant="body2">{period.type}</Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          <Chip 
-                            label={period.status} 
-                            size="small" 
-                            sx={{ 
-                              bgcolor: statusStyle.bg, 
-                              color: statusStyle.color, 
-                              fontWeight: 700, 
-                              fontSize: '0.72rem' 
-                            }} 
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', gap: 0.5 }}>
-                            <Tooltip title="Edit Period"><IconButton size="small" sx={{ color: '#0241FB' }}><EditIcon sx={{ fontSize: '1.1rem' }} /></IconButton></Tooltip>
-                            <Tooltip title="Delete Period"><IconButton size="small" sx={{ color: '#d32f2f' }}><DeleteIcon sx={{ fontSize: '1.1rem' }} /></IconButton></Tooltip>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  {periods.map((period) => (
+                    <TableRow 
+                      key={period.id} 
+                      hover 
+                      selected={selectedPeriod?.id === period.id}
+                      onClick={() => setSelectedPeriod(period)}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <TableCell sx={{ fontWeight: 700, color: IND }}>{period.name}</TableCell>
+                      <TableCell>{period.start}</TableCell>
+                      <TableCell>{period.end}</TableCell>
+                      <TableCell>
+                        <Chip label={period.cutoff} size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.65rem' }} />
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>{period.payDate}</TableCell>
+                      <TableCell>{getStatusChip(period.status)}</TableCell>
+                      <TableCell align="right">
+                        <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpen(period); }} sx={{ color: IND }}>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </TableContainer>
           </Card>
         </Grid>
+
+        {selectedPeriod && (
+          <Grid item xs={12} md={4}>
+            <Card sx={{ borderRadius: 4, boxShadow: '0 8px 32px rgba(0,0,0,0.08)', position: 'sticky', top: 20 }}>
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: NAV, mb: 3 }}>
+                  Period Details
+                </Typography>
+                
+                <Stack spacing={3}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase' }}>
+                      Period Name
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 700 }}>{selectedPeriod.name}</Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase' }}>
+                      Cutoff Range
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                      {selectedPeriod.start} — {selectedPeriod.end}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase' }}>
+                      Scheduled Pay Date
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                      <CalendarIcon sx={{ color: goldAccent }} />
+                      <Typography variant="body1" sx={{ fontWeight: 700, color: goldAccent }}>
+                        {selectedPeriod.payDate}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Divider />
+
+                  <Box>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}>
+                      Management Actions
+                    </Typography>
+                    <Stack spacing={1.5}>
+                      <Button fullWidth variant="outlined" color="primary" sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}>
+                        Edit Schedule
+                      </Button>
+                      <Button 
+                        fullWidth 
+                        variant="contained" 
+                        color={selectedPeriod.status === 'Active' ? 'error' : 'success'} 
+                        sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
+                      >
+                        {selectedPeriod.status === 'Active' ? 'Deactivate Period' : 'Activate Period'}
+                      </Button>
+                    </Stack>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
       </Grid>
 
-      {/* New Period Dialog */}
+      {/* Create/Edit Dialog */}
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ fontWeight: 800, color: '#0241FB' }}>Create New Payroll Period</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800, color: NAV }}>
+          {selectedPeriod ? 'Edit Payroll Period' : 'Create New Payroll Period'}
+        </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={3} sx={{ mt: 0.5 }}>
+            <Grid item xs={12}>
+              <TextField fullWidth label="Period Name" placeholder="e.g. May 2026" />
+            </Grid>
             <Grid item xs={12} sm={6}>
               <TextField fullWidth label="Start Date" type="date" InputLabelProps={{ shrink: true }} />
             </Grid>
@@ -199,26 +224,21 @@ export default function PayrollPeriods() {
               <TextField fullWidth label="End Date" type="date" InputLabelProps={{ shrink: true }} />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField fullWidth select label="Payroll Type" defaultValue="1st Cutoff">
-                <MenuItem value="1st Cutoff">1st Cutoff (1-15)</MenuItem>
-                <MenuItem value="2nd Cutoff">2nd Cutoff (16-30/31)</MenuItem>
+              <TextField fullWidth select label="Cutoff Type" defaultValue="First Half">
+                <MenuItem value="First Half">First Half (1-15)</MenuItem>
+                <MenuItem value="Second Half">Second Half (16-31)</MenuItem>
                 <MenuItem value="Monthly">Monthly</MenuItem>
-                <MenuItem value="Special">Special / Bonus Run</MenuItem>
               </TextField>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField fullWidth select label="Status" defaultValue="Open">
-                <MenuItem value="Open">Open</MenuItem>
-                <MenuItem value="Processing">Processing</MenuItem>
-                <MenuItem value="Closed">Closed</MenuItem>
-              </TextField>
+              <TextField fullWidth label="Pay Date" type="date" InputLabelProps={{ shrink: true }} />
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button onClick={() => setOpen(false)} sx={{ color: 'text.secondary', fontWeight: 600 }}>Cancel</Button>
-          <Button variant="contained" onClick={() => setOpen(false)} sx={{ background: 'linear-gradient(135deg, #0241FB, #4470ED)', fontWeight: 700 }}>
-            Create Period
+          <Button variant="contained" onClick={() => setOpen(false)} sx={{ background: `linear-gradient(135deg, ${NAV} 0%, ${IND} 100%)`, fontWeight: 700 }}>
+            {selectedPeriod ? 'Save Changes' : 'Create Period'}
           </Button>
         </DialogActions>
       </Dialog>

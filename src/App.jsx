@@ -41,6 +41,9 @@ import SalaryAdjustment from './pages/hr/SalaryAdjustment';
 import PayrollAdjustment from './pages/hr/PayrollAdjustment';
 import SalaryHistory from './pages/hr/SalaryHistory';
 import ServiceIncentiveLeave from './pages/hr/ServiceIncentiveLeave';
+import PayrollApprovals from './pages/hr/PayrollApprovals';
+import PayrollDashboard from './pages/hr/PayrollDashboard';
+import SalaryRelease from './pages/hr/SalaryRelease';
 
 // Exit Member Pages
 import ExitDashboard from './pages/exit/ExitDashboard';
@@ -138,6 +141,9 @@ export default function App() {
               <Route path="/hr/payroll/periods" element={<PayrollPeriods />} />
               <Route path="/hr/payroll/sil" element={<ServiceIncentiveLeave />} />
               <Route path="/hr/payroll/contributions" element={<GovernmentContributions />} />
+              <Route path="/hr/payroll/approvals" element={<PayrollApprovals />} />
+              <Route path="/hr/payroll/dashboard" element={<PayrollDashboard />} />
+              <Route path="/hr/payroll/salary-release" element={<SalaryRelease />} />
               <Route path="/hr/leaves" element={<LeavesSanctions />} />
               <Route path="/hr/leaves/applications" element={<LeaveApplications />} />
               <Route path="/hr/leaves/calendar" element={<LeaveCalendar />} />

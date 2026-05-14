@@ -1058,7 +1058,7 @@ export default function AddEmployee() {
     <Box className="page-container">
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" sx={{ fontWeight: 800, color: NAV, mb: 1 }}>
-          {editId ? 'Editing Record: ' + editId : '201 Record Encoding'}
+          {editId ? 'Editing Record: ' + editId : 'Record Encoding'}
         </Typography>
         <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
           {editId ? 'Fix the declined data and resubmit.' : 'Fill out the initial employee onboarding forms.'}
