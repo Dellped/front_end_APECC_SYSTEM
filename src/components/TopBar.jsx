@@ -84,20 +84,16 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
   const crumbs = routeInfo?.crumbs || ['Home'];
   const currentPage = crumbs[crumbs.length - 1];
 
-  const textPrimary   = isDark ? WHT   : NAV;
-  const textSecondary = isDark ? PER   : ROY;
+  // Always use white text since TopBar is always navy
+  const textPrimary   = WHT;
+  const textSecondary = `rgba(255, 255, 255, 0.65)`;
 
-  // Liquid Glass Apple UI Constants
-  const glassBg = isDark ? `rgba(255, 255, 255, 0.05)` : `rgba(255, 255, 255, 0.55)`;
-  const glassBgHover = isDark ? `rgba(255, 255, 255, 0.1)` : `rgba(255, 255, 255, 0.75)`;
-  const glassBorder = isDark ? `rgba(255,255,255,0.12)` : `rgba(255,255,255,0.7)`;
-  const glassShadowBox = isDark
-    ? `inset 0 1px 1px rgba(255,255,255,0.15), 0 4px 14px rgba(0,0,0,0.3)`
-    : `inset 0 1px 1px rgba(255,255,255,0.9), 0 4px 14px rgba(5,7,126,0.06)`;
-
-  const glassShadowHover = isDark
-    ? `inset 0 1px 1px rgba(255,255,255,0.25), 0 8px 24px rgba(0,0,0,0.4)`
-    : `inset 0 1px 1px rgba(255,255,255,1), 0 8px 24px rgba(5,7,126,0.12)`;
+  // Subtle white glass cards on navy background
+  const glassBg       = `rgba(255, 255, 255, 0.10)`;
+  const glassBgHover  = `rgba(255, 255, 255, 0.20)`;
+  const glassBorder   = `rgba(255, 255, 255, 0.18)`;
+  const glassShadowBox    = `inset 0 1px 1px rgba(255,255,255,0.15), 0 4px 14px rgba(0,0,0,0.2)`;
+  const glassShadowHover  = `inset 0 1px 1px rgba(255,255,255,0.25), 0 8px 24px rgba(0,0,0,0.3)`;
 
   return (
     <Box
@@ -105,13 +101,13 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
         position: 'sticky',
         top: 0,
         zIndex: 100,
-        background: isDark ? `rgba(11, 61, 145, 0.85)` : `rgba(253, 253, 252, 0.70)`,
-        backdropFilter: 'blur(32px) saturate(200%)',
-        WebkitBackdropFilter: 'blur(32px) saturate(200%)',
-        borderBottom: `1px solid ${isDark ? `rgba(192,192,192,0.2)` : `rgba(11,61,145,0.06)`}`,
-        boxShadow: isDark
-          ? `0 4px 32px rgba(0,0,0,0.4)`
-          : `0 4px 32px rgba(11,61,145,0.04)`,
+        background: isDark
+          ? `linear-gradient(90deg, #071F4E 0%, #0B3D91 100%)`
+          : `linear-gradient(90deg, #0B3D91 0%, #1E40AF 100%)`, // Matches sidebar navy
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        borderBottom: `1px solid rgba(255,255,255,0.12)`,
+        boxShadow: `0 4px 24px rgba(7,31,78,0.35)`,
         px: { xs: 2, sm: 3, md: 4 },
         py: 1.4,
         display: 'flex',
@@ -183,12 +179,10 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
             </Typography>
           ))}
 
-          {/* Active crumb — orange gradient */}
+          {/* Active crumb — bright white */}
           <Typography variant="caption" sx={{
             fontSize: '0.72rem', fontWeight: 800, whiteSpace: 'nowrap', letterSpacing: '0.02em',
-            background: `linear-gradient(135deg, ${goldAccent} 0%, #FFA726 100%)`,
-            backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            filter: `drop-shadow(0 0 6px rgba(255,140,0,0.4))`
+            color: WHT,
           }}>
             {currentPage}
           </Typography>
@@ -197,15 +191,12 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
         {/* Page Title */}
         <Typography variant="h6" sx={{
           fontWeight: 800,
-          fontSize: { xs: '1rem', sm: '1.2rem' },
+          fontSize: { xs: '1rem', sm: '1.1rem' },
           lineHeight: 1.2,
-          background: isDark
-            ? `linear-gradient(135deg, #FFB74D 0%, #FF8C00 100%)`
-            : `linear-gradient(135deg, #1E40AF 0%, #0B3D91 100%)`,
-          backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          color: WHT,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-          letterSpacing: '-0.02em',
-          filter: isDark ? `drop-shadow(0 0 8px rgba(255,140,0,0.3))` : 'none',
+          letterSpacing: '-0.01em',
+          textShadow: '0 1px 6px rgba(0,0,0,0.2)',
         }}>
           {currentPage}
         </Typography>
@@ -248,8 +239,8 @@ export default function TopBar({ onMenuClick, isMobile, mode, toggleColorMode })
             }}
           >
             {isDark
-              ? <LightModeIcon sx={{ fontSize: 18, color: goldAccent, filter: `drop-shadow(0 0 6px ${goldAccent})` }} />
-              : <DarkModeIcon sx={{ fontSize: 18, color: IND, filter: `drop-shadow(0 0 6px rgba(30,64,175,0.6))` }} />
+              ? <LightModeIcon sx={{ fontSize: 18, color: WHT, opacity: 0.9 }} />
+              : <DarkModeIcon sx={{ fontSize: 18, color: WHT, opacity: 0.9 }} />
             }
           </Box>
         </Tooltip>

@@ -34,6 +34,7 @@ import {
   Layers as LayersIcon,
   ChevronLeft as ChevronLeftIcon,
   Menu as MenuIcon,
+  PersonRemove as OffboardingIcon,
 } from '@mui/icons-material';
 import { LogOut } from 'lucide-react';
 
@@ -114,8 +115,8 @@ const menuConfig = [
   { id: 'hr-audit', label: 'HR Audit Trail', icon: <HistoryIcon />, path: '/hr/audit-trail' },
   {
     id: 'exit',
-    label: 'Exit Management',
-    icon: <ExitIcon />,
+    label: 'Offboarding',
+    icon: <OffboardingIcon />,
     children: [
       { id: 'exit-dashboard',       label: 'Dashboard',                 icon: <DashboardIcon />,          path: '/exit/dashboard' },
       { id: 'exit-requests',        label: 'Exit Requests',             icon: <ExitRequestIcon />,        path: '/exit/requests' },
@@ -187,7 +188,7 @@ export default function Sidebar({ open, onToggle, isMobile }) {
             <ListItemText
               primary={item.label}
               primaryTypographyProps={{
-                fontSize:   depth === 0 ? '1rem' : '0.875rem',
+                fontSize:   depth === 0 ? '0.8rem' : '0.75rem', // Decreased font size even further for menu items
                 fontWeight: active ? 700 : 600,
                 color:      'inherit',
               }}
@@ -265,8 +266,8 @@ export default function Sidebar({ open, onToggle, isMobile }) {
           flexShrink: 0,
           bgcolor: NAVY,
           borderTopLeftRadius: '32px',
-          pt: open ? 3.5 : 1.5,
-          pb: open ? 3   : 1,
+          pt: open ? 2 : 1, // Increased top padding to move the logo down further
+          pb: open ? 0.5 : 0, // Reduced padding to push the red stripe up closer to the logo
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -279,8 +280,8 @@ export default function Sidebar({ open, onToggle, isMobile }) {
           alt="APECC Logo"
           onClick={!open ? onToggle : undefined}
           sx={{
-            width:        open ? 100 : 44,
-            height:       open ? 100 : 44,
+            width:        open ? 80 : 44, // Adjusted logo size down to pull everything further upward
+            height:       open ? 80 : 44,
             borderRadius: '50%',
             objectFit:    'cover',
             border:       '3px solid white',
@@ -290,24 +291,39 @@ export default function Sidebar({ open, onToggle, isMobile }) {
           }}
         />
 
-        {/* Collapse toggle button */}
-        {open && (
+        {/* Chevron Arrow collapse toggle */}
+        {!isMobile && (
           <IconButton
             onClick={onToggle}
             size="small"
             sx={{
               position: 'absolute',
-              bottom: 8,
-              right: 10,
-              zIndex: 3,
-              bgcolor: 'rgba(255,255,255,0.18)',
+              top: open ? 67 : 70,
+              right: -1,
+              left: 'auto',
+              transform: 'none',
+              zIndex: 10,
+              bgcolor: '#1E40AF',
               color: 'white',
-              width: 26,
-              height: 26,
-              '&:hover': { bgcolor: 'rgba(255,255,255,0.32)' },
+              width: open ? 32 : 24,
+              height: open ? 32 : 24,
+              borderRadius: open ? '8px' : '6px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              '&:hover': {
+                bgcolor: '#2563EB',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
+                transform: open ? 'scale(1.08)' : 'translateX(-50%) scale(1.08)',
+              },
+              transition: 'all 0.2s ease',
             }}
           >
-            <ChevronLeftIcon sx={{ fontSize: 18 }} />
+            <ChevronLeftIcon
+              sx={{
+                fontSize: 20,
+                transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
+                transform: open ? 'rotate(0deg)' : 'rotate(180deg)', // flips to → when collapsed
+              }}
+            />
           </IconButton>
         )}
       </Box>
@@ -320,12 +336,12 @@ export default function Sidebar({ open, onToggle, isMobile }) {
         <svg
           viewBox="0 0 280 36"
           preserveAspectRatio="none"
-          style={{ width: '100%', height: '36px', display: 'block' }}
+          style={{ width: '100%', height: '30px', display: 'block' }}
         >
           {/* Navy fills top portion, creating diagonal bottom edge */}
-          <polygon points="0,0 280,0 280,16 0,36" fill={NAVY} />
-          {/* Red strip — perfectly parallel, 8px thick */}
-          <polygon points="0,28 280,8 280,16 0,36" fill={RED} />
+          <polygon points="0,0 280,0 280,0 0,36" fill={NAVY} />
+          {/* Red strip — thick on the left, tapers to a point on the right */}
+          <polygon points="0,28 280,0 280,0 0,36" fill={RED} />
         </svg>
       </Box>
 
@@ -349,13 +365,12 @@ export default function Sidebar({ open, onToggle, isMobile }) {
       {/* ══════════════════════════════════════════════════
           BOTTOM — wave curve into navy illustration area
       ══════════════════════════════════════════════════ */}
-      {open && (
-        <Box
+      <Box
           sx={{
             flexShrink: 0,
             position: 'relative',
-            height: 200,
-            borderBottomLeftRadius: '32px',   // ← LEFT side to match the drawer paper
+            height: 110,
+            borderBottomLeftRadius: '30px',   // ← LEFT side to match the drawer paper
             overflow: 'hidden',
           }}
         >
@@ -363,14 +378,14 @@ export default function Sidebar({ open, onToggle, isMobile }) {
           <Box sx={{ position: 'absolute', inset: 0, bgcolor: NAVY }} />
 
           {/* White wave that scoops down from the menu area */}
-          <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', lineHeight: 0, zIndex: 2 }}>
+          <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', lineHeight: 10, zIndex: 2 }}>
             <svg
-              viewBox="0 0 280 56"
+              viewBox="110 0 220 56"
               preserveAspectRatio="none"
-              style={{ width: '100%', height: '56px', display: 'block' }}
+              style={{ width: '100%', height: '40px', display: 'block' }}
               fill="none"
             >
-              <path d="M0 0 C80 56 200 56 280 0 L280 0 L0 0 Z" fill="white" />
+              <path d="M0 0 C 120 56 240 56 330 0 L330 0 L0 0 Z" fill="white" />
             </svg>
           </Box>
 
@@ -378,13 +393,13 @@ export default function Sidebar({ open, onToggle, isMobile }) {
           <Box
             sx={{
               position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
+              inset: 0, // Fills the entire 110px area
               zIndex: 1,
               display: 'flex',
               alignItems: 'flex-end',
-              justifyContent: 'center',
+              justifyContent: open ? 'flex-end' : 'flex-start', // Align right when open, left when collapsed
+              pr: open ? 0.5 : 0,         // Reduced right padding to push it even further to the right edge
+              pb: open ? 0.5 : 0,
             }}
           >
             <Box
@@ -392,14 +407,17 @@ export default function Sidebar({ open, onToggle, isMobile }) {
               src={bottomLogo}
               alt="APECC Illustration"
               sx={{
-                width: '100%',
-                objectFit: 'contain',
-                objectPosition: 'bottom center',
+                width: open ? '85%' : '100px', // Keep it a fixed width when collapsed (shrunk further)
+                flexShrink: 0,                 // Prevent shrinking
+                objectFit: 'contain',          // Maintain proportions
+                objectPosition: open ? 'bottom right' : 'bottom center', // Show the center of the drawing
+                ml: open ? 0 : -1.5,           // Pulls the image to the left when collapsed
+                mb: open ? -1.5 : 1,            // Lifts the logo up when collapsed
+                transform: open ? 'translateX(32px)' : 'none', // Pushes the image even further right, past the edge
               }}
             />
           </Box>
         </Box>
-      )}
     </Drawer>
   );
 }
